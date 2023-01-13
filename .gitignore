@@ -127,4 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/spaffaccaunting/mainapp/migrations/
+/static/
+/authapp/migrations/
+/mainapp/migrations/
