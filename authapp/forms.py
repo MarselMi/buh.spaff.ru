@@ -20,7 +20,7 @@ class CustomUserChangeForm(UserChangeForm):
 
 class LoginUserForm(AuthenticationForm):
 
-    username = forms.CharField(label='Email', widget=forms.TextInput(
+    username = forms.CharField(label='Логин', widget=forms.TextInput(
                 attrs={
                     'class': 'form-control mb-4',
                     'placeholder': 'Введите свой Email'

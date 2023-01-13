@@ -33,8 +33,8 @@ class BalanceHolder(models.Model):
         self.save()
 
     class Meta:
-        verbose_name = 'Балансодержатели'
-        verbose_name_plural = 'Балансодержатель'
+        verbose_name = 'Балансодержателя'
+        verbose_name_plural = 'Балансодержатели'
         ordering = ("-pk",)
 
 

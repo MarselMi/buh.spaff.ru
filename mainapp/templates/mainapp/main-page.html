@@ -7,7 +7,17 @@
 			<div class="card">
 				<div class="card-body">
 					<div class="table-responsive">
-					{{ user }}
+						<span>
+							<h2>
+								Главная страница финансовой информации <br> лучшей партнерской IT-компании ООО "СПАФФ ИТ"
+							</h2>
+						</span>
+						<br>
+						Вы вошли в систему как: {% if user.is_authenticate %}
+													<strong> {{ user.last_name }}  {{ user.first_name }}</strong>
+												{% else %}
+													<strong> {{ user }} </strong>
+												{% endif %}
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->

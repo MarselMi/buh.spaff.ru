@@ -22,7 +22,7 @@
 <body>
 
 <header class="navbar navbar-light sticky-top navbar-expand-xl flex-xl-nowrap p-0">
-	<a class="navbar-brand col me-0 px-3 fs-6" href="{% url 'admin:index' %}">
+	<a class="navbar-brand col me-0 px-3 fs-6" href="{% url 'main_page' %}">
 		<img src="{% static 'img/brand/logo.svg' %}" alt="">
 	</a> <!--/navbar-brand-->
 
@@ -49,18 +49,21 @@
 
 						<div class="ms-3 my-auto">
 							<div class="h6 mb-0">
-								{{ user }}
+								{{ user.first_name }}
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<a class="dropdown-item" href="">
+				{% if user.is_superuser %}
+				<a class="dropdown-item" href="{% url 'admin:index' %}">
 					<i class="fa-regular fa-circle-user me-2"></i>
-					Профиль
+					Административный режим
 				</a> <!-- /dropdown-item -->
 
 				<hr class="dropdown-divider">
+
+				{% endif %}
 
 				<a class="dropdown-item mb-0" href="{% url 'logout' %}">
 					<i class="fa-regular fa-right-from-bracket me-2"></i>
@@ -72,65 +75,65 @@
 
 
 	<ul class="navbar-nav d-none d-xl-flex ms-auto me-3">
-		<li class="nav-item d-flex align-items-center me-3">
-			<span class="navbar-text">
-				Баланс:
-				<span class="fw-bold">
-					что то
-				</span>
-				<i class="fa-regular fa-ruble-sign ms-1"></i>
-			</span>
-		</li> <!-- /nav-item -->
-		<li class="nav-item dropdown d-flex align-items-center me-2">
-			<a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-				Подписки
-			</a>
+<!--		<li class="nav-item d-flex align-items-center me-3">-->
+<!--			<span class="navbar-text">-->
+<!--				Баланс:-->
+<!--				<span class="fw-bold">-->
+<!--					что то-->
+<!--				</span>-->
+<!--				<i class="fa-regular fa-ruble-sign ms-1"></i>-->
+<!--			</span>-->
+<!--		</li> &lt;!&ndash; /nav-item &ndash;&gt;-->
+<!--		<li class="nav-item dropdown d-flex align-items-center me-2">-->
+<!--			<a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--				Подписки-->
+<!--			</a>-->
 
-			<ul class="dropdown-menu dropdown-menu-end">
-				<li>
-					<span class="dropdown-item-text">
-						<b>Активные</b>
+<!--			<ul class="dropdown-menu dropdown-menu-end">-->
+<!--				<li>-->
+<!--					<span class="dropdown-item-text">-->
+<!--						<b>Активные</b>-->
 
-						<span class="d-flex">
-							Оплаченных:
+<!--						<span class="d-flex">-->
+<!--							Оплаченных:-->
 
-							<span class="ms-auto ps-2 fw-bold">
-								что то
-							</span>
-						</span>
-						<span class="d-flex">
-							Просроченных:
+<!--							<span class="ms-auto ps-2 fw-bold">-->
+<!--								что то-->
+<!--							</span>-->
+<!--						</span>-->
+<!--						<span class="d-flex">-->
+<!--							Просроченных:-->
 
-							<span class="ms-auto ps-3">
-								что то
-							</span>
-						</span>
-					</span>
-				</li>
-				<li>
-					<hr class="dropdown-divider">
-				</li>
-				<li>
-					<span class="dropdown-item-text">
-						<b>Не активные</b>
-						<span class="d-flex">
-							Отписанных:
+<!--							<span class="ms-auto ps-3">-->
+<!--								что то-->
+<!--							</span>-->
+<!--						</span>-->
+<!--					</span>-->
+<!--				</li>-->
+<!--				<li>-->
+<!--					<hr class="dropdown-divider">-->
+<!--				</li>-->
+<!--				<li>-->
+<!--					<span class="dropdown-item-text">-->
+<!--						<b>Не активные</b>-->
+<!--						<span class="d-flex">-->
+<!--							Отписанных:-->
 
-							<span class="ms-auto ps-3">
-								что то
-							</span>
-						</span>
-						<span class="d-flex">
-							Неребилльные:
+<!--							<span class="ms-auto ps-3">-->
+<!--								что то-->
+<!--							</span>-->
+<!--						</span>-->
+<!--						<span class="d-flex">-->
+<!--							Неребилльные:-->
 
-							<span class="ms-auto ps-3">
-								что то
-							</span>
-						</span>
-					</span>
-				</li>
-			</ul> <!-- /dropdown-menu -->
-		</li> <!-- /nav-item -->
+<!--							<span class="ms-auto ps-3">-->
+<!--								что то-->
+<!--							</span>-->
+<!--						</span>-->
+<!--					</span>-->
+<!--				</li>-->
+<!--			</ul> &lt;!&ndash; /dropdown-menu &ndash;&gt;-->
+<!--		</li> &lt;!&ndash; /nav-item &ndash;&gt;-->
 		<li class="nav-item dropdown">
 			<a class="nav-link dropdown-toggle navbar-profile-user d-flex align-items-center" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 				<span class="d-flex align-items-center justify-content-center text-bg-outline-secondary rounded-circle" style="width: 40px; height: 40px;">
@@ -147,18 +150,19 @@
 
 						<div class="ms-3 my-auto">
 							<div class="h6 mb-0">
-								{{ user }}
+								{{ user.first_name }}
 							</div>
 						</div>
 					</div>
 				</div>
-
-				<a class="dropdown-item" href="">
+				{% if user.is_superuser %}
+				<a class="dropdown-item" href="{% url 'admin:index' %}">
 					<i class="fa-regular fa-circle-user me-2"></i>
-					Профиль
+					Административный режим
 				</a> <!-- /dropdown-item -->
-
 				<hr class="dropdown-divider">
+				{% endif %}
+
 
 				<a class="dropdown-item mb-0" href="{% url 'logout' %}">
 					<i class="fa-regular fa-right-from-bracket me-2"></i>
@@ -173,196 +177,115 @@
 <div class="container-fluid">
 	<div class="row">
 		<nav id="sidebarMenu" class="col-12 col-xl-2 d-xl-block sidebar collapse">
-			<a class="navbar-brand d-none d-xl-flex" href="{% url 'admin:index' %}">
+			<a class="navbar-brand d-none d-xl-flex" href="{% url 'main_page' %}">
 				<img src="{% static 'img/brand/logo.svg' %}" alt="">
 			</a> <!--/navbar-brand-->
 
 
 			<div class="position-sticky sidebar-sticky">
-				<ul class="nav nav-fill flex-column d-flex d-xl-none mt-2">
-					<li class="nav-item d-flex align-items-center">
-						<span class="nav-link">
-							Баланс:
-							<span class="fw-bold">
-								что то
-							</span>
-							<i class="fa-regular fa-ruble-sign ms-1"></i>
-						</span>
-					</li> <!-- /nav-item -->
-					<li class="nav-item dropdown d-flex align-items-center">
-						<a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-							Подписки
-						</a>
+<!--				<ul class="nav nav-fill flex-column d-flex d-xl-none mt-2">-->
+<!--					<li class="nav-item d-flex align-items-center">-->
+<!--						<span class="nav-link">-->
+<!--							Баланс:-->
+<!--							<span class="fw-bold">-->
+<!--								что то-->
+<!--							</span>-->
+<!--							<i class="fa-regular fa-ruble-sign ms-1"></i>-->
+<!--						</span>-->
+<!--					</li> &lt;!&ndash; /nav-item &ndash;&gt;-->
+<!--					<li class="nav-item dropdown d-flex align-items-center">-->
+<!--						<a class="nav-link dropdown-toggle" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--							Подписки-->
+<!--						</a>-->
 
-						<ul class="dropdown-menu">
-							<li>
-								<span class="dropdown-item-text">
-									<b>Активные</b>
+<!--						<ul class="dropdown-menu">-->
+<!--							<li>-->
+<!--								<span class="dropdown-item-text">-->
+<!--									<b>Активные</b>-->
 
-									<span class="d-flex">
-										Оплаченных:
+<!--									<span class="d-flex">-->
+<!--										Оплаченных:-->
 
-										<span class="ms-auto ps-2 fw-bold">
-											что то
-										</span>
-									</span>
-									<span class="d-flex">
-										Просроченных:
+<!--										<span class="ms-auto ps-2 fw-bold">-->
+<!--											что то-->
+<!--										</span>-->
+<!--									</span>-->
+<!--									<span class="d-flex">-->
+<!--										Просроченных:-->
 
-										<span class="ms-auto ps-3">
-											что то
-										</span>
-									</span>
-								</span>
-							</li>
-							<li>
-								<hr class="dropdown-divider">
-							</li>
-							<li>
-								<span class="dropdown-item-text">
-									<b>Не активные</b>
-									<span class="d-flex">
-										Отписанных:
+<!--										<span class="ms-auto ps-3">-->
+<!--											что то-->
+<!--										</span>-->
+<!--									</span>-->
+<!--								</span>-->
+<!--							</li>-->
+<!--							<li>-->
+<!--								<hr class="dropdown-divider">-->
+<!--							</li>-->
+<!--							<li>-->
+<!--								<span class="dropdown-item-text">-->
+<!--									<b>Не активные</b>-->
+<!--									<span class="d-flex">-->
+<!--										Отписанных:-->
 
-										<span class="ms-auto ps-3">
-											что то
-										</span>
-									</span>
-									<span class="d-flex">
-										Неребилльные:
+<!--										<span class="ms-auto ps-3">-->
+<!--											что то-->
+<!--										</span>-->
+<!--									</span>-->
+<!--									<span class="d-flex">-->
+<!--										Неребилльные:-->
 
-										<span class="ms-auto ps-3">
-											что то
-										</span>
-									</span>
-								</span>
-							</li>
-						</ul> <!-- /dropdown-menu -->
-					</li> <!-- /nav-item -->
-				</ul> <!-- /nav -->
-
-
-				<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-3 text-muted text-uppercase">
-					<span>
-						Главное
-					</span>
-				</h6>
-
-
-				<ul class="nav nav-fill flex-column">
-					<li class="nav-item">
-						<span class="sideshow_static btn-toggle nav-link d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" data-bs-target="#sd-m-1-collapse" aria-expanded="false" role="button">
-							<i class="fa-regular fa-chart-mixed anim-opacity me-3"></i>
-							Статистика
-						</span>
-
-						<div class="elemshow_static collapse" id="sd-m-1-collapse" data-bs-parent="#sidebarMenu">
-							<ul class="btn-toggle-nav list-unstyled pb-1">
-								<li>
-									<a class="stat statistic_link nav-link" href="">
-										Общая
-									</a>
-								</li>
-								<li>
-									<a class="stat statistic_link nav-link" href="">
-										По дням
-									</a>
-								</li>
-								<li>
-									<a class="stat statistic_link nav-link" href="">
-										По часам
-									</a>
-								</li>
-								<li>
-									<a class="stat statistic_link nav-link" href="">
-										По подпискам
-									</a>
-								</li>
-								<li>
-									<a class="stat statistic_link nav-link" href="">
-										По ребиллам
-									</a>
-								</li>
-								<li>
-									<a class="stat statistic_link nav-link" href="">
-										По отпискам
-									</a>
-								</li>
-							</ul> <!-- /btn-toggle-nav -->
-						</div> <!-- /collapse -->
-					</li> <!-- /nav-item -->
-				</ul> <!-- /nav -->
+<!--										<span class="ms-auto ps-3">-->
+<!--											что то-->
+<!--										</span>-->
+<!--									</span>-->
+<!--								</span>-->
+<!--							</li>-->
+<!--						</ul> &lt;!&ndash; /dropdown-menu &ndash;&gt;-->
+<!--					</li> &lt;!&ndash; /nav-item &ndash;&gt;-->
+<!--				</ul> &lt;!&ndash; /nav &ndash;&gt;-->
 
 
 				<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-3 text-muted text-uppercase">
 					<span>
-						Инструменты
+						Действия
 					</span>
 				</h6>
-
 
 				<ul class="nav nav-fill flex-column">
 
 					<li class="nav-item">
-						<a class="stat_streams nav-link d-inline-flex align-items-center" href="">
+						<a class="stat_streams nav-link d-inline-flex align-items-center" href="{% url 'transactions' %}">
 							<i class="fa-regular fa-airplay anim-opacity me-3"></i>
-							Потоки
+							Транзакции
 						</a>
 					</li> <!-- /nav-item -->
 					<li class="nav-item">
-						<a class="stat_posts nav-link d-inline-flex align-items-center" href="">
+						<a class="stat_posts nav-link d-inline-flex align-items-center" href="{% url 'balance_holders' %}">
 							<i class="fa-regular fa-circle-exclamation-check anim-opacity me-3"></i>
-							PostBacks
+							Балансодержатели
 						</a>
 					</li> <!-- /nav-item -->
 				</ul> <!-- /nav -->
 
 
-				<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-3 text-muted text-uppercase">
-					<span>
-						Взаиморасчёты
-					</span>
-				</h6>
-
-
 				<ul class="nav nav-fill flex-column">
 					<li class="nav-item">
-						<a class="stat_payments nav-link d-inline-flex align-items-center" href="">
+						<a class="stat_payments nav-link d-inline-flex align-items-center" href="{% url 'pay_types' %}">
 							<i class="fa-regular fa-building-columns anim-opacity me-3"></i>
-							Выплаты
+							Типы платежей
 						</a>
 					</li> <!-- /nav-item -->
 				</ul> <!-- /nav -->
 
 
-				<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-3 text-muted text-uppercase">
-					<span>
-						Дополнительно
-					</span>
-				</h6>
-
-
 				<ul class="nav nav-fill flex-column">
-
 					<li class="nav-item">
-						<a class="stat_news nav-link d-inline-flex align-items-center" href="">
+						<a class="stat_news nav-link d-inline-flex align-items-center" href="{% url 'additional_data' %}">
 							<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
-							Новости
+							Доп данные по транзакции
 						</a>
 					</li>
-					<li class="nav-item">
-						<a class="stat_referals nav-link d-inline-flex align-items-center" href="">
-							<i class="fa-regular fa-users-medical anim-opacity me-3"></i>
-							Рефералы
-						</a>
-					</li> <!-- /nav-item -->
-					<li class="nav-item">
-						<a class="stat_support nav-link d-inline-flex align-items-center" href="">
-							<i class="fa-regular fa-life-ring anim-opacity me-3"></i>
-							Поддержка
-						</a>
-					</li> <!-- /nav-item -->
-
 				</ul> <!-- /nav -->
 			</div> <!--/sidebar-sticky-->
 		</nav> <!--/sidebar-->
@@ -372,14 +295,14 @@
 
 			<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-end pt-3 pb-2 mt-2 mb-2">
 				<h1 class="h5">
-					Имя Страницы
+					{{ title }}
 				</h1> <!-- /title -->
 
 
 				<nav aria-label="breadcrumb">
 					<ol class="breadcrumb mb-1">
 						<li class="breadcrumb-item">
-							<a href="">
+							<a href="{% url 'main_page' %}">
 								Главная
 							</a>
 						</li>
