@@ -9,7 +9,34 @@
 					<div class="table-responsive">
 						Балансодержатели
 						<br>
+						{% if user.is_superuser %}
 						<a href="{% url 'holder_create' %}">Создать Нового балансодержателя</a>
+						{% endif %}
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-bordered text-nowrap mb-0">
+									<thead>
+										<tr>
+											<th>ID</th>
+											<th>Наименование</th>
+											<th>Держатель</th>
+											<th>Баланс Держателя</th>
+										</tr>
+									</thead>
+									{% for object in object_list %}
+									<tbody>
+										<tr class="align-middle">
+											<td>{{ object.pk }}</td>
+											<td>{{ object.holder_name }}</td>
+											<td>{{ object.holder }}</td>
+											<td>{{ object.holder_balance }}</td>
+										</tr>
+									</tbody>
+									{% endfor %}
+								</table> <!-- /table -->
+							</div> <!-- /table-responsive -->
+						</div>
+
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->

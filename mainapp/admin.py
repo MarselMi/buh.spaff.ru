@@ -11,6 +11,11 @@ class AdminPayType(admin.ModelAdmin):
     pass
 
 
+@admin.register(models.AdditionalDataTransaction)
+class AdminAdditionalDataTransaction(admin.ModelAdmin):
+    pass
+
+
 @admin.register(models.BalanceHolder)
 class AdminBalanceHolder(admin.ModelAdmin):
     list_display = ["holder_name", "holder", "holder_balance", "deleted"]

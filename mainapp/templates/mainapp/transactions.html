@@ -9,7 +9,47 @@
 					<div class="table-responsive">
 						Транзакции
 						<br>
+						{% if user.is_superuser %}
 						<a href="{% url 'transactions_create' %}">Создать транзакцию</a>
+						{% endif %}
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-bordered text-nowrap mb-0">
+									<thead>
+										<tr>
+											<th>ID</th>
+											<th>Название</th>
+											<th>Создан</th>
+											<th>Изменён</th>
+											<th>Тип транзакции</th>
+											<th>Дата Транзакции</th>
+											<th>Балансодержатель</th>
+											<th>Сумма</th>
+											<th>Тип платежа</th>
+											<th>Автор</th>
+											<th>Статус</th>
+										</tr>
+									</thead>
+									{% for object in transactions %}
+									<tbody>
+										<tr class="align-middle">
+											<td>{{ object.pk }}</td>
+											<td>{{ object.name }}</td>
+											<td>{{ object.create_date }}</td>
+											<td>{{ object.update_date }}</td>
+											<td>{{ object.type_transaction }}</td>
+											<td>{{ object.transaction_date }}</td>
+											<td>{{ object.balance_holder }}</td>
+											<td>{{ object.amount }}</td>
+											<td>{{ object.type_payment }}</td>
+											<td>{{ object.author }}</td>
+											<td>{{ object.status }}</td>
+										</tr>
+									</tbody>
+									{% endfor %}
+								</table> <!-- /table -->
+							</div> <!-- /table-responsive -->
+						</div>
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->

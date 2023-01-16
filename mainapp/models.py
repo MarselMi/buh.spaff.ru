@@ -2,9 +2,15 @@ from django.db import models
 from authapp.models import CustomUser
 
 TRANSACTION_CHOICE = [
-    (1, 'Приход'),
-    (2, 'Расход'),
+    ('COMING', 'Приход'),
+    ('EXPENDITURE', 'Расход'),
 ]
+
+STATUS_CHOICES = [
+        ('INPROCESS', 'В процессе'),
+        ('REJECT', 'Отклонен'),
+        ('SUCCESSFULLY', 'Успешно')
+    ]
 
 
 class PayType(models.Model):
@@ -39,10 +45,11 @@ class BalanceHolder(models.Model):
 
 
 class Transaction(models.Model):
-    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
-    update_date = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
 
-    type_transaction = models.IntegerField(choices=TRANSACTION_CHOICE, verbose_name='Тип транзакции')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
+    update_date = models.DateTimeField(auto_now=True, editable=False, verbose_name='Дата изменения')
+
+    type_transaction = models.CharField(max_length=15, choices=TRANSACTION_CHOICE, verbose_name='Тип транзакции')
     transaction_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата Транзакции')
 
     name = models.CharField(max_length=65, verbose_name='Наименование')
@@ -50,12 +57,13 @@ class Transaction(models.Model):
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.CASCADE, verbose_name='Балансодержатель')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма')
     type_payment = models.ForeignKey(PayType, on_delete=models.CASCADE, verbose_name='Тип')
-    tags = models.TextField(verbose_name='Теги')
+    tags = models.TextField(blank=False, default=None, verbose_name='Теги')
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], verbose_name='Статус')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
 
     def __str__(self):
-        return f'{self.name}'
+        return f'{self.pk}. {self.name}'
 
     def delete(self, *args, **kwargs):
         self.deleted = True
@@ -68,12 +76,12 @@ class Transaction(models.Model):
 
 
 class AdditionalDataTransaction(models.Model):
-    transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE, verbose_name='Транзакция')
     notes = models.TextField(verbose_name='Дополнительные данные по транзакции')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
 
     def __str__(self):
-        return f'ID Транзакции - {self.transaction_id}'
+        return f'Информация по транзакции: {self.transaction_id}'
 
     def delete(self, *args, **kwargs):
         self.deleted = True

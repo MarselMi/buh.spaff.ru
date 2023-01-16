@@ -1,5 +1,6 @@
 {% extends 'mainapp/base.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 {% block content %}
 
 	<div class="row mb-4">
@@ -9,6 +10,19 @@
 					<div class="table-responsive">
 						Создание нового балансодержателя
 						<br>
+						<form method="POST" action="">
+							{% csrf_token %}
+
+							<div class="row">
+							  <div class="col-12 col-md-3 col-sm-4">
+								{{ form|crispy }}
+							  </div>
+							</div>
+
+							<button class="w-100 btn btn-lg btn-primary mt-4" type="submit">
+								Сохранить
+							</button> <!-- /btn -->
+						</form>
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
