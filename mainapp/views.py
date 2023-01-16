@@ -1,7 +1,9 @@
+from urllib import request
+
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
 from mainapp.models import Transaction, BalanceHolder, PayType, AdditionalDataTransaction
-
+from django.views.generic.edit import FormView
 
 class MainPageView(TemplateView):
     template_name = 'mainapp/main-page.html'
@@ -33,10 +35,8 @@ class TransactionsCreateView(CreateView):
         'tags',
     ]
 
-    def form_invalid(self, form):
-        pass
-
     def form_valid(self, form):
+        form.instance.author = self.request.user
         form.save()
         return redirect('transactions')
 

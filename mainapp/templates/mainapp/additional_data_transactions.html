@@ -12,22 +12,26 @@
 						{% if user.is_superuser %}
 							<a href="{% url 'addition_create' %}">Создать дополнительные данные по транзакции</a>
 						{% endif %}
-						<table class="table table-bordered text-nowrap mb-0">
-							<thead>
-								<tr>
-									<th>Название транзакции</th>
-									<th>Дополнительные данные по транзакции</th>
-								</tr>
-							</thead>
-							{% for object in additional %}
-							<tbody>
-								<tr class="align-middle">
-									<td>{{ object.transaction_id }}</td>
-									<td>{{ object.notes }}</td>
-								</tr>
-							</tbody>
-							{% endfor %}
-						</table> <!-- /table -->
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-bordered text-nowrap mb-0">
+									<thead>
+										<tr>
+											<th>Название транзакции</th>
+											<th>Дополнительные данные по транзакции</th>
+										</tr>
+									</thead>
+									{% for object in additional %}
+									<tbody>
+										<tr class="align-middle">
+											<td>{{ object.transaction_id }}</td>
+											<td>{{ object.notes }}</td>
+										</tr>
+									</tbody>
+									{% endfor %}
+								</table> <!-- /table -->
+							</div> <!-- /table-responsive -->
+						</div>
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
