@@ -1,17 +1,12 @@
 from django.urls import path
-from .views import (
-    MainPageView,
-    TransactionsView,
-    TransactionsCreateView,
-    BalanceHolderCreateView,
-    BalanceHolderView,
-    PaymentTypeView,
-    PaymentTypeCreateView,
-    AdditionalDataTransactionView,
-    AdditionalDataTransactionCreateView
-)
 from authapp.views import CustomLogoutView, CustomLoginView
 from django.contrib.auth.decorators import login_required
+from .views import (
+    MainPageView, TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
+    BalanceHolderView, PaymentTypeView, PaymentTypeCreateView,
+    AdditionalDataTransactionView, AdditionalDataTransactionCreateView,
+    handler404, handler403, handler405, handler500, handler501,
+)
 
 
 urlpatterns = [
@@ -42,3 +37,8 @@ urlpatterns = [
          name='addition_create'),
 ]
 
+handler404 = handler404
+handler403 = handler403
+handler405 = handler405
+handler500 = handler500
+handler501 = handler501

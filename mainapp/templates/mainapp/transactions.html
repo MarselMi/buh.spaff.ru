@@ -9,7 +9,7 @@
 					<div class="table-responsive">
 						Транзакции
 						<br>
-						{% if user.is_superuser %}
+						{% if user.is_superuser or user.is_staff %}
 						<a href="{% url 'transactions_create' %}">Создать транзакцию</a>
 						{% endif %}
 						<div class="card-body">

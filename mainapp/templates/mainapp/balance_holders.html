@@ -9,7 +9,7 @@
 					<div class="table-responsive">
 						Балансодержатели
 						<br>
-						{% if user.is_superuser %}
+						{% if user.is_superuser or user.is_staff %}
 							<a href="{% url 'holder_create' %}">Создать Нового балансодержателя</a>
 						{% endif %}
 						<div class="card-body">

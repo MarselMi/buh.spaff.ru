@@ -31,18 +31,19 @@
 					<h1 class="h3 pb-3 mb-4 border-bottom text-center text-success-">
 						Ошибка метод не разрешен
 					</h1> <!-- /title -->
-
+				{% if user.is_authenticate %}
 					<div class="text-center">
 						Вернитесь на <a href="/">главную</a>.
 					</div>
 				</div> <!-- /card-body -->
-
+				{% else %}
+				</div> <!-- /card-body -->
 				<div class="card-footer text-center">
 					<a href="{% url 'login' %}">
 						Авторизоваться
 					</a>
-
 				</div> <!-- /card-footer -->
+				{% endif %}
 			</div> <!-- /card -->
 		</main> <!-- /content -->
 	</div> <!-- /row -->

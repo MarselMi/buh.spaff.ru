@@ -9,7 +9,7 @@
 					<div class="table-responsive">
 						Типы платежей
 						<br>
-						{% if user.is_superuser %}
+						{% if user.is_superuser or user.is_staff %}
 						<a href="{% url 'pay_create' %}">Создание нового типа платежа</a>
 						{% endif %}
 						<div class="card-body">
