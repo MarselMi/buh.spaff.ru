@@ -1,18 +1,23 @@
 from urllib import request
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
-
-from mainapp.forms import TransactionForm
+from datetime import datetime as dt
+from mainapp.forms import (
+    TransactionForm, BalanceHolderForm, AdditionalDataTransactionForm, PayTypeForm
+)
 from mainapp.models import Transaction, BalanceHolder, PayType, AdditionalDataTransaction
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, UpdateView
 
 
 class MainPageView(TemplateView):
     template_name = 'mainapp/main-page.html'
 
+    extra_context = {'title': 'Главная страница'}
+
 
 class TransactionsView(TemplateView):
     template_name = 'mainapp/transactions.html'
+    extra_context = {'title': 'Транзакции'}
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -24,28 +29,35 @@ class TransactionsView(TemplateView):
 class TransactionsCreateView(CreateView):
 
     template_name = 'mainapp/transaction_create.html'
-
     model = Transaction
+    form_class = TransactionForm
+    extra_context = {'title': 'Создание транзакции',
+                     'inside': {
+                         'page_url': 'transactions',
+                         'page_title': 'Транзакции'
+                     }}
 
-    fields = [
-        'name',
-        'type_transaction',
-        'description',
-        'balance_holder',
-        'amount',
-        'type_payment',
-        'tags',
-    ]
-    print(TransactionForm)
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.save()
         return redirect('transactions')
 
 
+class TransactionUpdateView(UpdateView):
+    template_name = 'mainapp/transaction.html'
+    model = Transaction
+    form_class = TransactionForm
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.update_date = dt.now()
+        form.save()
+        return redirect('transactions')
+
+
 class BalanceHolderView(ListView):
     template_name = 'mainapp/balance_holders.html'
-
+    extra_context = {'title': 'Балансодержатели'}
     model = BalanceHolder
 
     def get_queryset(self):
@@ -54,14 +66,13 @@ class BalanceHolderView(ListView):
 
 class BalanceHolderCreateView(CreateView):
     template_name = 'mainapp/balance_holder_create.html'
-
+    extra_context = {'title': 'Создание балансодержателя',
+                     'inside': {
+                         'page_url': 'holders',
+                         'page_title': 'Балансодержатели '
+                     }}
     model = BalanceHolder
-
-    fields = [
-        'holder_name',
-        'holder',
-        'holder_balance',
-    ]
+    form_class = BalanceHolderForm
 
     def form_valid(self, form):
         form.save()
@@ -70,6 +81,7 @@ class BalanceHolderCreateView(CreateView):
 
 class PaymentTypeView(TemplateView):
     template_name = 'mainapp/payments_type.html'
+    extra_context = {'title': 'Типы платежей'}
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -79,12 +91,13 @@ class PaymentTypeView(TemplateView):
 
 class PaymentTypeCreateView(CreateView):
     template_name = 'mainapp/payment_type_add.html'
-
+    extra_context = {'title': 'Создание типа платежа',
+                     'inside': {
+                         'page_url': 'pay-types',
+                         'page_title': 'Типы платежей'
+                     }}
     model = PayType
-
-    fields = [
-        'pay_type'
-    ]
+    form_class = PayTypeForm
 
     def form_valid(self, form):
         form.save()
@@ -93,6 +106,7 @@ class PaymentTypeCreateView(CreateView):
 
 class AdditionalDataTransactionView(TemplateView):
     template_name = 'mainapp/additional_data_transactions.html'
+    extra_context = {'title': 'Дополнительные данные по транзакциям'}
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -102,13 +116,13 @@ class AdditionalDataTransactionView(TemplateView):
 
 class AdditionalDataTransactionCreateView(CreateView):
     template_name = 'mainapp/additional_data_transaction_create.html'
-
+    extra_context = {'title': 'Создание дополнительных данных по транзакции',
+                     'inside': {
+                         'page_url': 'additional-data',
+                         'page_title': 'Дополнительные данные по транзакциям '
+                     }}
     model = AdditionalDataTransaction
-
-    fields = [
-        'transaction_id',
-        'notes'
-    ]
+    form_class = AdditionalDataTransactionForm
 
     def form_valid(self, form):
         form.save()

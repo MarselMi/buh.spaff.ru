@@ -35,15 +35,15 @@
 										<tr class="align-middle">
 											<td>{{ object.pk }}</td>
 											<td>{{ object.name }}</td>
-											<td>{{ object.create_date }}</td>
-											<td>{{ object.update_date }}</td>
-											<td>{{ object.type_transaction }}</td>
+											<td>{{ object.create_date|date_format }}</td>
+											<td>{{ object.update_date|date_format|safe }}</td>
+											<td>{{ object.type_transaction|trans_type }}</td>
 											<td>{{ object.transaction_date }}</td>
 											<td>{{ object.balance_holder }}</td>
-											<td>{{ object.amount }}</td>
+											<td>{{ object.amount|numb_format }}</td>
 											<td>{{ object.type_payment }}</td>
 											<td>{{ object.author }}</td>
-											<td>{{ object.status }}</td>
+											<td>{{ object.status|trans_status }}</td>
 										</tr>
 									</tbody>
 									{% endfor %}

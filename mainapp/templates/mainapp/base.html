@@ -313,6 +313,11 @@
 
 				<nav aria-label="breadcrumb">
 					<ol class="breadcrumb mb-1">
+						{% if request.resolver_match.url_name == 'main_page' %}
+						<li class="breadcrumb-item active" aria-current="page">
+							{{ title }}
+						</li>
+						{% else %}
 						<li class="breadcrumb-item">
 							<a href="{% url 'main_page' %}">
 								Главная
@@ -320,14 +325,15 @@
 						</li>
 						{% if inside %}
 						<li class="breadcrumb-item">
-							<a href="{{ inside.page_url }}">
+							<a href="/{{ inside.page_url }}">
 								{{ inside.page_title }}
 							</a>
 						</li>
 						{% endif %}
 						<li class="breadcrumb-item active" aria-current="page">
-							Имя страницы
+							{{ title }}
 						</li>
+						{% endif %}
 					</ol> <!-- /breadcrumb -->
 				</nav> <!-- /breadcrumb-container -->
 			</div> <!-- /page-title -->

@@ -29,7 +29,7 @@
 											<td>{{ object.pk }}</td>
 											<td>{{ object.holder_name }}</td>
 											<td>{{ object.holder }}</td>
-											<td>{{ object.holder_balance }}</td>
+											<td>{{ object.holder_balance|numb_format }}</td>
 										</tr>
 									</tbody>
 									{% endfor %}
