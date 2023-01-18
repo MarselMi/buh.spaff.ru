@@ -1,9 +1,10 @@
 from urllib import request
-
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
 from mainapp.models import Transaction, BalanceHolder, PayType, AdditionalDataTransaction
 from django.views.generic.edit import FormView
+from django.contrib.auth.decorators import login_required
+
 
 class MainPageView(TemplateView):
     template_name = 'mainapp/main-page.html'
