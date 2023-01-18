@@ -255,13 +255,19 @@
 				<ul class="nav nav-fill flex-column">
 
 					<li class="nav-item">
-						<a class="stat_streams nav-link d-inline-flex align-items-center" href="{% url 'transactions' %}">
+						<a class="{% if request.resolver_match.url_name == 'transactions' or request.resolver_match.url_name == 'transactions_create' %}
+						active
+						{% endif %}
+						  nav-link d-inline-flex align-items-center" href="{% url 'transactions' %}">
 							<i class="fa-regular fa-airplay anim-opacity me-3"></i>
 							Транзакции
 						</a>
 					</li> <!-- /nav-item -->
 					<li class="nav-item">
-						<a class="stat_posts nav-link d-inline-flex align-items-center" href="{% url 'balance_holders' %}">
+						<a class="{% if request.resolver_match.url_name == 'balance_holders' or request.resolver_match.url_name == 'holder_create' %}
+						active
+						{% endif %}
+						 nav-link d-inline-flex align-items-center" href="{% url 'balance_holders' %}">
 							<i class="fa-regular fa-circle-exclamation-check anim-opacity me-3"></i>
 							Балансодержатели
 						</a>
@@ -271,7 +277,10 @@
 
 				<ul class="nav nav-fill flex-column">
 					<li class="nav-item">
-						<a class="stat_payments nav-link d-inline-flex align-items-center" href="{% url 'pay_types' %}">
+						<a class="{% if request.resolver_match.url_name == 'pay_types' or request.resolver_match.url_name == 'pay_create' %}
+						active
+						{% endif %}
+						nav-link d-inline-flex align-items-center" href="{% url 'pay_types' %}">
 							<i class="fa-regular fa-building-columns anim-opacity me-3"></i>
 							Типы платежей
 						</a>
@@ -281,7 +290,10 @@
 
 				<ul class="nav nav-fill flex-column">
 					<li class="nav-item">
-						<a class="stat_news nav-link d-inline-flex align-items-center" href="{% url 'additional_data' %}">
+						<a class="{% if request.resolver_match.url_name == 'additional_data' or request.resolver_match.url_name == 'addition_create' %}
+						active
+						{% endif %}
+						nav-link d-inline-flex align-items-center" href="{% url 'additional_data' %}">
 							<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
 							Доп данные по транзакции
 						</a>
@@ -384,86 +396,6 @@
 <script src="{% static '/js/jquery.js' %}"></script>
 <script src="{% static '/js/jquery.vmap.sampledata.js' %}"></script>
 <script src="{% static '/js/jquery-ui.js' %}"></script>
-
-<script>
-
-	var stat_linkEl = document.querySelectorAll('.statistic_link');
-	var side_stat_showEl = document.querySelector('.sideshow_static');
-	var elem_stat_showEl = document.querySelector('.elemshow_static');
-
-	var offers_linkEl = document.querySelectorAll('.offers_link');
-	var side_offers_showEl = document.querySelector('.sideshow_offers');
-	var elem_offers_showEl = document.querySelector('.elemshow_offers');
-
-	var elem_stream_active = document.querySelector('.stat_streams')
-	var elem_posts_active = document.querySelector('.stat_posts')
-	var elem_payments_active = document.querySelector('.stat_payments')
-	var elem_news_active = document.querySelector('.stat_news')
-	var elem_referals_active = document.querySelector('.stat_referals')
-	var elem_support_active = document.querySelector('.stat_support')
-	var elem_stat_top_active = document.querySelector('.stat_top')
-
-	var re_streams = /\/stream/;
-	var re_postback = /\/postback/;
-	var re_payment = /\/payment/;
-	var re_news = /\/news/;
-
-	function checkActive (stat) {
-		for (let i = 0; i < stat.length; i++) {
-			if (stat[i].classList.contains('active')) {
-				return true;
-			};
-		} return false;
-		};
-
-	for (let i = 0; i < stat_linkEl.length; i++){
-		if (document.location.pathname == '/general/'){
-			stat_linkEl[0].classList.add('active');
-		}else if(document.location.pathname == '/days/'){
-			stat_linkEl[1].classList.add('active');
-		}else if(document.location.pathname == '/hours/'){
-			stat_linkEl[2].classList.add('active');
-		}else if(document.location.pathname == '/stat-subs/'){
-			stat_linkEl[3].classList.add('active');
-		}else if(document.location.pathname == '/stat-rebills/'){
-			stat_linkEl[4].classList.add('active');
-		}else if(document.location.pathname == '/stat-unsubs/'){
-			stat_linkEl[5].classList.add('active');
-		}
-	}
-
-	for (let i = 0; i < offers_linkEl.length; i++){
-		if (document.location.pathname == offers_linkEl[i].getAttribute('href')){
-			offers_linkEl[i].classList.add('active');
-		}
-	}
-
-	if (checkActive(stat_linkEl)){
-		side_stat_showEl.classList.remove('collapsed');
-		side_stat_showEl.removeAttribute('aria-expanded');
-		side_stat_showEl.setAttribute('aria-expanded', 'true');
-		elem_stat_showEl.classList.add('show');
-	}else if (checkActive(offers_linkEl)){
-		side_offers_showEl.classList.remove('collapsed');
-		side_offers_showEl.removeAttribute('aria-expanded');
-		side_offers_showEl.setAttribute('aria-expanded', 'true');
-		elem_offers_showEl.classList.add('show');
-	}else if (re_streams.test(document.location.pathname)){
-		elem_stream_active.classList.add('active')
-	}else if (re_postback.test(document.location.pathname)){
-		elem_posts_active.classList.add('active')
-	}else if (re_payment.test(document.location.pathname)){
-		elem_payments_active.classList.add('active')
-	}else if (re_news.test(document.location.pathname)){
-		elem_news_active.classList.add('active')
-	}else if(document.location.pathname == '/referrals/'){
-		elem_referals_active.classList.add('active')
-	}else if (document.location.pathname == '/support/'){
-		elem_support_active.classList.add('active')
-	}else if (document.location.pathname == '/top-webs/'){
-		elem_stat_top_active.classList.add('active')
-	}
-</script>
 
 </body>
 </html>

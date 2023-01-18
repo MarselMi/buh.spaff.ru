@@ -7,14 +7,14 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-					<div class="table-responsive">
+					<div>
 						Создание нового балансодержателя
 						<br>
 						<form method="POST" action="">
 							{% csrf_token %}
 
 							<div class="row">
-							  <div class="col-12 col-md-3 col-sm-4">
+							  <div class="mt-4">
 								{{ form|crispy }}
 							  </div>
 							</div>
