@@ -5,7 +5,7 @@ from .views import (
     MainPageView, TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
     BalanceHolderView, PaymentTypeView, PaymentTypeCreateView,
     AdditionalDataTransactionView, AdditionalDataTransactionCreateView,
-    handler404, handler403, handler405, handler500, handler501,
+    handler404, handler403, handler405, handler500, handler501, TransactionUpdateView,
 )
 
 
@@ -19,7 +19,9 @@ urlpatterns = [
     # Транзакции
     path('transactions/', login_required(TransactionsView.as_view(), login_url='login'), name='transactions'),
     path('transactions-create/', login_required(TransactionsCreateView.as_view(), login_url='login'),
-         name='transactions_create'),
+         name='transaction_create'),
+    path('transaction-edit/<int:pk>/', login_required(TransactionUpdateView.as_view(), login_url='login'),
+         name='transaction_edit'),
 
     # Балансодержатели
     path('holders/', login_required(BalanceHolderView.as_view(), login_url='login'), name='balance_holders'),

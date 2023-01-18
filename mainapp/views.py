@@ -5,6 +5,7 @@ from datetime import datetime as dt
 from mainapp.forms import (
     TransactionForm, BalanceHolderForm, AdditionalDataTransactionForm, PayTypeForm
 )
+from mainapp.mixin import SuperuserRequiredMixin
 from mainapp.models import Transaction, BalanceHolder, PayType, AdditionalDataTransaction
 from django.views.generic.edit import FormView, UpdateView
 
@@ -30,6 +31,7 @@ class TransactionsCreateView(CreateView):
 
     template_name = 'mainapp/transaction_create.html'
     model = Transaction
+    balance_hodler = BalanceHolder
     form_class = TransactionForm
     extra_context = {'title': 'Создание транзакции',
                      'inside': {
@@ -38,15 +40,26 @@ class TransactionsCreateView(CreateView):
                      }}
 
     def form_valid(self, form):
+        form.save(commit=False)
         form.instance.author = self.request.user
+        id_balance_holder = form.instance.balance_holder
+        balance_hodler = BalanceHolder.objects.filter(holder_name=id_balance_holder)
+        balance = balance_hodler.values_list('holder_balance', flat=True).get(holder_name=id_balance_holder)
+        balance += -(form.instance.amount)
+        BalanceHolder.objects.filter(holder_name=id_balance_holder).update(holder_balance=balance)
         form.save()
         return redirect('transactions')
 
 
-class TransactionUpdateView(UpdateView):
-    template_name = 'mainapp/transaction.html'
+class TransactionUpdateView(SuperuserRequiredMixin, UpdateView):
+    template_name = 'mainapp/transaction_edit.html'
     model = Transaction
     form_class = TransactionForm
+    extra_context = {'title': 'Изменение транзакции',
+                     'inside': {
+                         'page_url': 'transactions',
+                         'page_title': 'Транзакции'
+                     }}
 
     def form_valid(self, form):
         form.instance.author = self.request.user

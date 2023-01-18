@@ -255,7 +255,7 @@
 				<ul class="nav nav-fill flex-column">
 
 					<li class="nav-item">
-						<a class="{% if request.resolver_match.url_name == 'transactions' or request.resolver_match.url_name == 'transactions_create' %}
+						<a class="{% if request.resolver_match.url_name == 'transactions' or request.resolver_match.url_name == 'transaction_create' %}
 						active
 						{% endif %}
 						  nav-link d-inline-flex align-items-center" href="{% url 'transactions' %}">

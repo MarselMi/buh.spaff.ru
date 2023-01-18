@@ -10,7 +10,7 @@
 						Транзакции
 						<br>
 						{% if user.is_superuser or user.is_staff %}
-						<a href="{% url 'transactions_create' %}">Создать транзакцию</a>
+						<a href="{% url 'transaction_create' %}">Создать транзакцию</a>
 						{% endif %}
 						<div class="card-body">
 							<div class="table-responsive">
@@ -33,12 +33,19 @@
 									{% for object in transactions %}
 									<tbody>
 										<tr class="align-middle">
-											<td>{{ object.pk }}</td>
+											<td>
+												{{ object.pk }}
+												{% if user.is_superuser %}
+												<a href="{% url 'transaction_edit' object.pk %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+													<i class="fa-regular fa-pen-to-square"></i>
+												</a>
+												{% endif %}
+											</td>
 											<td>{{ object.name }}</td>
 											<td>{{ object.create_date|date_format }}</td>
 											<td>{{ object.update_date|date_format|safe }}</td>
 											<td>{{ object.type_transaction|trans_type }}</td>
-											<td>{{ object.transaction_date }}</td>
+											<td>{{ object.transaction_date|date_format }}</td>
 											<td>{{ object.balance_holder }}</td>
 											<td>{{ object.amount|numb_format }}</td>
 											<td>{{ object.type_payment }}</td>
