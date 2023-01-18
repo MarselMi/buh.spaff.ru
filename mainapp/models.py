@@ -47,7 +47,7 @@ class BalanceHolder(models.Model):
 class Transaction(models.Model):
 
     create_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
-    update_date = models.DateTimeField(auto_now=True, editable=False, verbose_name='Дата изменения')
+    update_date = models.DateTimeField(blank=True, null=True,  verbose_name='Дата изменения')
 
     type_transaction = models.CharField(max_length=15, choices=TRANSACTION_CHOICE, verbose_name='Тип транзакции')
     transaction_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата Транзакции')
@@ -57,7 +57,7 @@ class Transaction(models.Model):
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.CASCADE, verbose_name='Балансодержатель')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма')
     type_payment = models.ForeignKey(PayType, on_delete=models.CASCADE, verbose_name='Тип')
-    tags = models.TextField(blank=False, default=None, verbose_name='Теги')
+    tags = models.TextField(blank=True, null=True, default=None, verbose_name='Теги')
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], verbose_name='Статус')
     deleted = models.BooleanField(default=False, verbose_name='Удален')

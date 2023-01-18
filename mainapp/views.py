@@ -1,6 +1,8 @@
 from urllib import request
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
+
+from mainapp.forms import TransactionForm
 from mainapp.models import Transaction, BalanceHolder, PayType, AdditionalDataTransaction
 from django.views.generic.edit import FormView
 
@@ -34,7 +36,7 @@ class TransactionsCreateView(CreateView):
         'type_payment',
         'tags',
     ]
-
+    print(TransactionForm)
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.save()

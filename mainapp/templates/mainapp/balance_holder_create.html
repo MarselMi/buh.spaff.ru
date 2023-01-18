@@ -13,13 +13,13 @@
 						<form method="POST" action="">
 							{% csrf_token %}
 
-							<div class="row">
+							<div class="w-100">
 							  <div class="mt-4">
 								{{ form|crispy }}
 							  </div>
 							</div>
 
-							<button class="w-100 btn btn-lg btn-primary mt-4" type="submit">
+							<button class="btn btn-lg btn-primary mt-4" type="submit">
 								Сохранить
 							</button> <!-- /btn -->
 						</form>
