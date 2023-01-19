@@ -3,9 +3,17 @@ from datetime import datetime as dt
 
 
 @register.filter
-def date_format(date_time):
+def datetime_format(date_time):
     if date_time:
         return date_time.strftime('%d.%m.%Y в %H:%M:%S')
+    else:
+        return f'&ndash;'
+
+
+@register.filter
+def date_format(date_object):
+    if date_object:
+        return date_object.strftime('%d.%m.%Y')
     else:
         return f'&ndash;'
 

@@ -2,34 +2,49 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from mainapp.models import Transaction, BalanceHolder, AdditionalDataTransaction, PayType
+import os
+from django.conf import settings
+
+
+def images_path():
+    return os.path.join(settings.MEDIA_ROOT, 'img')
 
 
 class TransactionForm(forms.ModelForm):
+
     class Meta:
+
         model = Transaction
-        fields = ['name', 'type_transaction', 'description', 'balance_holder', 'amount', 'type_payment', 'tags']
+
+        fields = ['name', 'type_transaction', 'transaction_date', 'description', 'balance_holder',
+                  'amount', 'type_payment', 'check_img', 'tags']
+
         widgets = {
             'name': forms.TextInput(
-                attrs={'class': 'form-control', 'id': 'transactionName', 'placeholder': 'Имя транзакции'}
+                attrs={'class': 'form-control mb-2', 'id': 'transactionName', 'placeholder': 'Имя транзакции'}
+            ),
+            'transaction_date': forms.TextInput(
+                attrs={'class': 'form-control mb-2', 'id': 'datepicker', 'placeholder': 'Дата транзакции'}
             ),
             'type_transaction': forms.Select(
-                attrs={'class': 'form-select', 'id': 'transactionType', 'placeholder': 'Тип транзакции'}
+                attrs={'class': 'form-select mb-2', 'id': 'transactionType', 'placeholder': 'Тип транзакции'}
             ),
             'description': forms.TextInput(
-                attrs={'class': 'form-control', 'id': 'transactionDescription', 'placeholder': 'Описание'}
+                attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
             ),
             'balance_holder': forms.Select(
-                attrs={'class': 'form-select', 'id': 'transactionBalance_holder', 'placeholder': 'Выберите Балансодержателя'}
+                attrs={'class': 'form-select mb-2', 'id': 'transactionBalance_holder', 'placeholder': 'Выберите Балансодержателя'}
             ),
             'amount': forms.TextInput(
-                attrs={'class': 'form-control', 'id': 'transactionAmount', 'placeholder': 'Сумма транзакции'}
+                attrs={'class': 'form-control mb-2', 'id': 'transactionAmount', 'placeholder': 'Сумма транзакции'}
             ),
             'type_payment': forms.Select(
-                attrs={'class': 'form-select', 'id': 'transactionPayment', 'placeholder': 'Тип платежа'}
+                attrs={'class': 'form-select mb-2', 'id': 'transactionPayment', 'placeholder': 'Тип платежа'}
             ),
+            'check_img': forms.FileInput(),
             'tags': forms.Textarea(
-                attrs={'class': 'form-control', 'id': 'transactionTags', 'placeholder': 'Теги для данной транзакции'}
-            )
+                attrs={'class': 'form-control mb-2', 'id': 'transactionTags', 'placeholder': 'Теги для данной транзакции'}
+            ),
         }
 
     def __int__(self, *args, **kwargs):
@@ -37,6 +52,54 @@ class TransactionForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Save Transaction'))
+
+
+class TransactionUpdateForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Transaction
+
+        fields = ['name', 'status', 'type_transaction', 'transaction_date', 'description', 'balance_holder',
+                  'amount', 'type_payment', 'check_img', 'tags',]
+
+        widgets = {
+            'name': forms.TextInput(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionName', 'placeholder': 'Имя транзакции'}
+            ),
+            'status': forms.Select(
+                attrs={'class': 'form-select mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
+            ),
+            'transaction_date': forms.TextInput(
+                attrs={'class': 'form-control mb-2', 'id': 'datepicker', 'placeholder': 'Дата транзакции'}
+            ),
+            'type_transaction': forms.Select(
+                attrs={'class': 'form-select mb-2', 'id': 'transactionType', 'placeholder': 'Тип транзакции'}
+            ),
+            'description': forms.TextInput(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
+            ),
+            'balance_holder': forms.Select(
+                attrs={'class': 'form-select mb-2', 'id': 'transactionBalance_holder', 'placeholder': 'Выберите Балансодержателя'}
+            ),
+            'amount': forms.TextInput(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionAmount', 'placeholder': 'Сумма транзакции'}
+            ),
+            'type_payment': forms.Select(
+                attrs={'class': 'form-select mb-2', 'id': 'transactionPayment', 'placeholder': 'Тип платежа'}
+            ),
+            'check_img': forms.FileInput(),
+            'tags': forms.Textarea(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionTags', 'placeholder': 'Теги для данной транзакции'}
+            ),
+        }
+
+    def __int__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('submit', 'Save Transaction'))
+
 
 
 class BalanceHolderForm(forms.ModelForm):

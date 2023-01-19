@@ -10,7 +10,7 @@
 					<div class="table-responsive">
 						<strong>Создание Транзакции</strong>
 						<br>
-						<form method="POST" action="">
+						<form method="POST" action="" enctype="multipart/form-data">
 							{% csrf_token %}
 
 							<div class="w-100">
@@ -28,5 +28,11 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+
+	<script type="text/javascript">
+		$(function(){
+			$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
+		});
+	</script>
 
 {% endblock content %}

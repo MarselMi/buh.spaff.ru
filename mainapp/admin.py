@@ -24,7 +24,7 @@ class AdminBalanceHolder(admin.ModelAdmin):
 @admin.register(models.Transaction)
 class AdminTransaction(admin.ModelAdmin):
     list_display = ['name', 'type_transaction', 'amount', 'create_date', 'transaction_date',
-                    'balance_holder', 'author']
+                    'balance_holder', 'author', 'check_img']
     list_per_page = 10
     search_fields = ['tags']
 

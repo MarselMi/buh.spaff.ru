@@ -1,5 +1,12 @@
 from django.db import models
 from authapp.models import CustomUser
+import os
+from django.conf import settings
+
+
+def images_path():
+    return os.path.join(settings.MEDIA_ROOT, 'img')
+
 
 TRANSACTION_CHOICE = [
     ('COMING', 'Приход'),
@@ -22,7 +29,6 @@ class PayType(models.Model):
     class Meta:
         verbose_name = 'Типы платежей'
         verbose_name_plural = 'Тип платежа'
-        ordering = ("-pk",)
 
 
 class BalanceHolder(models.Model):
@@ -41,16 +47,15 @@ class BalanceHolder(models.Model):
     class Meta:
         verbose_name = 'Балансодержателя'
         verbose_name_plural = 'Балансодержатели'
-        ordering = ("-pk",)
 
 
 class Transaction(models.Model):
 
     create_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
-    update_date = models.DateTimeField(blank=True, null=True,  verbose_name='Дата изменения')
+    update_date = models.DateTimeField(blank=True, null=True, verbose_name='Дата изменения')
 
     type_transaction = models.CharField(max_length=15, choices=TRANSACTION_CHOICE, verbose_name='Тип транзакции')
-    transaction_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата Транзакции')
+    transaction_date = models.DateField(verbose_name='Дата Транзакции')
 
     name = models.CharField(max_length=65, verbose_name='Наименование')
     description = models.TextField(verbose_name='Подробнее')
@@ -59,6 +64,7 @@ class Transaction(models.Model):
     type_payment = models.ForeignKey(PayType, on_delete=models.CASCADE, verbose_name='Тип')
     tags = models.TextField(blank=True, null=True, default=None, verbose_name='Теги')
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
+    check_img = models.FileField(blank=True, null=True, upload_to='img/', verbose_name='Чек')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], verbose_name='Статус')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
 
@@ -72,7 +78,6 @@ class Transaction(models.Model):
     class Meta:
         verbose_name = 'Транзакции'
         verbose_name_plural = 'Транзакция'
-        ordering = ("-pk",)
 
 
 class AdditionalDataTransaction(models.Model):
@@ -90,4 +95,3 @@ class AdditionalDataTransaction(models.Model):
     class Meta:
         verbose_name = 'Доп. данные по транзакциям'
         verbose_name_plural = 'Доп. данные по транзакции'
-        ordering = ("-pk",)

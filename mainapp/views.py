@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
 from datetime import datetime as dt
 from mainapp.forms import (
-    TransactionForm, BalanceHolderForm, AdditionalDataTransactionForm, PayTypeForm
+    TransactionForm, BalanceHolderForm, AdditionalDataTransactionForm, PayTypeForm, TransactionUpdateForm
 )
 from mainapp.mixin import SuperuserRequiredMixin
 from mainapp.models import Transaction, BalanceHolder, PayType, AdditionalDataTransaction
@@ -23,7 +23,7 @@ class TransactionsView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['transactions'] = Transaction.objects.filter(deleted=False)
-        # context['additional'] = AdditionalDataTransaction.objects.all()
+        context['transactions'] = context['transactions'][::-1]
         return context
 
 
@@ -45,7 +45,11 @@ class TransactionsCreateView(CreateView):
         id_balance_holder = form.instance.balance_holder
         balance_hodler = BalanceHolder.objects.filter(holder_name=id_balance_holder)
         balance = balance_hodler.values_list('holder_balance', flat=True).get(holder_name=id_balance_holder)
-        balance += -(form.instance.amount)
+
+        if form.instance.type_transaction == 'COMING':
+            balance += form.instance.amount
+        else:
+            balance -= form.instance.amount
         BalanceHolder.objects.filter(holder_name=id_balance_holder).update(holder_balance=balance)
         form.save()
         return redirect('transactions')
@@ -54,7 +58,8 @@ class TransactionsCreateView(CreateView):
 class TransactionUpdateView(SuperuserRequiredMixin, UpdateView):
     template_name = 'mainapp/transaction_edit.html'
     model = Transaction
-    form_class = TransactionForm
+    form_class = TransactionUpdateForm
+    balance_hodler = BalanceHolder
     extra_context = {'title': 'Изменение транзакции',
                      'inside': {
                          'page_url': 'transactions',
@@ -62,10 +67,20 @@ class TransactionUpdateView(SuperuserRequiredMixin, UpdateView):
                      }}
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
-        form.instance.update_date = dt.now()
+        transaction = form.save(commit=False)
+        transaction.author = self.request.user
+        transaction.update_date = dt.now()
         form.save()
         return redirect('transactions')
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+@receiver(post_save, sender=Transaction)
+def check_amount(sender, **kwargs):
+    print(sender, kwargs)
 
 
 class BalanceHolderView(ListView):

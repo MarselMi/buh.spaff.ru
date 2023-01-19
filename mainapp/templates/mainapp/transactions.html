@@ -28,6 +28,7 @@
 											<th>Тип платежа</th>
 											<th>Автор</th>
 											<th>Статус</th>
+											<th>Файл с чеком</th>
 										</tr>
 									</thead>
 									{% for object in transactions %}
@@ -35,15 +36,15 @@
 										<tr class="align-middle">
 											<td>
 												{{ object.pk }}
-												{% if user.is_superuser %}
+												{% if user.is_superuser and object.status == 'INPROCESS' %}
 												<a href="{% url 'transaction_edit' object.pk %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
 													<i class="fa-regular fa-pen-to-square"></i>
 												</a>
 												{% endif %}
 											</td>
 											<td>{{ object.name }}</td>
-											<td>{{ object.create_date|date_format }}</td>
-											<td>{{ object.update_date|date_format|safe }}</td>
+											<td>{{ object.create_date|datetime_format }}</td>
+											<td>{{ object.update_date|datetime_format|safe }}</td>
 											<td>{{ object.type_transaction|trans_type }}</td>
 											<td>{{ object.transaction_date|date_format }}</td>
 											<td>{{ object.balance_holder }}</td>
@@ -51,6 +52,15 @@
 											<td>{{ object.type_payment }}</td>
 											<td>{{ object.author }}</td>
 											<td>{{ object.status|trans_status }}</td>
+											<td class="text-center">
+												{% if object.check_img %}
+												<a href="/media/{{ object.check_img }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
+													<i class="fa-regular fa-clipboard"></i>
+												</a>
+												{% else %}
+												&ndash;
+												{% endif %}
+											</td>
 										</tr>
 									</tbody>
 									{% endfor %}
