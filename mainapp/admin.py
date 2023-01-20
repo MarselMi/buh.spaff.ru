@@ -6,6 +6,11 @@ from mainapp import models
 from django.contrib.auth.admin import UserAdmin
 
 
+@admin.register(models.TransactionLog)
+class AdminCrudLogTable(admin.ModelAdmin):
+    pass
+
+
 @admin.register(models.PayType)
 class AdminPayType(admin.ModelAdmin):
     pass

@@ -2,12 +2,6 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from mainapp.models import Transaction, BalanceHolder, AdditionalDataTransaction, PayType
-import os
-from django.conf import settings
-
-
-def images_path():
-    return os.path.join(settings.MEDIA_ROOT, 'img')
 
 
 class TransactionForm(forms.ModelForm):
@@ -60,21 +54,15 @@ class TransactionUpdateForm(forms.ModelForm):
 
         model = Transaction
 
-        fields = ['name', 'status', 'type_transaction', 'transaction_date', 'description', 'balance_holder',
-                  'amount', 'type_payment', 'check_img', 'tags',]
+        fields = ['status', 'transaction_date', 'description',
+                  'amount', 'type_payment', 'check_img', 'tags']
 
         widgets = {
-            'name': forms.TextInput(
-                attrs={'class': 'form-control mb-2', 'id': 'transactionName', 'placeholder': 'Имя транзакции'}
-            ),
             'status': forms.Select(
                 attrs={'class': 'form-select mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
             ),
             'transaction_date': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'datepicker', 'placeholder': 'Дата транзакции'}
-            ),
-            'type_transaction': forms.Select(
-                attrs={'class': 'form-select mb-2', 'id': 'transactionType', 'placeholder': 'Тип транзакции'}
             ),
             'description': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
@@ -101,7 +89,6 @@ class TransactionUpdateForm(forms.ModelForm):
         self.helper.add_input(Submit('submit', 'Save Transaction'))
 
 
-
 class BalanceHolderForm(forms.ModelForm):
     class Meta:
         model = BalanceHolder
@@ -111,7 +98,7 @@ class BalanceHolderForm(forms.ModelForm):
                 attrs={'class': 'form-control', 'id': 'HolderName', 'placeholder': 'Наименование организации'}
             ),
             'holder': forms.TextInput(
-                attrs={'class': 'form-select', 'id': 'Holder', 'placeholder': 'Имя балансодержателя'}
+                attrs={'class': 'form-control', 'id': 'Holder', 'placeholder': 'Имя балансодержателя'}
             ),
             'holder_balance': forms.TextInput(
                 attrs={'class': 'form-control', 'id': 'HolderBalance', 'placeholder': 'Баланс'}

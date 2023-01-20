@@ -130,3 +130,4 @@ dmypy.json
 /static/
 /authapp/migrations/
 /mainapp/migrations/
+/media/img/

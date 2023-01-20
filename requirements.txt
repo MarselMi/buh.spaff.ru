@@ -4,4 +4,5 @@ django-crispy-forms==1.14.0
 django_debug_toolbar==3.8.1
 mysqlclient==2.1.1
 Pillow==9.4.0
+PyMySQL==1.0.2
 sqlparse==0.4.3
