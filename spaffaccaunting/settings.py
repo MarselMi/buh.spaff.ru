@@ -42,7 +42,8 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost'
+    'http://localhost',
+    'https://buh.spaff.ru'
 ]
 
 ROOT_URLCONF = 'spaffaccaunting.urls'
