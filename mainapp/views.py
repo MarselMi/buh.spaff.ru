@@ -19,6 +19,12 @@ class MainPageView(TemplateView):
 
     extra_context = {'title': 'Главная страница'}
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['holders'] = BalanceHolder.objects.filter(deleted=False)
+        context['transactions'] = Transaction.objects.filter(balance_holder=1, status='SUCCESSFULLY')
+        return context
+
 
 class TransactionsView(TemplateView):
     template_name = 'mainapp/transactions.html'
@@ -35,7 +41,6 @@ class TransactionsCreateView(CreateView):
 
     template_name = 'mainapp/transaction_create.html'
     model = Transaction
-    balance_hodler = BalanceHolder
     form_class = TransactionForm
     extra_context = {'title': 'Создание транзакции',
                      'inside': {
@@ -65,7 +70,6 @@ class TransactionUpdateView(SuperuserRequiredMixin, UpdateView):
     template_name = 'mainapp/transaction_edit.html'
     model = Transaction
     form_class = TransactionUpdateForm
-    balance_hodler = BalanceHolder
     extra_context = {'title': 'Изменение транзакции',
                      'inside': {
                          'page_url': 'transactions',
@@ -84,16 +88,40 @@ class TransactionUpdateView(SuperuserRequiredMixin, UpdateView):
         old_transaction = self.model.objects.filter(pk=transaction.id).values(
             'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img'
         )
+
+        id_balance_holder = form.instance.balance_holder.id
+        balance_hodler = BalanceHolder.objects.filter(pk=id_balance_holder)
+        old_balance_holder = balance_hodler.values('holder_balance')[0]['holder_balance']
+
         for k in old_transaction[0]:
             check = eval(f'transaction.{k}') == old_transaction[0][k]
             if not check:
                 changes[k] = str(old_transaction[0][k])+"/"+str(eval(f'transaction.{k}'))
         if len(changes.values()) > 2:
             TransactionLog.objects.create(**changes)
-
         transaction.update_date = dt.now()
 
+        if old_transaction[0]['amount'] > transaction.amount:
+            change = old_transaction[0]['amount'] - transaction.amount
+            if self.model.objects.filter(pk=transaction.id).values('type_transaction')[0]['type_transaction'] == 'COMING':
+                old_balance_holder -= change
+                balance_hodler.update(holder_balance=old_balance_holder)
+            else:
+                old_balance_holder += change
+                balance_hodler.update(holder_balance=old_balance_holder)
+        elif old_transaction[0]['amount'] < transaction.amount:
+            change = transaction.amount - old_transaction[0]['amount']
+            if self.model.objects.filter(pk=transaction.id).values('type_transaction')[0]['type_transaction'] == 'COMING':
+                old_balance_holder += change
+                balance_hodler.update(holder_balance=old_balance_holder)
+            else:
+                old_balance_holder -= change
+                balance_hodler.update(holder_balance=old_balance_holder)
+        else:
+            pass
+
         form.save()
+
         return redirect('transactions')
 
 

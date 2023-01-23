@@ -30,5 +30,19 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+        'NAME': 'buh',
+        'USER': 'buhsoft',
+        'PASSWORD': 'gzfZ0xDmugJw',
+        'HOST': 'master.bbbf8e05-6eac-4287-908f-44b5ad38540f.c.dbaas.selcloud.ru',
+        'PORT': '6033',
+    }
+}
+
 # STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'

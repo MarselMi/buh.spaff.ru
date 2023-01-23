@@ -31,13 +31,13 @@ class PayType(models.Model):
 
 
 class BalanceHolder(models.Model):
-    holder_name = models.CharField(max_length=65, verbose_name='Наименование')
+    holder_name = models.CharField(max_length=65, verbose_name='holder')
     holder = models.CharField(max_length=35, verbose_name='Держатель')
     holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Баланс Держателя')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
 
     def __str__(self):
-        return f'{self.holder_name} {self.holder}'
+        return f'{self.holder}'
 
     def delete(self, *args, **kwargs):
         self.deleted = True

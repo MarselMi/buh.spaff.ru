@@ -6,19 +6,123 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-					<div class="table-responsive">
-						<span>
-							<h2>
-								Главная страница финансовой информации <br> лучшей партнерской IT-компании ООО "СПАФФ ИТ"
-							</h2>
-						</span>
-						<br>
-						Вы вошли в систему как: {% if user.is_authenticate %}
-													<strong> {{ user.last_name }}  {{ user.first_name }}</strong>
-												{% else %}
-													<strong> {{ user }} </strong>
-												{% endif %}
-					</div> <!-- /table-responsive -->
+					<div class="center">
+						<div class="btn-group text-center">
+							{% for holder in holders %}
+							<button id="{{ holder.id }}" class="button_hours btn btn-light btn-sm">
+								{{ holder }}
+							</button>
+							{% endfor %}
+						</div>
+					</div>
+
+<!--					<div class="table-responsive">-->
+<!--						Вы вошли в систему как: {% if user.is_authenticate %}-->
+<!--													<strong> {{ user.last_name }}  {{ user.first_name }}</strong>-->
+<!--												{% else %}-->
+<!--													<strong> {{ user }} </strong>-->
+<!--												{% endif %}-->
+
+<!--						{% for holder in holders %}-->
+<!--							<div class="mt-4">-->
+<!--								<strong> holder - </strong> {{ holder.holder_name }} <br>-->
+<!--								<strong> Держатель - </strong>{{ holder.holder }} <br>-->
+<!--								<strong> Баланс - </strong>{{ holder.holder_balance|numb_format }}-->
+
+<!--							</div>-->
+<!--						{% endfor %}-->
+<!--					</div> &lt;!&ndash; /table-responsive &ndash;&gt;-->
+
+					<div class="row mt-4">
+						<div class="col-12 col-sm-12">
+							<div class="card mb-4">
+								<div class="card-header card-header-no-bg border-bottom-0">
+									<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-0">
+										Транзакции
+									</div> <!-- /card-title -->
+								</div> <!-- /card-header -->
+
+								<div class="card-body">
+									{% if transactions %}
+									<div class="table-responsive">
+										<table class="table table-bordered text-nowrap mb-0">
+											<thead>
+												<tr>
+													<th class="text-center">Дата создания</th>
+													<th class="text-center">Дата транзакции</th>
+													<th class="text-center">Тип транзакции</th>
+													<th class="text-center">Сумма</th>
+													<th class="text-center">Статус</th>
+													<th class="text-center">Автор создания</th>
+													<th class="text-center">Балансодержатель</th>
+													<th class="text-center">Наименование</th>
+													<th class="text-center">Тип платежа</th>
+													<th class="text-center">Чек</th>
+												</tr>
+											</thead>
+											{% for transaction in transactions %}
+											<tbody>
+												<tr>
+													<td class="text-center">{{ transaction.create_date|date_format }}</td>
+													<td class="text-center">{{ transaction.transaction_date|date_format }}</td>
+													<td>
+														{% if transaction.type_transaction == 'COMING' %}
+															<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+															  Приход
+															</span>
+														{% elif transaction.type_transaction == 'EXPENDITURE' %}
+															<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+															  Расход
+															</span>
+														{% endif %}
+													</td>
+													<td>{{ transaction.amount|numb_format }}</td>
+													<td>
+														{% if transaction.status == 'SUCCESSFULLY' %}
+															<span class="badge bg-warning d-flex align-items-center justify-content-center rounded-pill ms-auto my-auto">
+															  Успешно
+															</span>
+														{% elif transaction.status == 'REJECT' %}
+															<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+															  Отклонено
+															</span>
+														{% elif transaction.status == 'INPROCESS' %}
+															<span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
+															  В процессе
+															</span>
+														{% endif %}
+													</td>
+													<td>{{ transaction.author }}</td>
+													<td>{{ transaction.balance_holder }}</td>
+													<td>{{ transaction.name }}</td>
+													<td>{{ transaction.type_payment }}</td>
+													<td> {% if transaction.check_img %}
+														<a href="/media/{{ transaction.check_img }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
+															<i class="fa-regular fa-clipboard"></i>
+														</a>
+														{% else %}
+														&ndash;
+														{% endif %}
+													</td>
+												</tr>
+											</tbody>
+											{% endfor %}
+										</table>
+									</div> <!-- /table-responsive -->
+									{% else %}
+									<div class="alert alert-warning d-flex align-items-center mb-0" role="alert">
+										<i class="fa-regular fa-triangle-exclamation me-2"></i>
+										<div>
+											Транзакции не найдены
+										</div>
+									</div>
+									{% endif %}
+								</div> <!-- /card-body -->
+
+							</div> <!-- /card -->
+						</div> <!-- /col -->
+					</div> <!-- /row -->
+
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
 		</div> <!-- /col -->

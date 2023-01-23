@@ -61,7 +61,7 @@ class TransactionUpdateForm(forms.ModelForm):
             'status': forms.Select(
                 attrs={'class': 'form-select mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
             ),
-            'transaction_date': forms.TextInput(
+            'transaction_date': forms.DateInput(
                 attrs={'class': 'form-control mb-2', 'id': 'datepicker', 'placeholder': 'Дата транзакции'}
             ),
             'description': forms.TextInput(

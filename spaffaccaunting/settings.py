@@ -71,22 +71,6 @@ WSGI_APPLICATION = 'spaffaccaunting.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-        'NAME': 'spaffaccaunting_db',
-        'USER': 'admin',
-        'PASSWORD': 'ux5DdPxWIwUz',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
