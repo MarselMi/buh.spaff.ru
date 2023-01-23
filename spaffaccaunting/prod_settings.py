@@ -28,6 +28,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
+    'buh.spaff.ru',
+    '2.58.70.133'
 ]
 
 DATABASES = {
