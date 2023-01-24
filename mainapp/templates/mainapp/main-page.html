@@ -9,7 +9,7 @@
 					<div class="center">
 						<div class="btn-group text-center">
 							{% for holder in holders %}
-							<button id="{{ holder.id }}" class="button_hours btn btn-light btn-sm">
+							<button id="{{ holder.id }}" name="holder_id" class="holders_id btn btn-light btn-sm">
 								Держатель - {{ holder.holder_name }}
 								<br>
 								Баланс - {{ holder.holder_balance }}
@@ -17,23 +17,6 @@
 							{% endfor %}
 						</div>
 					</div>
-
-<!--					<div class="table-responsive">-->
-<!--						Вы вошли в систему как: {% if user.is_authenticate %}-->
-<!--													<strong> {{ user.last_name }}  {{ user.first_name }}</strong>-->
-<!--												{% else %}-->
-<!--													<strong> {{ user }} </strong>-->
-<!--												{% endif %}-->
-
-<!--						{% for holder in holders %}-->
-<!--							<div class="mt-4">-->
-<!--								<strong> holder - </strong> {{ holder.holder_name }} <br>-->
-<!--								<strong> Держатель - </strong>{{ holder.holder }} <br>-->
-<!--								<strong> Баланс - </strong>{{ holder.holder_balance|numb_format }}-->
-
-<!--							</div>-->
-<!--						{% endfor %}-->
-<!--					</div> &lt;!&ndash; /table-responsive &ndash;&gt;-->
 
 					<div class="row mt-4">
 						<div class="col-12 col-sm-12">
@@ -45,8 +28,8 @@
 								</div> <!-- /card-header -->
 
 								<div class="card-body">
-									{% if transactions %}
-									<div class="table-responsive">
+									
+									<div class="table-responsive holder_table" hidden>
 										<table class="table table-bordered text-nowrap mb-0">
 											<thead>
 												<tr>
@@ -62,63 +45,21 @@
 													<th class="text-center">Чек</th>
 												</tr>
 											</thead>
-											{% for transaction in transactions %}
-											<tbody>
-												<tr>
-													<td class="text-center">{{ transaction.create_date|date_format }}</td>
-													<td class="text-center">{{ transaction.transaction_date|date_format }}</td>
-													<td class="text-center">
-														{% if transaction.type_transaction == 'COMING' %}
-															<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
-															  Приход
-															</span>
-														{% elif transaction.type_transaction == 'EXPENDITURE' %}
-															<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
-															  Расход
-															</span>
-														{% endif %}
-													</td>
-													<td class="text-center">{{ transaction.amount|numb_format }}</td>
-													<td class="text-center">
-														{% if transaction.status == 'SUCCESSFULLY' %}
-															<span class="badge bg-warning d-flex align-items-center justify-content-center rounded-pill ms-auto my-auto">
-															  Успешно
-															</span>
-														{% elif transaction.status == 'REJECT' %}
-															<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
-															  Отклонено
-															</span>
-														{% elif transaction.status == 'INPROCESS' %}
-															<span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
-															  В процессе
-															</span>
-														{% endif %}
-													</td>
-													<td class="text-center">{{ transaction.author }}</td>
-													<td class="text-center">{{ transaction.balance_holder }}</td>
-													<td class="text-center">{{ transaction.name }}</td>
-													<td class="text-center">{{ transaction.type_payment }}</td>
-													<td class="text-center"> {% if transaction.check_img %}
-														<a href="/media/{{ transaction.check_img }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
-															<i class="fa-regular fa-clipboard"></i>
-														</a>
-														{% else %}
-														&ndash;
-														{% endif %}
-													</td>
-												</tr>
+											
+											<tbody class="info_transaction">
+												
 											</tbody>
-											{% endfor %}
+											
 										</table>
 									</div> <!-- /table-responsive -->
-									{% else %}
-									<div class="alert alert-warning d-flex align-items-center mb-0" role="alert">
+									
+									<div class="alert d-flex align-items-center mb-0 holder_alert">
 										<i class="fa-regular fa-triangle-exclamation me-2"></i>
 										<div>
-											Транзакции не найдены
+											Выберите балансодержателя
 										</div>
 									</div>
-									{% endif %}
+									
 								</div> <!-- /card-body -->
 
 							</div> <!-- /card -->
@@ -129,5 +70,97 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+<script>
 
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	var holders_id = document.querySelectorAll('.holders_id');
+
+	for (let i = 0; i < holders_id.length; i++){
+		holders_id[i].addEventListener('click', function(event) {
+			if (event.target == holders_id[i]){
+				holders_id[i].classList.add('btn-primary');
+				$.ajax(
+					{
+						url: url,
+						method: 'POST',
+						data: {
+							csrfmiddlewaretoken: token,
+							type: holders_id[i].getAttribute("name"),
+							id: holders_id[i].getAttribute("id")
+						}
+					}
+					).then(function(result) {
+						$('.holder_table').removeAttr('hidden')
+						$('.holder_alert').remove();
+						var transaction_table = $('.info_transaction');
+						transaction_table.empty();
+						var transa = JSON.parse(result);
+						for (let i = 0; i < transa.length; i++) {
+							if (transa[i].type_transaction == 'COMING') {
+								var type = `<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+												Приход
+											</span>`
+							} else {
+								var type = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+												Расход
+											</span>`
+							};
+							
+							if (transa[i].status == 'INPROCESS') {
+								var status = `<span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
+												В процессе
+											</span>`
+							} else if (transa[i].status == 'SUCCESSFULLY') {
+								var status = `<span class="badge bg-warning d-flex align-items-center justify-content-center rounded-pill ms-auto my-auto">
+												Успешно
+											</span>`
+							} else {
+								var status = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+												Отклонено
+											</span>`
+							};
+							
+							if (transa[i].check_img) {
+								var img = `<a href="/media/${transa[i].check_img}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
+												<i class="fa-regular fa-clipboard"></i>
+											</a>`
+							} else {
+								var img = '&ndash;'
+							}
+							var transaction_info =`<tr>
+														<td class="text-center">${transa[i].create_date}</td>
+														<td class="text-center">${transa[i].transaction_date}</td>
+														<td class="text-center">${type}</td>
+														<td class="text-center">${transa[i].amount}</td>
+														<td class="text-center">${status}</td>
+														<td class="text-center">${transa[i].author_id}</td>
+														<td class="text-center">${transa[i].balance_holder_id}</td>
+														<td class="text-center">${transa[i].name}</td>
+														<td class="text-center">${transa[i].type_payment_id}</td>
+														<td class="text-center">${img}</td>
+													</tr>`;
+							console.log(transaction_info)
+							transaction_table.prepend(transaction_info);
+						}
+					}).catch(function(err) {
+						var x = 1;
+				})
+			} else {
+				holders_id[i].classList.remove('btn-primary');
+			}
+		})
+	};
+
+</script>
 {% endblock content %}

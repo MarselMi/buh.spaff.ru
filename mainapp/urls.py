@@ -1,16 +1,16 @@
 from django.urls import path
-from authapp.views import CustomLogoutView, CustomLoginView
+from authapp.views import CustomLogoutView, CustomLoginView, custom_login
 from django.contrib.auth.decorators import login_required
 from .views import (
     MainPageView, TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
     BalanceHolderView, PaymentTypeView, PaymentTypeCreateView,
     AdditionalDataTransactionView, AdditionalDataTransactionCreateView,
-    handler404, handler403, handler405, handler500, handler501, TransactionUpdateView,
+    handler404, handler403, handler405, handler500, handler501, TransactionUpdateView, main_page_view,
 )
 
 
 urlpatterns = [
-    path('', login_required(MainPageView.as_view(), login_url='login'), name='main_page'),
+    path('', main_page_view, name='main_page'),
 
     # Авторизация и Выход
     path('login/', CustomLoginView.as_view(), name='login'),

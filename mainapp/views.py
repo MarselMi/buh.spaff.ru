@@ -1,7 +1,12 @@
+import json
 from urllib import request
+
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
 from datetime import datetime as dt
+
+from mainapp.data_library import get_transaction_holder
 from mainapp.forms import (
     TransactionForm, BalanceHolderForm, AdditionalDataTransactionForm,
     PayTypeForm, TransactionUpdateForm
@@ -14,15 +19,46 @@ from mainapp.models import (
 from django.views.generic.edit import UpdateView
 
 
+def main_page_view(request):
+
+    main_session_holder = request.session.get('main_session_holder')
+
+    if request.method == 'POST':
+        if request.POST.get('type') == 'holder_id':
+            request.session['main_session_holder'] = request.POST.get('id')
+            transactions = get_transaction_holder(request.POST.get('id'))
+            for transaction in transactions:
+                transaction['create_date'] = transaction['create_date'].strftime('%d.%m.%Y в %H:%M:%S')
+                if transaction.get('update_date'):
+                    transaction['update_date'] = transaction['update_date'].strftime('%d.%m.%Y')
+                transaction['transaction_date'] = transaction['transaction_date'].strftime('%d.%m.%Y')
+                transaction['amount'] = str(transaction['amount'])
+            return HttpResponse(json.dumps(transactions))
+
+    holders = BalanceHolder.objects.filter(deleted=False)
+
+    if main_session_holder:
+        transactions = get_transaction_holder(main_session_holder)
+    else:
+        transactions = ''
+
+    data = {'title': 'Главная страница', 'holders': holders, 'transactions': transactions}
+
+    return render(request, 'mainapp/main-page.html', data)
+
+
 class MainPageView(TemplateView):
+
     template_name = 'mainapp/main-page.html'
 
     extra_context = {'title': 'Главная страница'}
 
     def get_context_data(self, **kwargs):
+
         context = super().get_context_data(**kwargs)
         context['holders'] = BalanceHolder.objects.filter(deleted=False)
-        context['transactions'] = Transaction.objects.filter()
+        context['transactions'] = get_transaction_holder(1)
+        print(context['transactions'])
         return context
 
 
