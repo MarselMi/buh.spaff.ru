@@ -10,7 +10,9 @@
 						<div class="btn-group text-center">
 							{% for holder in holders %}
 							<button id="{{ holder.id }}" class="button_hours btn btn-light btn-sm">
-								{{ holder }}
+								Держатель - {{ holder.holder_name }}
+								<br>
+								Баланс - {{ holder.holder_balance }}
 							</button>
 							{% endfor %}
 						</div>
