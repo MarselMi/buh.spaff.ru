@@ -67,7 +67,7 @@
 												<tr>
 													<td class="text-center">{{ transaction.create_date|date_format }}</td>
 													<td class="text-center">{{ transaction.transaction_date|date_format }}</td>
-													<td>
+													<td class="text-center">
 														{% if transaction.type_transaction == 'COMING' %}
 															<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
 															  Приход
@@ -78,8 +78,8 @@
 															</span>
 														{% endif %}
 													</td>
-													<td>{{ transaction.amount|numb_format }}</td>
-													<td>
+													<td class="text-center">{{ transaction.amount|numb_format }}</td>
+													<td class="text-center">
 														{% if transaction.status == 'SUCCESSFULLY' %}
 															<span class="badge bg-warning d-flex align-items-center justify-content-center rounded-pill ms-auto my-auto">
 															  Успешно
@@ -94,11 +94,11 @@
 															</span>
 														{% endif %}
 													</td>
-													<td>{{ transaction.author }}</td>
-													<td>{{ transaction.balance_holder }}</td>
-													<td>{{ transaction.name }}</td>
-													<td>{{ transaction.type_payment }}</td>
-													<td> {% if transaction.check_img %}
+													<td class="text-center">{{ transaction.author }}</td>
+													<td class="text-center">{{ transaction.balance_holder }}</td>
+													<td class="text-center">{{ transaction.name }}</td>
+													<td class="text-center">{{ transaction.type_payment }}</td>
+													<td class="text-center"> {% if transaction.check_img %}
 														<a href="/media/{{ transaction.check_img }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
 															<i class="fa-regular fa-clipboard"></i>
 														</a>
