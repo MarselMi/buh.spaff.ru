@@ -29,3 +29,4 @@ class LoginUserForm(AuthenticationForm):
                     'class': 'form-control mb-4',
                     'placeholder': 'Введите пароль'
                 }))
+

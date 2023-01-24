@@ -22,7 +22,7 @@ class MainPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['holders'] = BalanceHolder.objects.filter(deleted=False)
-        context['transactions'] = Transaction.objects.filter(balance_holder=1, status='SUCCESSFULLY')
+        context['transactions'] = Transaction.objects.filter()
         return context
 
 

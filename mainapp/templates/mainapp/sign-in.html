@@ -1,4 +1,5 @@
 {% load static %}
+{% load crispy_forms_tags %}
 <!DOCTYPE html>
 <html lang="ru" class="h-100">
 <head>
@@ -34,7 +35,7 @@
 					<form action="#" method="POST">
 						{% csrf_token %}
 
-						{{ form }}
+						{{ form|crispy }}
 
 						<div class="text-center mb-3 mt-3">
 							<div class="form-check form-check-inline">
