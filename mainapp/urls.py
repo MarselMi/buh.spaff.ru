@@ -10,7 +10,7 @@ from .views import (
 
 
 urlpatterns = [
-    path('', main_page_view, name='main_page'),
+    path('', login_required(main_page_view, login_url='login'), name='main_page'),
 
     # Авторизация и Выход
     path('login/', CustomLoginView.as_view(), name='login'),
