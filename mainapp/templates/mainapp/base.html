@@ -253,13 +253,21 @@
 				</h6>
 
 				<ul class="nav nav-fill flex-column">
-
+					<li class="nav-item">
+						<a class="{% if request.resolver_match.url_name == 'main_page' %}
+						active
+						{% endif %}
+						  nav-link d-inline-flex align-items-center" href="{% url 'main_page' %}">
+							<i class="fa-regular fa-address-card anim-opacity me-3"></i>
+							Главная
+						</a>
+					</li> <!-- /nav-item -->
 					<li class="nav-item">
 						<a class="{% if request.resolver_match.url_name == 'transactions' or request.resolver_match.url_name == 'transaction_create' %}
 						active
 						{% endif %}
 						  nav-link d-inline-flex align-items-center" href="{% url 'transactions' %}">
-							<i class="fa-regular fa-airplay anim-opacity me-3"></i>
+							<i class="fa-regular fa-album-circle-plus anim-opacity me-3"></i>
 							Транзакции
 						</a>
 					</li> <!-- /nav-item -->
@@ -268,7 +276,7 @@
 						active
 						{% endif %}
 						 nav-link d-inline-flex align-items-center" href="{% url 'balance_holders' %}">
-							<i class="fa-regular fa-circle-exclamation-check anim-opacity me-3"></i>
+							<i class="fa-regular fa-album-collection anim-opacity me-3"></i>
 							Балансодержатели
 						</a>
 					</li> <!-- /nav-item -->
@@ -281,7 +289,7 @@
 						active
 						{% endif %}
 						nav-link d-inline-flex align-items-center" href="{% url 'pay_types' %}">
-							<i class="fa-regular fa-building-columns anim-opacity me-3"></i>
+							<i class="fa-regular fa-alien-8bit anim-opacity me-3"></i>
 							Типы платежей
 						</a>
 					</li> <!-- /nav-item -->

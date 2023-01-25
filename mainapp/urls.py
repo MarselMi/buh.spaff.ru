@@ -3,9 +3,10 @@ from authapp.views import CustomLogoutView, CustomLoginView, custom_login
 from django.contrib.auth.decorators import login_required
 from .views import (
     TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
-    BalanceHolderView, PaymentTypeView, PaymentTypeCreateView,
-    AdditionalDataTransactionView, AdditionalDataTransactionCreateView,
+    BalanceHolderView, PaymentTypeCreateView,
+    AdditionalDataTransactionCreateView,
     handler404, handler403, handler405, handler500, handler501, TransactionUpdateView, main_page_view,
+    payment_type_view, additional_data_transaction_view,
 )
 
 
@@ -29,11 +30,11 @@ urlpatterns = [
          name='holder_create'),
 
     # Типы платежей
-    path('pay-types/', login_required(PaymentTypeView.as_view(), login_url='login'), name='pay_types'),
+    path('pay-types/', login_required(payment_type_view, login_url='login'), name='pay_types'),
     path('pay-create/', login_required(PaymentTypeCreateView.as_view(), login_url='login'), name='pay_create'),
 
     # Доп данные по транзакциям
-    path('additional-data/', login_required(AdditionalDataTransactionView.as_view(), login_url='login'),
+    path('additional-data/', login_required(additional_data_transaction_view, login_url='login'),
          name='additional_data'),
     path('addition-create/', login_required(AdditionalDataTransactionCreateView.as_view(), login_url='login'),
          name='addition_create'),

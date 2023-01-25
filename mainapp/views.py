@@ -1,6 +1,7 @@
 import json
 from urllib import request
 
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
@@ -20,8 +21,6 @@ from django.views.generic.edit import UpdateView
 
 
 def main_page_view(request):
-
-    main_session_holder = request.session.get('main_session_holder')
 
     if request.method == 'POST':
         if request.POST.get('type') == 'holder_id':
@@ -175,14 +174,12 @@ class BalanceHolderCreateView(CreateView):
         return redirect('balance_holders')
 
 
-class PaymentTypeView(TemplateView):
-    template_name = 'mainapp/payments_type.html'
-    extra_context = {'title': 'Типы платежей'}
+def payment_type_view(request):
+    pay_type = PayType.objects.all()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['pay_type'] = PayType.objects.all()
-        return context
+    data = {'title': 'Типы платежей', 'pay_type': pay_type}
+
+    return render(request, 'mainapp/payments_type.html', data)
 
 
 class PaymentTypeCreateView(CreateView):
@@ -200,14 +197,11 @@ class PaymentTypeCreateView(CreateView):
         return redirect('pay_types')
 
 
-class AdditionalDataTransactionView(TemplateView):
-    template_name = 'mainapp/additional_data_transactions.html'
-    extra_context = {'title': 'Дополнительные данные по транзакциям'}
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['additional'] = AdditionalDataTransaction.objects.filter(deleted=False)
-        return context
+def additional_data_transaction_view(request):
+    additional = AdditionalDataTransaction.objects.filter(deleted=False)
+    name_transaction = Transaction.objects.all()
+    data = {'title': 'Дополнительные данные по транзакциям', 'additional': additional}
+    return render(request, 'mainapp/additional_data_transactions.html', data)
 
 
 class AdditionalDataTransactionCreateView(CreateView):
