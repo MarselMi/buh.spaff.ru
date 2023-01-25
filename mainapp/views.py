@@ -53,8 +53,9 @@ def main_page_view(request):
             return HttpResponse(json.dumps(result))
 
     holders = BalanceHolder.objects.filter(deleted=False)
+    color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
 
-    data = {'title': 'Главная страница', 'holders': holders}
+    data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list}
 
     return render(request, 'mainapp/main-page.html', data)
 
@@ -198,8 +199,8 @@ class PaymentTypeCreateView(CreateView):
 
 
 def additional_data_transaction_view(request):
-    additional = AdditionalDataTransaction.objects.filter(deleted=False)
-    name_transaction = Transaction.objects.all()
+    additional = AdditionalDataTransaction.objects.filter(deleted=False).values('notes', 'transaction_id__name')
+
     data = {'title': 'Дополнительные данные по транзакциям', 'additional': additional}
     return render(request, 'mainapp/additional_data_transactions.html', data)
 

@@ -43,3 +43,17 @@ def trans_status(obj):
         return 'Отклонен'
     elif obj == 'SUCCESSFULLY':
         return 'Успешно'
+
+
+@register.filter
+def enu_list(list_element):
+    return enumerate(list_element)
+
+
+@register.filter
+def get_item(arr, key):
+    try:
+        value = arr[key]
+    except (KeyError, TypeError):
+        return 0
+    return value

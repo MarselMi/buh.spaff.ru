@@ -7,16 +7,20 @@
 			<div class="card">
 				<div class="card-body">
 
-					<div class="center holders_list">
-						<div class="btn-group text-center">
-							{% for holder in holders %}
-							<button id="{{ holder.id }}" name="holder_id" class="holders_id btn btn-sm btn-light">
-								Держатель - {{ holder.holder_name }}
-								<br>
-								Баланс - {{ holder.holder_balance|numb_format }}
-							</button>
-							{% endfor %}
+					<div class="row">
+						{% for count, holder in holders|enu_list %}
+						<div class="col-lg-3 col-6 text-center">
+							<div class="small-box bg-{{color_list|get_item:count}}" style="border-radius: 15px;">
+								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
+									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.holder_name }}</h5>
+									<p>Расчетный счет</p>
+								</div>
+								<div class="icon">
+									<i class="ion ion-bag"></i>
+								</div>
+							</div>
 						</div>
+						{% endfor %}
 					</div>
 
 					<div class="row mt-4">
