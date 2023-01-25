@@ -8,7 +8,7 @@
 			<div class="card">
 				<div class="card-body">
 					<div class="table-responsive">
-						<strong>Изменение транзакции - {{ transaction.name }}</strong>
+						<strong>Изменение транзакции - {{ transaction.name }} <br> Балансодержатель - {{ transaction.balance_holder }}</strong>
 						<br>
 						<form method="POST" action="" enctype="multipart/form-data">
 							{% csrf_token %}

@@ -13,9 +13,11 @@ def get_transaction_holder(pk):
                            cursorclass=pymysql.cursors.DictCursor)
     try:
         with conn.cursor() as cursor:
-            response = f'SELECT * FROM `mainapp_transaction` t WHERE `t`.`balance_holder_id`={pk}'
+            response = f'SELECT * FROM `mainapp_transaction` t WHERE `t`.`balance_holder_id`={pk} AND `t`.`status`="SUCCESSFULLY"'
             cursor.execute(response)
             response = cursor.fetchall()
     finally:
         conn.close()
+
     return response
+

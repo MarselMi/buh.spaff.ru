@@ -10,12 +10,12 @@ class TransactionForm(forms.ModelForm):
 
         model = Transaction
 
-        fields = ['name', 'type_transaction', 'transaction_date', 'description', 'balance_holder',
+        fields = ['name', 'status', 'type_transaction', 'transaction_date', 'description', 'balance_holder',
                   'amount', 'type_payment', 'check_img', 'tags']
 
         widgets = {
             'name': forms.TextInput(
-                attrs={'class': 'form-control mb-2', 'id': 'transactionName', 'placeholder': 'Имя транзакции'}
+                attrs={'class': 'form-control mb-2', 'id': 'transactionName', 'placeholder': 'Имя транзакции', 'clean': 'true'}
             ),
             'transaction_date': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'datepicker', 'placeholder': 'Дата транзакции'}
@@ -38,6 +38,9 @@ class TransactionForm(forms.ModelForm):
             'check_img': forms.FileInput(),
             'tags': forms.Textarea(
                 attrs={'class': 'form-control mb-2', 'id': 'transactionTags', 'placeholder': 'Теги для данной транзакции'}
+            ),
+            'status': forms.Select(
+                attrs={'class': 'form-select mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
             ),
         }
 
@@ -67,8 +70,8 @@ class TransactionUpdateForm(forms.ModelForm):
             'description': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
             ),
-            'balance_holder': forms.Select(
-                attrs={'class': 'form-select mb-2', 'id': 'transactionBalance_holder', 'placeholder': 'Выберите Балансодержателя'}
+            'balance_holder': forms.TextInput(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionBalance_holder', 'disabled': 'true'}
             ),
             'amount': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'transactionAmount', 'placeholder': 'Сумма транзакции'}

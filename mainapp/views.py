@@ -32,7 +32,11 @@ def main_page_view(request):
                 if transaction.get('update_date'):
                     transaction['update_date'] = transaction['update_date'].strftime('%d.%m.%Y')
                 transaction['transaction_date'] = transaction['transaction_date'].strftime('%d.%m.%Y')
-                transaction['amount'] = str(transaction['amount'])
+                if round(transaction['amount'], 2) % 1 == 0:
+                    transaction['amount'] = '{0:,}'.format(int(transaction['amount'])).replace(',', ' ')
+                else:
+                    transaction['amount'] = round(transaction['amount'], 2)
+                    transaction['amount'] = '{0:,}'.format(transaction['amount']).replace(',', ' ').replace('.', ',')
             return HttpResponse(json.dumps(transactions))
 
     holders = BalanceHolder.objects.filter(deleted=False)
@@ -45,21 +49,6 @@ def main_page_view(request):
     data = {'title': 'Главная страница', 'holders': holders, 'transactions': transactions}
 
     return render(request, 'mainapp/main-page.html', data)
-
-
-class MainPageView(TemplateView):
-
-    template_name = 'mainapp/main-page.html'
-
-    extra_context = {'title': 'Главная страница'}
-
-    def get_context_data(self, **kwargs):
-
-        context = super().get_context_data(**kwargs)
-        context['holders'] = BalanceHolder.objects.filter(deleted=False)
-        context['transactions'] = get_transaction_holder(1)
-        print(context['transactions'])
-        return context
 
 
 class TransactionsView(TemplateView):
@@ -91,10 +80,11 @@ class TransactionsCreateView(CreateView):
         balance_hodler = BalanceHolder.objects.filter(pk=id_balance_holder)
         balance = balance_hodler.values_list('holder_balance', flat=True).get(pk=id_balance_holder)
 
-        if form.instance.type_transaction == 'COMING':
-            balance += form.instance.amount
-        else:
-            balance -= form.instance.amount
+        if form.instance.status == 'SUCCESSFULLY':
+            if form.instance.type_transaction == 'COMING':
+                balance += form.instance.amount
+            else:
+                balance -= form.instance.amount
 
         BalanceHolder.objects.filter(pk=id_balance_holder).update(holder_balance=balance)
         form.save()
@@ -137,21 +127,12 @@ class TransactionUpdateView(SuperuserRequiredMixin, UpdateView):
             TransactionLog.objects.create(**changes)
         transaction.update_date = dt.now()
 
-        if old_transaction[0]['amount'] > transaction.amount:
-            change = old_transaction[0]['amount'] - transaction.amount
+        if transaction.status == 'SUCCESSFULLY':
             if self.model.objects.filter(pk=transaction.id).values('type_transaction')[0]['type_transaction'] == 'COMING':
-                old_balance_holder -= change
+                old_balance_holder += transaction.amount
                 balance_hodler.update(holder_balance=old_balance_holder)
             else:
-                old_balance_holder += change
-                balance_hodler.update(holder_balance=old_balance_holder)
-        elif old_transaction[0]['amount'] < transaction.amount:
-            change = transaction.amount - old_transaction[0]['amount']
-            if self.model.objects.filter(pk=transaction.id).values('type_transaction')[0]['type_transaction'] == 'COMING':
-                old_balance_holder += change
-                balance_hodler.update(holder_balance=old_balance_holder)
-            else:
-                old_balance_holder -= change
+                old_balance_holder -= transaction.amount
                 balance_hodler.update(holder_balance=old_balance_holder)
         else:
             pass

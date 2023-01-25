@@ -2,7 +2,7 @@ from django.urls import path
 from authapp.views import CustomLogoutView, CustomLoginView, custom_login
 from django.contrib.auth.decorators import login_required
 from .views import (
-    MainPageView, TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
+    TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
     BalanceHolderView, PaymentTypeView, PaymentTypeCreateView,
     AdditionalDataTransactionView, AdditionalDataTransactionCreateView,
     handler404, handler403, handler405, handler500, handler501, TransactionUpdateView, main_page_view,

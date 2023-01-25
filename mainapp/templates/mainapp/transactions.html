@@ -16,7 +16,7 @@
 							<div class="table-responsive">
 								<table class="table table-bordered text-nowrap mb-0">
 									<thead>
-										<tr>
+										<tr class="text-center">
 											<th>ID</th>
 											<th>Название</th>
 											<th>Создан</th>
@@ -33,7 +33,7 @@
 									</thead>
 									{% for object in transactions %}
 									<tbody>
-										<tr class="align-middle">
+										<tr class="align-middle text-center">
 											<td>
 												{{ object.pk }}
 												{% if user.is_superuser and object.status == 'INPROCESS' %}
@@ -45,14 +45,38 @@
 											<td>{{ object.name }}</td>
 											<td>{{ object.create_date|datetime_format }}</td>
 											<td>{{ object.update_date|datetime_format|safe }}</td>
-											<td>{{ object.type_transaction|trans_type }}</td>
+											<td>
+												{% if object.type_transaction == 'COMING' %}
+													<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+														Приход
+													</span>
+												{% else %}
+													<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+														Расход
+													</span>
+												{% endif %}
+											</td>
 											<td>{{ object.transaction_date|date_format }}</td>
 											<td>{{ object.balance_holder }}</td>
 											<td>{{ object.amount|numb_format }}</td>
 											<td>{{ object.type_payment }}</td>
 											<td>{{ object.author }}</td>
-											<td>{{ object.status|trans_status }}</td>
-											<td class="text-center">
+											<td>
+												{% if object.status == 'INPROCESS' %}
+													<span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
+														В процессе
+													</span>
+												{% elif object.status == 'SUCCESSFULLY' %}
+													<span class="badge bg-warning d-flex align-items-center justify-content-center rounded-pill ms-auto my-auto">
+														Успешно
+													</span>
+												{% else %}
+													<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+														Отклонено
+													</span>
+												{% endif %}
+											</td>
+											<td>
 												{% if object.check_img %}
 												<a href="/media/{{ object.check_img }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
 													<i class="fa-regular fa-clipboard"></i>
