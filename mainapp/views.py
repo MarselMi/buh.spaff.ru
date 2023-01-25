@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
 from datetime import datetime as dt
 
-from mainapp.data_library import get_transaction_holder
+from mainapp.data_library import *
 from mainapp.forms import (
     TransactionForm, BalanceHolderForm, AdditionalDataTransactionForm,
     PayTypeForm, TransactionUpdateForm
@@ -27,6 +27,7 @@ def main_page_view(request):
         if request.POST.get('type') == 'holder_id':
             request.session['main_session_holder'] = request.POST.get('id')
             transactions = get_transaction_holder(request.POST.get('id'))
+
             for transaction in transactions:
                 transaction['create_date'] = transaction['create_date'].strftime('%d.%m.%Y в %H:%M:%S')
                 if transaction.get('update_date'):
@@ -37,16 +38,24 @@ def main_page_view(request):
                 else:
                     transaction['amount'] = round(transaction['amount'], 2)
                     transaction['amount'] = '{0:,}'.format(transaction['amount']).replace(',', ' ').replace('.', ',')
-            return HttpResponse(json.dumps(transactions))
+
+            sum_coming_obj = get_coming_sum(request.POST.get('id'))
+            sum_expenditure_obj = get_expenditure_sum(request.POST.get('id'))
+            sum_coming = {}
+            sum_expenditure = {}
+
+            sum_coming['coming'] = numb_format(sum_coming_obj[0]['coming'])
+            sum_expenditure['expenditure'] = numb_format(sum_expenditure_obj[0]['expenditure'])
+            result = {
+                'transactions': transactions,
+                'sum_coming': sum_coming,
+                'sum_expenditure': sum_expenditure
+            }
+            return HttpResponse(json.dumps(result))
 
     holders = BalanceHolder.objects.filter(deleted=False)
 
-    if main_session_holder:
-        transactions = get_transaction_holder(main_session_holder)
-    else:
-        transactions = ''
-
-    data = {'title': 'Главная страница', 'holders': holders, 'transactions': transactions}
+    data = {'title': 'Главная страница', 'holders': holders}
 
     return render(request, 'mainapp/main-page.html', data)
 

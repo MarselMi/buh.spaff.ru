@@ -7,7 +7,7 @@
 			<div class="card">
 				<div class="card-body">
 
-					<div class="center">
+					<div class="center holders_list">
 						<div class="btn-group text-center">
 							{% for holder in holders %}
 							<button id="{{ holder.id }}" name="holder_id" class="holders_id btn btn-sm btn-light">
@@ -104,13 +104,78 @@
 					}
 					).then(function(result) {
 						var transaction_table = $('.info_transaction');
-						transaction_table.empty();
-						var transa = JSON.parse(result);
 						$('.holder_alert').remove();
-						console.log(transa.length);
+						transaction_table.empty();
+
+						var response = JSON.parse(result);
+						var transa = response.transactions;
+						var sum_coming = response.sum_coming;
+						var sum_expenditure = response.sum_expenditure;
+						
 						if (transa.length) {
+							if ($('.sum_transaction_info')){
+								$('.sum_transaction_info').remove();
+							}
+							var sum_transaction_info = `<div class="card px-3 ps-4 mb-4 sum_transaction_info">
+														<div class="row">
+
+															<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xxl-3">
+																<div class="row border-end bd-xs-e-0 p-3">
+																	<div class="col-3 d-flex align-items-center justify-content-center">
+																		
+																	</div> <!-- /col -->
+
+																	<div class="col-9">
+																		<div class="pt-4 pb-3">
+																			<div class="d-flex">
+																				<div class="h6 mb-2 small">
+																					Доход
+																				</div>
+																			</div>
+
+																			<div class="pb-0 mt-0">
+																				<div class="d-flex">
+																					<div class="fs-5 fw-light mb-0">
+																						${sum_coming.coming}
+																					</div>
+																				</div>
+																			</div>
+																		</div>
+																	</div> <!-- /col -->
+																</div> <!-- /row -->
+															</div> <!-- /col -->
+
+															<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xxl-3">
+																<div class="row p-3">
+																	<div class="col-3 d-flex align-items-center justify-content-center">
+																		
+																	</div> <!-- /col -->
+
+																	<div class="col-9">
+																		<div class="pt-4 pb-3">
+																			<div class="d-flex">
+																				<div class="h6 mb-2 small">
+																					Расходы
+																				</div>
+																			</div>
+
+																			<div class="pb-0 mt-0">
+																				<div class="d-flex">
+																					<div class="fs-5 fw-light mb-0">
+																						${sum_expenditure.expenditure}
+																					</div>
+																				</div>
+																			</div>
+																		</div>
+																	</div> <!-- /col -->
+																</div> <!-- /row -->
+															</div> <!-- /col -->
+														</div> <!-- /row -->
+													</div>`
 							$('.holder_non_transaction').remove()
 							$('.holder_table').removeAttr('hidden');
+							
+							$('.holders_list').append(sum_transaction_info);
 							for (let i = 0; i < transa.length; i++) {
 								if (transa[i].type_transaction == 'COMING') {
 									var type = `<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
@@ -178,4 +243,5 @@
 	};
 
 </script>
+
 {% endblock content %}
