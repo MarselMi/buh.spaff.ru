@@ -4,11 +4,9 @@ from django.contrib.auth.decorators import login_required
 from .views import (
     TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
     BalanceHolderView, PaymentTypeCreateView,
-    AdditionalDataTransactionCreateView,
-    custom_handler404, handler403, handler405, handler500, handler501, TransactionUpdateView, main_page_view,
+    AdditionalDataTransactionCreateView, TransactionUpdateView, main_page_view,
     payment_type_view, additional_data_transaction_view,
 )
-
 
 urlpatterns = [
     path('', login_required(main_page_view, login_url='login'), name='main_page'),
@@ -40,8 +38,3 @@ urlpatterns = [
          name='addition_create'),
 ]
 
-handler404 = custom_handler404
-handler403 = handler403
-handler405 = handler405
-handler500 = handler500
-handler501 = handler501
