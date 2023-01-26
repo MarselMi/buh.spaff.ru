@@ -30,8 +30,8 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
-handler404 = custom_handler404
-handler403 = handler403
-handler405 = handler405
-handler500 = handler500
-handler501 = handler501
+handler404 = "mainapp.views.custom_handler404"
+handler403 = "mainapp.views.handler403"
+handler405 = "mainapp.views.handler405"
+handler500 = "mainapp.views.handler500"
+handler501 = "mainapp.views.handler501"
