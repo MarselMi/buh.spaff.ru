@@ -29,6 +29,7 @@ def main_page_view(request):
         if request.POST.get('type') == 'holders_id':
             id = request.POST.get('id')
             transactions = get_transaction_holder(id)
+            print(transactions)
 
             for transaction in transactions:
                 transaction['create_date'] = transaction['create_date'].strftime('%d.%m.%Y в %H:%M:%S')
