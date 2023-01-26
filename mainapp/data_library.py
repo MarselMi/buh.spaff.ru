@@ -25,7 +25,7 @@ def get_transaction_holder(pk):
         with conn.cursor() as cursor:
             response = \
                 f'''
-                SELECT `status`, `create_date`, `type_transaction`, `transaction_date`, `name`, `mainapp_balanceholder`.`holder` AS `balance_holder_id`, `amount`, `mainapp_paytype`.`pay_type` AS `type_payment_id`, `authapp_customuser`.`username` AS `author_id`, `check_img`
+                SELECT `status`, `create_date`, `type_transaction`, `transaction_date`, `name`, `mainapp_balanceholder`.`holder_name` AS `balance_holder_id`, `amount`, `mainapp_paytype`.`pay_type` AS `type_payment_id`, CONCAT(`authapp_customuser`.`last_name`,' ', `authapp_customuser`.`first_name`) AS `author_id`, `check_img`
                 FROM `mainapp_transaction` t  
                 JOIN `mainapp_balanceholder` ON (`mainapp_balanceholder`.`id` = `t`.`balance_holder_id`)
                 JOIN `mainapp_paytype` ON (`mainapp_paytype`.`id` = `t`.`type_payment_id`)
