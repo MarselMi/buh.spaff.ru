@@ -228,20 +228,20 @@ class AdditionalDataTransactionCreateView(CreateView):
 
 
 def handler404(request, exception):
-    return render(request, 'mainapp/404.html', status=404)
+    return render(request, '404.html', status=404)
 
 
 def handler403(request, exception):
-    return render(request, 'mainapp/403.html', status=403)
+    return render(request, '403.html', status=403)
 
 
 def handler405(request, exception):
-    return render(request, 'mainapp/405.html', status=405)
+    return render(request, '405.html', status=405)
 
 
 def handler500(request):
-    return render(request, 'mainapp/500.html', status=500)
+    return render(request, '500.html', status=500)
 
 
 def handler501(request):
-    return render(request, 'mainapp/501.html', status=501)
+    return render(request, '501.html', status=501)
