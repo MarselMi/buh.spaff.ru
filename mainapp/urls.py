@@ -5,7 +5,7 @@ from .views import (
     TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
     BalanceHolderView, PaymentTypeCreateView,
     AdditionalDataTransactionCreateView,
-    handler404, handler403, handler405, handler500, handler501, TransactionUpdateView, main_page_view,
+    custom_handler404, handler403, handler405, handler500, handler501, TransactionUpdateView, main_page_view,
     payment_type_view, additional_data_transaction_view,
 )
 
@@ -40,7 +40,7 @@ urlpatterns = [
          name='addition_create'),
 ]
 
-handler404 = handler404
+handler404 = custom_handler404
 handler403 = handler403
 handler405 = handler405
 handler500 = handler500
