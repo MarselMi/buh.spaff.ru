@@ -92,10 +92,12 @@
 	}
 
 	var holders_id = document.querySelectorAll('.holders_id');
-
+	
 	for (let i = 0; i < holders_id.length; i++){
+		
 		holders_id[i].addEventListener('click', function(event) {
 			if (event.currentTarget == holders_id[i]){
+				holders_id[i].classList.add('border-dark');
 				$.ajax(
 					{
 						url: url,
@@ -105,8 +107,7 @@
 							type: 'holders_id',
 							id: holders_id[i].getAttribute("id")
 						}
-					}
-					).then(function(result) {
+					}).then(function(result) {
 						var transaction_table = $('.info_transaction');
 						$('.holder_alert').remove();
 						transaction_table.empty();
@@ -115,71 +116,54 @@
 						var transa = response.transactions;
 						var sum_coming = response.sum_coming;
 						var sum_expenditure = response.sum_expenditure;
+						var balance_holder = response.balance_holder
 						
 						if (transa.length) {
 							if ($('.sum_transaction_info')){
 								$('.sum_transaction_info').remove();
 							}
-							var sum_transaction_info = `<div class="card px-3 ps-4 mb-4 sum_transaction_info">
-														<div class="row">
-
-															<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xxl-3">
-																<div class="row border-end bd-xs-e-0 p-3">
-																	<div class="col-3 d-flex align-items-center justify-content-center">
-																		
-																	</div> <!-- /col -->
-
-																	<div class="col-9">
-																		<div class="pt-4 pb-3">
-																			<div class="d-flex">
-																				<div class="h6 mb-2 small">
-																					Доход
-																				</div>
-																			</div>
-
-																			<div class="pb-0 mt-0">
-																				<div class="d-flex">
-																					<div class="fs-5 fw-light mb-0">
-																						${sum_coming.coming}
-																					</div>
-																				</div>
+							var sum_transaction_info = `<div class="row sum_transaction_info">
+															<div class="text-center">
+																<strong>Балансодержатель - ${balance_holder}</strong>
+																</div>
+															<div class="col-lg-3 col-6 ">
+																<div class="pt-4 pb-3">
+																	<div class="d-flex">
+																		<div class="h6 mb-2 small">
+																			Сумма входящих транзакция
+																		</div>
+																	</div>
+																	<div class="pb-0 mt-0">
+																		<div class="d-flex">
+																			<div class="fs-5 fw-light mb-0">
+																				${sum_coming.coming}
 																			</div>
 																		</div>
-																	</div> <!-- /col -->
-																</div> <!-- /row -->
+																	</div>
+																</div>
 															</div> <!-- /col -->
 
-															<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xxl-3">
-																<div class="row p-3">
-																	<div class="col-3 d-flex align-items-center justify-content-center">
-																		
-																	</div> <!-- /col -->
-
-																	<div class="col-9">
-																		<div class="pt-4 pb-3">
-																			<div class="d-flex">
-																				<div class="h6 mb-2 small">
-																					Расходы
-																				</div>
-																			</div>
-
-																			<div class="pb-0 mt-0">
-																				<div class="d-flex">
-																					<div class="fs-5 fw-light mb-0">
-																						${sum_expenditure.expenditure}
-																					</div>
-																				</div>
+															<div class="col-lg-3 col-6">
+																<div class="pt-4 pb-3">
+																	<div class="d-flex">
+																		<div class="h6 mb-2 small">
+																			Сумма исходящих транзакция
+																		</div>
+																	</div>
+																	<div class="pb-0 mt-0">
+																		<div class="d-flex">
+																			<div class="fs-5 fw-light mb-0">
+																				${sum_expenditure.expenditure}
 																			</div>
 																		</div>
-																	</div> <!-- /col -->
-																</div> <!-- /row -->
+																	</div>
+																</div> <!-- /col -->
 															</div> <!-- /col -->
-														</div> <!-- /row -->
-													</div>`
+														</div> <!-- /row -->`
 							$('.holder_non_transaction').remove()
 							$('.holder_table').removeAttr('hidden');
 							
-							$('.holders_list').append(sum_transaction_info);
+							$('.card_info_trans').prepend(sum_transaction_info);
 							for (let i = 0; i < transa.length; i++) {
 								if (transa[i].type_transaction == 'COMING') {
 									var type = `<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">

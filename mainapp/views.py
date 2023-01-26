@@ -22,11 +22,13 @@ from django.views.generic.edit import UpdateView
 
 def main_page_view(request):
 
+    holders = BalanceHolder.objects.filter(deleted=False)
+
     if request.method == 'POST':
-        print(request.POST)
+
         if request.POST.get('type') == 'holders_id':
-            request.session['main_session_holder'] = request.POST.get('id')
-            transactions = get_transaction_holder(request.POST.get('id'))
+            id = request.POST.get('id')
+            transactions = get_transaction_holder(id)
 
             for transaction in transactions:
                 transaction['create_date'] = transaction['create_date'].strftime('%d.%m.%Y в %H:%M:%S')
@@ -39,21 +41,23 @@ def main_page_view(request):
                     transaction['amount'] = round(transaction['amount'], 2)
                     transaction['amount'] = '{0:,}'.format(transaction['amount']).replace(',', ' ').replace('.', ',')
 
-            sum_coming_obj = get_coming_sum(request.POST.get('id'))
-            sum_expenditure_obj = get_expenditure_sum(request.POST.get('id'))
+            sum_coming_obj = get_coming_sum(id)
+            sum_expenditure_obj = get_expenditure_sum(id)
             sum_coming = {}
             sum_expenditure = {}
+            balance_holder = BalanceHolder.objects.filter(pk=id).values('holder_name')[0]['holder_name']
 
             sum_coming['coming'] = numb_format(sum_coming_obj[0]['coming'])
             sum_expenditure['expenditure'] = numb_format(sum_expenditure_obj[0]['expenditure'])
+
             result = {
                 'transactions': transactions,
                 'sum_coming': sum_coming,
-                'sum_expenditure': sum_expenditure
+                'sum_expenditure': sum_expenditure,
+                'balance_holder': balance_holder
             }
             return HttpResponse(json.dumps(result))
 
-    holders = BalanceHolder.objects.filter(deleted=False)
     color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
 
     data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list}
