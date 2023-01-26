@@ -232,16 +232,16 @@ def custom_handler404(request, exception):
 
 
 def handler403(request, exception):
-    return render(request, 'errors/403.html', status=403)
+    return render(request, '403.html', status=403)
 
 
 def handler405(request, exception):
-    return render(request, 'errors/405.html', status=405)
+    return render(request, '405.html', status=405)
 
 
 def handler500(request):
-    return render(request, 'errors/500.html', status=500)
+    return render(request, '500.html', status=500)
 
 
 def handler501(request):
-    return render(request, 'errors/501.html', status=501)
+    return render(request, '501.html', status=501)
