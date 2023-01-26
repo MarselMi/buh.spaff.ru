@@ -12,6 +12,7 @@
 						{% if user.is_superuser or user.is_staff %}
 						<a href="{% url 'pay_create' %}">Создание нового типа платежа</a>
 						{% endif %}
+						{% if pay_type %}
 						<div class="card-body">
 							<div class="table-responsive">
 								<table class="table table-bordered text-nowrap mb-0">
@@ -32,6 +33,11 @@
 								</table> <!-- /table -->
 							</div> <!-- /table-responsive -->
 						</div>
+						{% else %}
+						<div class="card-body">
+							Нет данных
+						</div>
+						{% endif %}
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
