@@ -27,9 +27,10 @@ def main_page_view(request):
     if request.method == 'POST':
 
         if request.POST.get('type') == 'holders_id':
-            id = request.POST.get('id')
-            transactions = get_transaction_holder(id)
-            print(transactions)
+
+            transaction_id = request.POST.get('id')
+
+            transactions = get_transaction_holder(transaction_id)
 
             for transaction in transactions:
                 transaction['create_date'] = transaction['create_date'].strftime('%d.%m.%Y в %H:%M:%S')
@@ -42,11 +43,11 @@ def main_page_view(request):
                     transaction['amount'] = round(transaction['amount'], 2)
                     transaction['amount'] = '{0:,}'.format(transaction['amount']).replace(',', ' ').replace('.', ',')
 
-            sum_coming_obj = get_coming_sum(id)
-            sum_expenditure_obj = get_expenditure_sum(id)
+            sum_coming_obj = get_coming_sum(transaction_id)
+            sum_expenditure_obj = get_expenditure_sum(transaction_id)
             sum_coming = {}
             sum_expenditure = {}
-            balance_holder = BalanceHolder.objects.filter(pk=id).values('holder_name')[0]['holder_name']
+            balance_holder = BalanceHolder.objects.filter(pk=transaction_id).values('holder_name')[0]['holder_name']
 
             sum_coming['coming'] = numb_format(sum_coming_obj[0]['coming'])
             sum_expenditure['expenditure'] = numb_format(sum_expenditure_obj[0]['expenditure'])
