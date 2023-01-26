@@ -23,7 +23,8 @@ from django.views.generic.edit import UpdateView
 def main_page_view(request):
 
     if request.method == 'POST':
-        if request.POST.get('type') == 'holder_id':
+        print(request.POST)
+        if request.POST.get('type') == 'holders_id':
             request.session['main_session_holder'] = request.POST.get('id')
             transactions = get_transaction_holder(request.POST.get('id'))
 

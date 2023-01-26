@@ -10,7 +10,7 @@
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center">
-							<div class="small-box bg-{{color_list|get_item:count}}" style="border-radius: 15px;">
+							<button id="{{ holder.id }}" type="button" class="container-fluid holders_id btn btn-{{color_list|get_item:count}}" style="border-radius: 15px;">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.holder_name }}</h5>
 									<p>Расчетный счет</p>
@@ -18,7 +18,7 @@
 								<div class="icon">
 									<i class="ion ion-bag"></i>
 								</div>
-							</div>
+							</button>
 						</div>
 						{% endfor %}
 					</div>
@@ -95,14 +95,14 @@
 
 	for (let i = 0; i < holders_id.length; i++){
 		holders_id[i].addEventListener('click', function(event) {
-			if (event.target == holders_id[i]){
+			if (event.currentTarget == holders_id[i]){
 				$.ajax(
 					{
 						url: url,
 						method: 'POST',
 						data: {
 							csrfmiddlewaretoken: token,
-							type: holders_id[i].getAttribute("name"),
+							type: 'holders_id',
 							id: holders_id[i].getAttribute("id")
 						}
 					}
