@@ -34,6 +34,7 @@ class BalanceHolder(models.Model):
     holder_name = models.CharField(max_length=65, verbose_name='holder')
     holder = models.CharField(max_length=35, verbose_name='Держатель')
     holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Баланс Держателя')
+    payment_account = models.CharField(max_length=20, default=0, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
 
     def __str__(self):

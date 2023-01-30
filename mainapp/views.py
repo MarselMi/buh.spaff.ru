@@ -227,7 +227,7 @@ class AdditionalDataTransactionCreateView(CreateView):
         return redirect('additional_data')
 
 
-def custom_handler404(request, exception):
+def handler404(request, exception):
     return render(request, '404.html', status=404)
 
 
