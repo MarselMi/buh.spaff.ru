@@ -5,7 +5,7 @@ from .views import (
     TransactionsView, TransactionsCreateView, BalanceHolderCreateView,
     BalanceHolderView, PaymentTypeCreateView,
     AdditionalDataTransactionCreateView, TransactionUpdateView, main_page_view,
-    payment_type_view, additional_data_transaction_view,
+    payment_type_view, additional_data_transaction_view, balance_holder_create_view,
 )
 
 urlpatterns = [
@@ -24,7 +24,7 @@ urlpatterns = [
 
     # Балансодержатели
     path('holders/', login_required(BalanceHolderView.as_view(), login_url='login'), name='balance_holders'),
-    path('holder-create/', login_required(BalanceHolderCreateView.as_view(), login_url='login'),
+    path('holder-create/', login_required(balance_holder_create_view, login_url='login'),
          name='holder_create'),
 
     # Типы платежей

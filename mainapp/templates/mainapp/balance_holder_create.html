@@ -15,7 +15,10 @@
 
 							<div class="w-100">
 							  <div class="mt-4">
-								{{ form|crispy }}
+								  {% for element in form %}
+									{{ element.label }}
+								  	{{ element }}
+								  {% endfor %}
 							  </div>
 							</div>
 

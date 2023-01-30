@@ -12,7 +12,7 @@
 						<div class="col-lg-3 col-6 text-center">
 							<button id="{{ holder.id }}" type="button" class="container-fluid holders_id btn btn-{{color_list|get_item:count}}" style="border-radius: 15px;">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
-									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.holder_name }}</h5>
+									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.organization_holder }}</h5>
 									<p>Расчетный счет - {{ holder.payment_account }}</p>
 								</div>
 								<div class="icon">

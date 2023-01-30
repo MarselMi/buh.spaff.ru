@@ -182,6 +182,26 @@ class BalanceHolderCreateView(CreateView):
         return redirect('balance_holders')
 
 
+def balance_holder_create_view(request):
+
+    model = BalanceHolder
+    form_class = BalanceHolderForm
+
+    data = {'title': 'Создание балансодержателя',
+            'inside': {
+                'page_url': 'holders',
+                'page_title': 'Балансодержатели '
+                },
+            'form': form_class,
+            }
+
+    if request.method == 'POST':
+        name = request.POST.get('')
+        return redirect('balance_holders')
+
+    return render(request, 'mainapp/balance_holder_create.html', data)
+
+
 def payment_type_view(request):
     pay_type = PayType.objects.all()
 

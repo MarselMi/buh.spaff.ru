@@ -95,16 +95,16 @@ class TransactionUpdateForm(forms.ModelForm):
 class BalanceHolderForm(forms.ModelForm):
     class Meta:
         model = BalanceHolder
-        fields = ['holder_name', 'holder', 'holder_balance']
+        fields = ['organization_holder', 'name_holder', 'payment_account']
         widgets = {
-            'holder_name': forms.TextInput(
+            'organization_holder': forms.TextInput(
                 attrs={'class': 'form-control', 'id': 'HolderName', 'placeholder': 'Наименование организации'}
             ),
-            'holder': forms.TextInput(
+            'name_holder': forms.TextInput(
                 attrs={'class': 'form-control', 'id': 'Holder', 'placeholder': 'Имя балансодержателя'}
             ),
-            'holder_balance': forms.TextInput(
-                attrs={'class': 'form-control', 'id': 'HolderBalance', 'placeholder': 'Баланс'}
+            'payment_account': forms.TextInput(
+                attrs={'class': 'form-control', 'id': 'HolderBalance', 'placeholder': 'Расчетный счет'}
             ),
         }
 
