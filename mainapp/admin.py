@@ -23,7 +23,7 @@ class AdminAdditionalDataTransaction(admin.ModelAdmin):
 
 @admin.register(models.BalanceHolder)
 class AdminBalanceHolder(admin.ModelAdmin):
-    list_display = ["organization_holder", "name_holder", "holder_balance", "payment_account", "deleted"]
+    pass
 
 
 @admin.register(models.Transaction)

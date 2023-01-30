@@ -47,7 +47,7 @@ def main_page_view(request):
             sum_expenditure_obj = get_expenditure_sum(transaction_id)
             sum_coming = {}
             sum_expenditure = {}
-            balance_holder = BalanceHolder.objects.filter(pk=transaction_id).values('holder_name')[0]['holder_name']
+            balance_holder = BalanceHolder.objects.filter(pk=transaction_id).values('organization_holder')[0]['organization_holder']
 
             sum_coming['coming'] = numb_format(sum_coming_obj[0]['coming'])
             sum_expenditure['expenditure'] = numb_format(sum_expenditure_obj[0]['expenditure'])

@@ -38,7 +38,7 @@ class BalanceHolder(models.Model):
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
 
     def __str__(self):
-        return f'{self.holder}'
+        return f'{self.organization_holder}'
 
     def delete(self, *args, **kwargs):
         self.deleted = True
