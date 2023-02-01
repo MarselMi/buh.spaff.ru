@@ -10,21 +10,21 @@ class TransactionForm(forms.ModelForm):
 
         model = Transaction
 
-        fields = ['name', 'status', 'type_transaction', 'transaction_date', 'description', 'balance_holder',
-                  'amount', 'type_payment', 'check_img', 'tags']
+        fields = ['name', 'status', 'type_transaction', 'transaction_date', 'balance_holder',
+                  'amount', 'type_payment', 'description', 'tags', 'check_img']
 
         widgets = {
             'name': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'transactionName', 'placeholder': 'Имя транзакции', 'clean': 'true'}
+            ),
+            'status': forms.TextInput(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
             ),
             'transaction_date': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'datepicker', 'placeholder': 'Дата транзакции'}
             ),
             'type_transaction': forms.Select(
                 attrs={'class': 'form-select mb-2', 'id': 'transactionType', 'placeholder': 'Тип транзакции'}
-            ),
-            'description': forms.TextInput(
-                attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
             ),
             'balance_holder': forms.Select(
                 attrs={'class': 'form-select mb-2', 'id': 'transactionBalance_holder', 'placeholder': 'Выберите Балансодержателя'}
@@ -35,12 +35,14 @@ class TransactionForm(forms.ModelForm):
             'type_payment': forms.Select(
                 attrs={'class': 'form-select mb-2', 'id': 'transactionPayment', 'placeholder': 'Тип платежа'}
             ),
-            'check_img': forms.FileInput(),
-            'tags': forms.Textarea(
-                attrs={'class': 'form-control mb-2', 'id': 'transactionTags', 'placeholder': 'Теги для данной транзакции'}
+            'check_img': forms.FileInput(
+                attrs={'class': 'form-control mb-2', 'type': 'file'}
             ),
-            'status': forms.Select(
-                attrs={'class': 'form-select mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
+            'description': forms.Textarea(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
+            ),
+            'tags': forms.Textarea(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionTags', 'placeholder': 'Теги транзакции'}
             ),
         }
 
@@ -62,13 +64,10 @@ class TransactionUpdateForm(forms.ModelForm):
 
         widgets = {
             'status': forms.Select(
-                attrs={'class': 'form-select mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
+                attrs={'class': 'form-control mb-2', 'id': 'transactionStatus', 'placeholder': 'Статус транзакции'}
             ),
             'transaction_date': forms.DateInput(
                 attrs={'class': 'form-control mb-2', 'id': 'datepicker', 'placeholder': 'Дата транзакции'}
-            ),
-            'description': forms.TextInput(
-                attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
             ),
             'balance_holder': forms.TextInput(
                 attrs={'class': 'form-control mb-2', 'id': 'transactionBalance_holder', 'disabled': 'true'}
@@ -79,9 +78,14 @@ class TransactionUpdateForm(forms.ModelForm):
             'type_payment': forms.Select(
                 attrs={'class': 'form-select mb-2', 'id': 'transactionPayment', 'placeholder': 'Тип платежа'}
             ),
-            'check_img': forms.FileInput(),
+            'check_img': forms.FileInput(
+                attrs={'class': 'form-control mb-2 fileinput fileUpload form-control-file', 'type': 'file', }
+            ),
+            'description': forms.Textarea(
+                attrs={'class': 'form-control mb-2', 'id': 'transactionDescription', 'placeholder': 'Описание'}
+            ),
             'tags': forms.Textarea(
-                attrs={'class': 'form-control mb-2', 'id': 'transactionTags', 'placeholder': 'Теги для данной транзакции'}
+                attrs={'class': 'form-control mb-2', 'id': 'transactionTags', 'placeholder': 'Теги транзакции'}
             ),
         }
 
@@ -152,3 +156,8 @@ class PayTypeForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Save PayType'))
+
+
+class UploadFileForm(forms.Form):
+    title = forms.CharField(max_length=50)
+    file = forms.FileField()

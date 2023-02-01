@@ -1,0 +1,70 @@
+{% extends 'mainapp/base.html' %}
+{% load static %}
+{% block content %}
+
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="table-responsive">
+						{% if transactions_log %}
+						<div class="card-body">
+							<div class="table-responsive table-maxh-stats">
+								<table class="table table-bordered text-nowrap mb-0">
+									<thead>
+										<tr class="text-center">
+											<th>ID-Транзакции</th>
+											<th>Дата изменения</th>
+											<th>Автор изменения</th>
+											<th>Статус транз до/после</th>
+											<th>Дата транз до/после</th>
+											<th>Сумма транз до/после</th>
+											<th>Описание транз до/после</th>
+											<th>Тип платежа до/после</th>
+											<th>Чеки транз до/после</th>
+										</tr>
+									</thead>
+									{% for object in transactions_log %}
+									<tbody>
+										<tr class="align-middle text-center">
+											<td>{{ object.transaction_id|dash }}</td>
+											<td>{{ object.changed|dash }}</td>
+											<td>{{ object.author_references|dash }}</td>
+											<td>{{ object.status|change_status|safe }}</td>
+											<td>{{ object.transaction_date|dash|safe }}</td>
+											<td>{{ object.amount|change_sum_trans|safe }}</td>
+											<td>{{ object.description|dash|safe }}</td>
+											<td>{{ object.type_payment|pay_type_decode|safe }}</td>
+											<td>{% if object.check_img %}
+													{% for img in object.check_img|split_img %}
+														{% if img %}
+														<a href="/media/img/{{ img|replace_space }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
+															<i class="fa-regular fa-clipboard"></i>
+														</a>
+														{% else %}
+														-
+														{% endif %}
+													{% endfor %}
+												{% else %}
+												&ndash;
+												{% endif %}
+											</td>
+										</tr>
+									</tbody>
+									{% endfor %}
+								</table> <!-- /table -->
+							</div> <!-- /table-responsive -->
+						</div>
+
+						{% else %}
+						<div class="card-body">
+							Нет данных
+						</div>
+						{% endif %}
+					</div> <!-- /table-responsive -->
+				</div> <!-- /card-body -->
+			</div> <!-- /card -->
+		</div> <!-- /col -->
+	</div> <!--/row-->
+
+{% endblock content %}

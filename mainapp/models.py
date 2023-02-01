@@ -26,8 +26,8 @@ class PayType(models.Model):
         return f'{self.pay_type}'
 
     class Meta:
-        verbose_name = 'Типы платежей'
-        verbose_name_plural = 'Тип платежа'
+        verbose_name = 'Тип платежа'
+        verbose_name_plural = 'Типы платежей'
 
 
 class BalanceHolder(models.Model):
@@ -58,12 +58,15 @@ class Transaction(models.Model):
     transaction_date = models.DateField(verbose_name='Дата Транзакции')
 
     name = models.CharField(max_length=65, verbose_name='Наименование')
-    description = models.TextField(blank=True, null=True, verbose_name='Подробнее')
-    balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.CASCADE, verbose_name='Балансодержатель')
+    description = models.TextField(blank=True, null=True, default=None, verbose_name='Подробнее')
+    balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='transaction_balanceholder', verbose_name='Балансодержатель')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма')
-    type_payment = models.ForeignKey(PayType, on_delete=models.CASCADE, verbose_name='Тип')
+    type_payment = models.ForeignKey(PayType, on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='transaction_paytype', verbose_name='Тип')
     tags = models.TextField(blank=True, null=True, default=None, verbose_name='Теги')
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
+    author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='transaction_customuser', verbose_name='Автор')
     check_img = models.FileField(blank=True, null=True, upload_to='img/', verbose_name='Чек')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], verbose_name='Статус')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
@@ -75,13 +78,16 @@ class Transaction(models.Model):
         self.deleted = True
         self.save()
 
+
+
     class Meta:
-        verbose_name = 'Транзакции'
-        verbose_name_plural = 'Транзакция'
+        verbose_name = 'Транзакцию'
+        verbose_name_plural = 'Транзакции'
 
 
 class AdditionalDataTransaction(models.Model):
-    transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE, verbose_name='Транзакция')
+    transaction_id = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='additionaldatatransaction_transaction', verbose_name='Транзакция')
     notes = models.TextField(verbose_name='Дополнительные данные по транзакции')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
 
@@ -101,10 +107,11 @@ class TransactionLog(models.Model):
 
     transaction_id = models.IntegerField(verbose_name='ID транзакции')
     changed = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
-    author_references = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор изменения')
+    author_references = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='transactionlog_customuser', verbose_name='Автор изменения')
 
     status = models.CharField(max_length=30, blank=True, null=True, verbose_name='Статус транз до/после')
-    transaction_date = models.CharField(max_length=25, blank=True, null=True, verbose_name='Дата транз до/после')
+    transaction_date = models.CharField(max_length=30, blank=True, null=True, verbose_name='Дата транз до/после')
     amount = models.CharField(max_length=30, blank=True, null=True, verbose_name='Сумма транз до/после')
     description = models.TextField(blank=True, null=True, verbose_name='Описание транз до/после')
     type_payment = models.CharField(max_length=25, blank=True, null=True, verbose_name='Тип платежа до/после')

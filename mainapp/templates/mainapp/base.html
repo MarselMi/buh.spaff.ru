@@ -184,6 +184,19 @@
 						</a>
 					</li>
 				</ul> <!-- /nav -->
+				{% if user.is_superuser %}
+				<ul class="nav nav-fill flex-column">
+					<li class="nav-item">
+						<a class="{% if request.resolver_match.url_name == 'transactions_log' %}
+						active
+						{% endif %}
+						nav-link d-inline-flex align-items-center" href="{% url 'transactions_log' %}">
+							<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
+							Данные по изменениям транз.
+						</a>
+					</li>
+				</ul> <!-- /nav -->
+				{% endif %}
 			</div> <!--/sidebar-sticky-->
 		</nav> <!--/sidebar-->
 

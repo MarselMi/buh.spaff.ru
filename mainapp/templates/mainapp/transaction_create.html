@@ -7,23 +7,97 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-					<div class="table-responsive">
-						<strong>Создание Транзакции</strong>
-						<br>
+					<div class="card-body">
 						<form method="POST" action="" enctype="multipart/form-data">
 							{% csrf_token %}
 
-							<div class="w-100">
-							  <div class="mt-4">
-								{{ form|crispy }}
-							  </div>
+							<div class="row">
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.balance_holder.label }}*
+									<input autocomplete="off" onfocus="this.value=''" list="balance_holder_list" class="form-control" name="balance_holder" id="balance_holder" placeholder="Выберите балансодержателя" "/>
+									<datalist id="balance_holder_list">
+										{% for holder in balance_holders %}
+										<option value="{{ holder }}">{{ holder }}</option>
+										{% endfor %}
+									</datalist>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+								  {{ form.name.label }}*
+								  	<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2" name="transaction_name" id="transaction_name" placeholder="Имя транзакции"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+								  {{ form.status.label }}*
+									<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2" name="transaction_status" list="datalistStatus" id="transaction_status" value="В процессе"/>
+								  	<datalist id="datalistStatus">
+										<option value="В процессе">В процессе</option>
+										<option value="Отклонен">Отклонен</option>
+										<option value="Успешно">Успешно</option>
+									</datalist>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.transaction_date.label }}*
+									<input autocomplete="off" class="form-control" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.type_payment.label }}*
+									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="form-control" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
+									<datalist id="list_pay">
+										{% for type in type_payments %}
+										<option value="{{ type }}">{{ type }}</option>
+										{% endfor %}
+									</datalist>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.amount.label }}*
+									<input autocomplete="off" class="form-control" name="amount" placeholder="Сумма транзакции" id="amount"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+								  {{ form.type_transaction.label }}*
+									<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+								  	<datalist id="datalist_transaction_type">
+										<option value="Приход">Приход</option>
+										<option value="Расход">Расход</option>
+									</datalist>
+								</div>
+
+							</div>
+
+							<div class="row">
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.check_img.label }}
+									{{ form.check_img }}
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.description.label }}
+									<div>
+										{{ form.description }}
+									</div>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.tags.label }}
+									<div>
+										{{ form.tags }}
+									</div>
+								</div>
+
 							</div>
 
 							<button class="btn btn-lg btn-primary mt-4" type="submit">
 								Сохранить
 							</button> <!-- /btn -->
+
 						</form>
-					</div> <!-- /table-responsive -->
+					</div> <!-- /card-body -->
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
 		</div> <!-- /col -->

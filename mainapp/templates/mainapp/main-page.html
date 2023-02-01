@@ -48,9 +48,9 @@
 												<tr class="text-center">
 													<th>Дата создания</th>
 													<th>Дата транзакции</th>
+													<th>Дата изменения</th>
 													<th>Тип транзакции</th>
 													<th>Сумма</th>
-													<th>Статус</th>
 													<th>Автор создания</th>
 													<th>Балансодержатель</th>
 													<th>Наименование</th>
@@ -176,21 +176,7 @@
 													Расход
 												</span>`
 								};
-								
-								if (transa[i].status == 'INPROCESS') {
-									var status = `<span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
-													В процессе
-												</span>`
-								} else if (transa[i].status == 'SUCCESSFULLY') {
-									var status = `<span class="badge bg-warning d-flex align-items-center justify-content-center rounded-pill ms-auto my-auto">
-													Успешно
-												</span>`
-								} else {
-									var status = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
-													Отклонено
-												</span>`
-								};
-								
+
 								if (transa[i].check_img) {
 									var img = `<a href="/media/${transa[i].check_img}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
 													<i class="fa-regular fa-clipboard"></i>
@@ -198,12 +184,19 @@
 								} else {
 									var img = '&ndash;'
 								}
+
+								if (transa[i].update_date){
+									var update_date = transa[i].update_date
+								} else {
+									var update_date = '&ndash;'
+								}
+
 								var transaction_info =`<tr class="text-center">
 															<td>${transa[i].create_date}</td>
 															<td>${transa[i].transaction_date}</td>
+															<td>${update_date}</td>
 															<td>${type}</td>
 															<td>${transa[i].amount}</td>
-															<td>${status}</td>
 															<td>${transa[i].author_id}</td>
 															<td>${transa[i].balance_holder_id}</td>
 															<td>${transa[i].name}</td>

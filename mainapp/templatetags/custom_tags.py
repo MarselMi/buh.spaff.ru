@@ -1,5 +1,38 @@
 from django.template.defaulttags import register
 from datetime import datetime as dt
+from mainapp.models import PayType
+
+
+@register.filter
+def pay_type_decode(obj):
+    if obj:
+        slpit_object = obj.split('/')
+        first_el = PayType.objects.filter(pk=slpit_object[0])[0]
+        second_el = PayType.objects.filter(pk=slpit_object[1])[0]
+        return f'{first_el.pay_type}/{second_el.pay_type}'
+    return f'&ndash;'
+
+
+@register.filter
+def dash(obj):
+    if obj:
+        return obj
+    return f'&ndash;'
+
+
+@register.filter
+def split_img(obj):
+    if obj:
+        res = obj.split('/img/')
+        if len(res) > 2:
+            return res[1:]
+        else:
+            return res
+
+
+@register.filter
+def replace_space(obj:str):
+    return obj.replace(' ', '_')
 
 
 @register.filter
@@ -14,6 +47,15 @@ def datetime_format(date_time):
 def date_format(date_object):
     if date_object:
         return date_object.strftime('%d.%m.%Y')
+    else:
+        return f'&ndash;'
+
+
+@register.filter
+def change_sum_trans(obj):
+    if obj:
+        changes = obj.replace(',', '.').replace(' ', '').split('/')
+        return f"{numb_format(float(changes[0]))} / {numb_format(float(changes[1]))}"
     else:
         return f'&ndash;'
 
@@ -43,6 +85,15 @@ def trans_status(obj):
         return 'Отклонен'
     elif obj == 'SUCCESSFULLY':
         return 'Успешно'
+
+
+@register.filter
+def change_status(obj):
+    if obj:
+        stats = obj.split('/')
+        return f'{trans_status(stats[0])}/{trans_status(stats[1])}'
+    else:
+        return f'&ndash;'
 
 
 @register.filter
