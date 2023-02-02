@@ -1,0 +1,58 @@
+{% extends 'mainapp/base.html' %}
+{% load static %}
+{% block content %}
+
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="table-responsive">
+						{% if user.is_superuser or user.is_staff %}
+						<a href="{% url 'create_user' %}">Создать пользователя</a>
+						{% endif %}
+						{% if users %}
+						<div class="card-body">
+							<div class="table-responsive table-maxh-stats">
+								<table class="table table-bordered text-nowrap mb-0">
+									<thead>
+										<tr class="text-center">
+											<th>ID</th>
+											<th>Логин</th>
+											<th>Фамилия</th>
+											<th>Имя</th>
+											<th>Статус персонала</th>
+										</tr>
+									</thead>
+									<tbody>
+									{% for object in users %}
+										<tr class="align-middle text-center">
+											<td>
+												{{ object.pk }}
+												{% if user.is_superuser %}
+													<a href="{% url 'edit_user' object.pk %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+														<i class="fa-regular fa-pen-to-square"></i>
+													</a>
+												{% endif %}
+											</td>
+											<td>{{ object.username }}</td>
+											<td>{{ object.last_name }}</td>
+											<td>{{ object.first_name }}</td>
+											<td>{{ object.is_staff }}</td>
+										</tr>
+									{% endfor %}
+									</tbody>
+								</table> <!-- /table -->
+							</div> <!-- /table-responsive -->
+						</div>
+						{% else %}
+						<div class="card-body">
+							Нет данных
+						</div>
+						{% endif %}
+					</div> <!-- /table-responsive -->
+				</div> <!-- /card-body -->
+			</div> <!-- /card -->
+		</div> <!-- /col -->
+	</div> <!--/row-->
+
+{% endblock content %}

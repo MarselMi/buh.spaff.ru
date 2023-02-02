@@ -24,6 +24,7 @@ class LoginUserForm(AuthenticationForm):
                     'class': 'form-control mb-4',
                     'placeholder': 'Введите свой Email'
                 }))
+
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(
                 attrs={
                     'class': 'form-control mb-4',

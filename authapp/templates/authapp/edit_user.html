@@ -1,0 +1,198 @@
+{% extends 'mainapp/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="card-body">
+						<form method="POST" class="userCreate" action="" novalidate>
+							{% csrf_token %}
+
+							<div class="row">
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="username">Логин пользователя</label>
+									<input autocomplete="off" class="form-control success" name="username" id="username" value="{{ user.username }}" placeholder="Введите Логин пользователя" required/>
+								</div>
+								<div class="invalid-feedback">
+									Пользователь с таким логином уже существует
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="first_name">Имя пользователя</label>
+									<input autocomplete="off" class="form-control" name="first_name" id="first_name" value="{{ user.first_name }}" placeholder="Введите Имя пользователя" required/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="last_name">Фамилия пользователя</label>
+									<input autocomplete="off" class="form-control" name="last_name" id="last_name" value="{{ user.last_name }}" placeholder="Введите Фамилию пользователя" required/>
+								</div>
+
+							</div>
+
+							<div class="row">
+
+								<div class="col-12 col-sm-3 mb-3">
+									{% if user.is_staff %}
+									<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" checked/>
+									{% else %}
+									<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff"/>
+									{% endif %}
+									<label for="is_staff">Статус персонала</label>
+								</div>
+
+							</div>
+
+							<div class="row">
+
+								<div class="col-12 col-sm-3 mb-3">
+									{% if user.is_superuser %}
+									<input class="form-check-input" type="checkbox" name="is_superuser" id="is_superuser" checked/>
+									{% else %}
+									<input class="form-check-input" type="checkbox" name="is_superuser" id="is_superuser"/>
+									{% endif %}
+									<label for="is_superuser">Суперпользователь</label>
+								</div>
+
+							</div>
+
+							<div class="row">
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="password">Введите старый пароль</label>
+									<input  autocomplete="new-password" class="form-control is-invalid" type="password" name="password" id="password" placeholder="Введите старый пароль" required/>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="password1">Новый пароль</label>
+									<input  autocomplete="new-password" class="form-control" type="password" name="password1" id="password1" placeholder="Введите пароль" required/>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-12 col-sm-3">
+									<label for="password2">Повторите новый пароль</label>
+									<input  autocomplete="new-password" class="form-control" type="password" name="password2" id="password2" placeholder="Повторите пароль" required/>
+								</div>
+							</div>
+
+							<button class="btn btn-lg btn-primary mt-4" disabled>
+								Сохранить
+							</button>
+
+						</form>
+					</div> <!-- /card-body -->
+				</div> <!-- /card-body -->
+			</div> <!-- /card -->
+		</div> <!-- /col -->
+	</div> <!--/row-->
+
+<script type="text/javascript">
+
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	$('#username').on('input', function() {
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_username',
+					username: $('#username').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#username').removeClass('is-invalid');
+					$('#username').addClass('is-valid');
+				} else {
+					$('#username').removeClass('is-valid');
+					$('#username').addClass('is-invalid');
+				}
+				if (!$('#username').val()){
+					$('#username').removeClass('is-valid');
+					$('#username').addClass('is-invalid');
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)}
+	)
+	
+	$('#password').on('input', function() {
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_password',
+					password: $('#password').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#password').removeClass('is-invalid');
+					$('#password').addClass('is-valid');
+				} else {
+					$('#password').removeClass('is-valid');
+					$('#password').addClass('is-invalid');
+				}
+				if (!$('#password').val()){
+					$('#password').removeClass('is-valid');
+					$('#password').addClass('is-invalid');
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)}
+	)
+
+	$('#password2').on('input', function() {
+		if ($('#password1').val() == $('#password2').val()){
+			$('#password2').removeClass('is-invalid');
+			$('#password1').addClass('is-valid');
+			$('#password2').addClass('is-valid');
+		}else{
+			$('#password1').removeClass('is-valid');
+			$('#password2').removeClass('is-valid');
+			$('#password2').addClass('is-invalid');
+		}
+	})
+
+	$('form').on('change keyup input', function(){
+		var button_div = `<div class="btn btn-lg btn-primary mt-4 div_button">
+							Сохранить
+						</div>`
+
+		var button = `<button class="btn btn-lg btn-primary mt-4" type="submit">
+						Сохранить
+					</button>`
+
+		if ($('#password2').hasClass('is-invalid') || $('#username').hasClass('is-invalid')){
+			$('.div_button').remove()
+			$('button').remove()
+			$('.userCreate').append(button_div)
+		}else{
+			$('button').remove()
+			$('.div_button').remove()
+			$('.userCreate').append(button)
+		}
+	})
+
+</script>
+
+{% endblock content %}
