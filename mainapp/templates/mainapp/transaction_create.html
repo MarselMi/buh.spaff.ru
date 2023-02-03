@@ -8,14 +8,14 @@
 			<div class="card">
 				<div class="card-body">
 					<div class="card-body">
-						<form method="POST" action="" enctype="multipart/form-data">
+						<form method="POST"  action="" enctype="multipart/form-data">
 							{% csrf_token %}
 
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.balance_holder.label }}*
-									<input autocomplete="off" onfocus="this.value=''" list="balance_holder_list" class="form-control" name="balance_holder" id="balance_holder" placeholder="Выберите балансодержателя" "/>
+									{{ form.balance_holder.label }}
+									<input autocomplete="off" onfocus="this.value=''" list="balance_holder_list" class="obligatory form-control is-invalid" name="balance_holder" id="balance_holder" placeholder="Выберите балансодержателя" "/>
 									<datalist id="balance_holder_list">
 										{% for holder in balance_holders %}
 										<option value="{{ holder }}">{{ holder }}</option>
@@ -24,13 +24,13 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-								  {{ form.name.label }}*
-								  	<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2" name="transaction_name" id="transaction_name" placeholder="Имя транзакции"/>
+								  {{ form.name.label }}
+								  	<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2 is-invalid" name="transaction_name" id="transaction_name" placeholder="Имя транзакции"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-								  {{ form.status.label }}*
-									<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2" name="transaction_status" list="datalistStatus" id="transaction_status" value="В процессе"/>
+								  {{ form.status.label }}
+									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2" name="transaction_status" list="datalistStatus" id="transaction_status" value="В процессе"/>
 								  	<datalist id="datalistStatus">
 										<option value="В процессе">В процессе</option>
 										<option value="Отклонен">Отклонен</option>
@@ -39,13 +39,13 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.transaction_date.label }}*
-									<input autocomplete="off" class="form-control" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+									{{ form.transaction_date.label }}
+									<input autocomplete="off" class="obligatory form-control is-invalid" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.type_payment.label }}*
-									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="form-control" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
+									{{ form.type_payment.label }}
+									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
 									<datalist id="list_pay">
 										{% for type in type_payments %}
 										<option value="{{ type }}">{{ type }}</option>
@@ -54,13 +54,13 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.amount.label }}*
-									<input autocomplete="off" class="form-control" name="amount" placeholder="Сумма транзакции" id="amount"/>
+									{{ form.amount.label }}
+									<input autocomplete="off" class="obligatory form-control is-invalid" name="amount" placeholder="Сумма транзакции" id="amount"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-								  {{ form.type_transaction.label }}*
-									<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+								  {{ form.type_transaction.label }}
+									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2 is-invalid" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
 								  	<datalist id="datalist_transaction_type">
 										<option value="Приход">Приход</option>
 										<option value="Расход">Расход</option>
@@ -73,26 +73,23 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.check_img.label }}
-									{{ form.check_img }}
+									<input class="form-control mb-2 fileinput fileUpload form-control-file" name="check_img" type="file" id="id_check_img">
+									
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.description.label }}
-									<div>
-										{{ form.description }}
-									</div>
+									{{ form.description }}
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.tags.label }}
-									<div>
-										{{ form.tags }}
-									</div>
+									{{ form.tags }}
 								</div>
 
 							</div>
 
-							<button class="btn btn-lg btn-primary mt-4" type="submit">
+							<button class="btn btn-lg btn-primary mt-4" type="submit" disabled>
 								Сохранить
 							</button> <!-- /btn -->
 
@@ -103,10 +100,96 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
-	<script type="text/javascript">
-		$(function(){
-			$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
+<script type="text/javascript">
+	$(function(){
+		$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
+	});
+</script>
+
+<script type="text/javascript">
+
+	$('form').on('change keyup input click focusot live', function(){
+
+		var objects = $('.obligatory')
+
+		for (let i=0; objects.length > i; i++){
+			if (objects[i].value){
+				objects[i].classList.remove('is-invalid')
+			}else{
+				objects[i].classList.add('is-invalid')
+			}
+		}
+		
+		if ($('#amount').val())
+
+		if ($('#transaction_status').val() == 'Успешно'){
+			if (!$('#id_check_img').val()){
+				$('#id_check_img').addClass('is-invalid')
+			}else{
+				$('#id_check_img').removeClass('is-invalid')
+			}
+		}else{
+			$('#id_check_img').removeClass('is-invalid')
+		}
+
+		if ($('#balance_holder').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#transaction_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#transaction_status').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#datepicker').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#type_payment').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#amount').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#type_transaction').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#id_check_img').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else{
+			$('button').removeAttr('disabled');
+		}
+	})
+
+	$('#datepicker').on('change click focusot hover', function(){
+		if ($('#datepicker').val()){
+			$('#datepicker').removeClass('is-invalid')
+		}else{
+			$('#datepicker').addClass('is-invalid')
+		}
+	})
+
+	$(document).ready(function() {
+		$('form').submit(function(e) {
+			e.preventDefault();
+			var valid = true;
+			var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+			var amount = $('#amount').val();
+			var dateEl = $('#datepicker').val();
+
+			var validDate = regEx.test(dateEl);
+			var validAmount = regEx.test(amount);
+
+			$(".error").remove();
+			
+			if (validDate || (dateEl.length != 10)){
+				$('#datepicker').addClass('is-invalid');
+				$('#datepicker').after('<span class="error">Введите корректные данные</span>');
+				valid = false;
+			}
+			
+			if (validAmount) {
+				$('#amount').addClass('is-invalid');
+				$('#amount').after('<span class="error">Введите корректные данные</span>');
+				valid = false;
+			}
+			if (valid) this.submit();
 		});
-	</script>
+	});
+
+</script>
 
 {% endblock content %}

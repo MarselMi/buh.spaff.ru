@@ -1,6 +1,5 @@
 from django.db import models
-from authapp.models import CustomUser
-from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import AbstractUser
 
 
 ACTION_CREATE = 'create'
@@ -32,7 +31,7 @@ class PayType(models.Model):
 
 class BalanceHolder(models.Model):
     organization_holder = models.CharField(blank=True, null=True, max_length=65, verbose_name='Наименование организации')
-    name_holder = models.CharField(blank=True, null=True, max_length=35, verbose_name='Имя держателя')
+    alias_holder = models.CharField(blank=True, null=True, max_length=35, verbose_name='Псевдоним')
     holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Баланс Держателя')
     payment_account = models.CharField(max_length=20, default=0, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
@@ -47,6 +46,19 @@ class BalanceHolder(models.Model):
     class Meta:
         verbose_name = 'Балансодержателя'
         verbose_name_plural = 'Балансодержатели'
+
+
+class CustomUser(AbstractUser, models.Model):
+
+    available_holders = models.ManyToManyField(BalanceHolder)
+
+    def __str__(self):
+        return f'{self.last_name} {self.first_name}'
+
+    class Meta:
+        verbose_name = 'Пользователя'
+        verbose_name_plural = 'Пользователи'
+        ordering = ("-pk",)
 
 
 class Transaction(models.Model):
@@ -77,8 +89,6 @@ class Transaction(models.Model):
     def delete(self, *args, **kwargs):
         self.deleted = True
         self.save()
-
-
 
     class Meta:
         verbose_name = 'Транзакцию'

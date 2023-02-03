@@ -1,12 +1,9 @@
-import json
 from django.http import JsonResponse
-from django.contrib.auth import get_user_model
 from django.contrib.auth.views import LoginView, LogoutView
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from authapp.forms import LoginUserForm, CustomUserCreationForm
+from authapp.forms import LoginUserForm
 from django.contrib import messages
-from authapp.models import CustomUser
+from mainapp.models import CustomUser, BalanceHolder
 from django.contrib.auth.hashers import make_password
 
 
@@ -75,6 +72,8 @@ def edit_user_view(request, pk):
 
     user = CustomUser.objects.filter(pk=pk)
 
+    balance_holders = BalanceHolder.objects.all()
+
     if request.method == 'POST':
 
         if request.POST.get('type') == 'check_username':
@@ -121,20 +120,28 @@ def edit_user_view(request, pk):
             is_superuser = False
 
         password1 = request.POST.get('password1')
-
-        user.update(
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            is_staff=is_staff,
-            is_superuser=is_superuser,
-            password=make_password(password1)
-        )
+        if password1:
+            user.update(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                is_staff=is_staff,
+                is_superuser=is_superuser,
+                password=make_password(password1)
+            )
+        else:
+            user.update(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                is_staff=is_staff,
+                is_superuser=is_superuser
+            )
 
         return redirect('users')
 
     data = {'title': 'Редактирование пользователя', 'inside': {'page_url': 'users', 'page_title': 'Пользователи'},
-            'user': user[0]}
+            'user': user[0], 'balance_holders': balance_holders}
 
     return render(request, 'authapp/edit_user.html', data)
 

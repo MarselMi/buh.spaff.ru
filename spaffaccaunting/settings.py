@@ -95,7 +95,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-AUTH_USER_MODEL = 'authapp.CustomUser'
+AUTH_USER_MODEL = 'mainapp.CustomUser'
 
 LOGIN_REDIRECT_URL = "main_page"
 

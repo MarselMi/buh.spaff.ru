@@ -1,25 +1,20 @@
 import json
 import decimal
-from os import path
-from urllib import request
-from django.core.files.storage import default_storage
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, ListView, CreateView
+from django.views.generic import ListView, CreateView
 from datetime import datetime as dt
 
 from mainapp.data_library import *
 from mainapp.forms import (
     TransactionForm, BalanceHolderForm, AdditionalDataTransactionForm,
-    PayTypeForm, TransactionUpdateForm, UploadFileForm
+    PayTypeForm, TransactionUpdateForm
 )
-from mainapp.mixin import SuperuserRequiredMixin
 from mainapp.models import (
     Transaction, BalanceHolder, PayType, AdditionalDataTransaction,
     TransactionLog
 )
-from django.views.generic.edit import UpdateView
 
 
 def main_page_view(request):
@@ -148,86 +143,6 @@ def create_transaction_view(request):
             'form': form, 'type_payments': type_payments, 'balance_holders': balance_holders}
 
     return render(request, 'mainapp/transaction_create.html', data)
-
-
-class TransactionsCreateView(CreateView):
-
-    template_name = 'mainapp/transaction_create.html'
-    model = Transaction
-    form_class = TransactionForm
-    extra_context = {'title': 'Создание транзакции',
-                     'inside': {
-                         'page_url': 'transactions',
-                         'page_title': 'Транзакции'
-                     }}
-
-    def form_valid(self, form):
-        form.save(commit=False)
-        form.instance.author = self.request.user
-        id_balance_holder = form.instance.balance_holder.id
-        balance_hodler = BalanceHolder.objects.filter(pk=id_balance_holder)
-        balance = balance_hodler.values_list('holder_balance', flat=True).get(pk=id_balance_holder)
-
-        if form.instance.status == 'SUCCESSFULLY':
-            if form.instance.type_transaction == 'COMING':
-                balance += form.instance.amount
-            else:
-                balance -= form.instance.amount
-
-        BalanceHolder.objects.filter(pk=id_balance_holder).update(holder_balance=balance)
-        form.save()
-
-        return redirect('transactions')
-
-
-# class TransactionUpdateView(SuperuserRequiredMixin, UpdateView):
-#     template_name = 'mainapp/transaction_edit.html'
-#     model = Transaction
-#     form_class = TransactionUpdateForm
-#     extra_context = {'title': 'Изменение транзакции',
-#                      'inside': {
-#                          'page_url': 'transactions',
-#                          'page_title': 'Транзакции'
-#                      }}
-#
-#     def form_valid(self, form):
-#
-#         transaction = form.save(commit=False)
-#
-#         changes = {
-#             'transaction_id': transaction.id,
-#             'author_references': self.request.user
-#         }
-#
-#         old_transaction = self.model.objects.filter(pk=transaction.id).values(
-#             'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img'
-#         )
-#
-#         id_balance_holder = form.instance.balance_holder.id
-#         balance_hodler = BalanceHolder.objects.filter(pk=id_balance_holder)
-#         old_balance_holder = balance_hodler.values('holder_balance')[0]['holder_balance']
-#
-#         for k in old_transaction[0]:
-#             check = eval(f'transaction.{k}') == old_transaction[0][k]
-#             if not check:
-#                 changes[k] = str(old_transaction[0][k])+"/"+str(eval(f'transaction.{k}'))
-#         if len(changes.values()) > 2:
-#             TransactionLog.objects.create(**changes)
-#         transaction.update_date = dt.now()
-#
-#         if transaction.status == 'SUCCESSFULLY':
-#             if self.model.objects.filter(pk=transaction.id).values('type_transaction')[0]['type_transaction'] == 'COMING':
-#                 old_balance_holder += transaction.amount
-#                 balance_hodler.update(holder_balance=old_balance_holder)
-#             else:
-#                 old_balance_holder -= transaction.amount
-#                 balance_hodler.update(holder_balance=old_balance_holder)
-#         else:
-#             pass
-#
-#         form.save()
-#
-#         return redirect('transactions')
 
 
 def transaction_update_view(request, pk):

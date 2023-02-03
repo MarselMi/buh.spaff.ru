@@ -1,11 +1,11 @@
 from django.urls import path
-from authapp.views import CustomLogoutView, CustomLoginView, custom_login, users_view, create_user_view, edit_user_view
+from authapp.views import CustomLogoutView, CustomLoginView, users_view, create_user_view, edit_user_view
 from django.contrib.auth.decorators import login_required
-from .views import (
+from mainapp.views import (
     BalanceHolderView, PaymentTypeCreateView,
     AdditionalDataTransactionCreateView, main_page_view,
     payment_type_view, additional_data_transaction_view, balance_holder_create_view, transactions_log_view,
-    transaction_view, transaction_update_view, create_transaction_view,
+    transaction_view, transaction_update_view, create_transaction_view, BalanceHolderCreateView,
 )
 
 urlpatterns = [
@@ -37,7 +37,7 @@ urlpatterns = [
     # Балансодержатели
     path('holders/', login_required(BalanceHolderView.as_view(), login_url='login'),
          name='balance_holders'),
-    path('holder-create/', login_required(balance_holder_create_view, login_url='login'),
+    path('holder-create/', login_required(BalanceHolderCreateView.as_view(), login_url='login'),
          name='holder_create'),
 
     # Типы платежей
@@ -52,4 +52,3 @@ urlpatterns = [
     path('addition-create/', login_required(AdditionalDataTransactionCreateView.as_view(), login_url='login'),
          name='addition_create'),
 ]
-

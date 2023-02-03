@@ -15,20 +15,17 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="username">Логин пользователя</label>
-									<input autocomplete="off" class="form-control success" name="username" id="username" placeholder="Введите Логин пользователя" required/>
-								</div>
-								<div class="invalid-feedback">
-									Пользователь с таким логином уже существует
+									<input autocomplete="off" class="form-control success is-invalid" name="username" id="username" placeholder="Введите Логин пользователя" required/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="first_name">Имя пользователя</label>
-									<input autocomplete="off" class="form-control" name="first_name" id="first_name" placeholder="Введите Имя пользователя" required/>
+									<input autocomplete="off" class="form-control is-invalid" name="first_name" id="first_name" placeholder="Введите Имя пользователя" required/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="last_name">Фамилия пользователя</label>
-									<input autocomplete="off" class="form-control" name="last_name" id="last_name" placeholder="Введите Фамилию пользователя" required/>
+									<input autocomplete="off" class="form-control is-invalid" name="last_name" id="last_name" placeholder="Введите Фамилию пользователя" required/>
 								</div>
 
 							</div>
@@ -54,14 +51,14 @@
 							<div class="row">
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="password1">Пароль</label>
-									<input autocomplete="off" class="form-control" type="password" name="password1" id="password1" placeholder="Введите пароль" required/>
+									<input autocomplete="off" class="form-control is-invalid" type="password" name="password1" id="password1" placeholder="Введите пароль" required/>
 								</div>
 							</div>
 
 							<div class="row">
 								<div class="col-12 col-sm-3">
 									<label for="password2">Повторите Пароль</label>
-									<input autocomplete="off" class="form-control" type="password" name="password2" id="password2" placeholder="Повторите пароль" required/>
+									<input autocomplete="off" class="form-control is-invalid" type="password" name="password2" id="password2" placeholder="Повторите пароль" required/>
 								</div>
 
 								<div class="invalid-feedback">
@@ -69,7 +66,7 @@
 							 	 </div>
 							</div>
 
-							<button class="btn btn-lg btn-primary mt-4" type="submit">
+							<button class="btn btn-lg btn-primary mt-4" type="submit" disabled>
 								Сохранить
 							</button>
 
@@ -125,34 +122,58 @@
 	$('#password2').on('input', function() {
 		if ($('#password1').val() == $('#password2').val()){
 			$('#password2').removeClass('is-invalid');
+			$('#password1').removeClass('is-invalid');
 			$('#password1').addClass('is-valid');
 			$('#password2').addClass('is-valid');
 		}else{
 			$('#password1').removeClass('is-valid');
 			$('#password2').removeClass('is-valid');
 			$('#password2').addClass('is-invalid');
+			$('#password1').addClass('is-invalid');
+		}
+	})
+
+	$('#password1').on('input', function() {
+		if ($('#password1').val() == $('#password2').val()){
+			$('#password2').removeClass('is-invalid');
+			$('#password1').removeClass('is-invalid');
+			$('#password1').addClass('is-valid');
+			$('#password2').addClass('is-valid');
+		}else{
+			$('#password1').removeClass('is-valid');
+			$('#password2').removeClass('is-valid');
+			$('#password2').addClass('is-invalid');
+			$('#password1').addClass('is-invalid');
 		}
 	})
 
 	$('form').on('change keyup input', function(){
-		var button_div = `<div class="btn btn-lg btn-primary mt-4 div_button">
-							Сохранить
-						</div>`
-
-		var button = `<button class="btn btn-lg btn-primary mt-4" type="submit">
-						Сохранить
-					</button>`
-
-		console.log($('#password2').hasClass('is-invalid') || $('#username').hasClass('is-invalid'))
-
-		if ($('#password2').hasClass('is-invalid') || $('#username').hasClass('is-invalid')){
-			$('.div_button').remove()
-			$('button').remove()
-			$('.userCreate').append(button_div)
+		if ($('#password2').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#username').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#first_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#last_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
 		}else{
-			$('button').remove()
-			$('.div_button').remove()
-			$('.userCreate').append(button)
+			$('button').removeAttr('disabled');
+		}
+	})
+
+	$('#first_name').on('input', function(){
+		if ($('#first_name').val()){
+			$('#first_name').removeClass('is-invalid');
+		}else{
+			$('#first_name').addClass('is-invalid');
+		}
+	})
+
+	$('#last_name').on('input', function(){
+		if ($('#last_name').val()){
+			$('#last_name').removeClass('is-invalid');
+		}else{
+			$('#last_name').addClass('is-invalid');
 		}
 	})
 

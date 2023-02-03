@@ -30,8 +30,20 @@
 									<label for="last_name">Фамилия пользователя</label>
 									<input autocomplete="off" class="form-control" name="last_name" id="last_name" value="{{ user.last_name }}" placeholder="Введите Фамилию пользователя" required/>
 								</div>
-
 							</div>
+
+							<div class="row">
+
+								<label>Доступные балансодержатели</label>
+
+								{% for holder in balance_holders %}
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="holder-{{holder.pk}}">{{ holder }}</label>
+									<input class="form-check-input" type="checkbox" name="holder-{{holder.pk}}" id="holder-{{holder.pk}}"/>
+								</div>
+								{% endfor %}
+							</div>
+
 
 							<div class="row">
 
@@ -132,7 +144,7 @@
 			}
 		)}
 	)
-	
+
 	$('#password').on('input', function() {
 		$.ajax(
 			{
@@ -164,32 +176,68 @@
 	$('#password2').on('input', function() {
 		if ($('#password1').val() == $('#password2').val()){
 			$('#password2').removeClass('is-invalid');
+			$('#password1').removeClass('is-invalid');
 			$('#password1').addClass('is-valid');
 			$('#password2').addClass('is-valid');
 		}else{
 			$('#password1').removeClass('is-valid');
 			$('#password2').removeClass('is-valid');
 			$('#password2').addClass('is-invalid');
+			$('#password1').addClass('is-invalid');
 		}
 	})
 
 	$('form').on('change keyup input', function(){
-		var button_div = `<div class="btn btn-lg btn-primary mt-4 div_button">
-							Сохранить
-						</div>`
-
-		var button = `<button class="btn btn-lg btn-primary mt-4" type="submit">
-						Сохранить
-					</button>`
-
 		if ($('#password2').hasClass('is-invalid') || $('#username').hasClass('is-invalid')){
-			$('.div_button').remove()
-			$('button').remove()
-			$('.userCreate').append(button_div)
+			$('button').attr('disabled');
 		}else{
-			$('button').remove()
-			$('.div_button').remove()
-			$('.userCreate').append(button)
+			$('button').removeAttr('disabled');
+		}
+	})
+
+	$('#password1').on('input', function() {
+		if ($('#password1').val() == $('#password2').val()){
+			$('#password2').removeClass('is-invalid');
+			$('#password1').removeClass('is-invalid');
+			$('#password1').addClass('is-valid');
+			$('#password2').addClass('is-valid');
+		}else{
+			$('#password1').removeClass('is-valid');
+			$('#password2').removeClass('is-valid');
+			$('#password2').addClass('is-invalid');
+			$('#password1').addClass('is-invalid');
+		}
+	})
+
+	$('form').on('change keyup input', function(){
+		if ($('#password').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#password2').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#username').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#first_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#last_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else{
+			$('button').removeAttr('disabled');
+		}
+	})
+
+	$('#first_name').on('input', function(){
+		if ($('#first_name').val()){
+			$('#first_name').removeClass('is-invalid');
+		}else{
+			$('#first_name').addClass('is-invalid');
+		}
+	})
+
+	$('#last_name').on('input', function(){
+		if ($('#last_name').val()){
+			$('#last_name').removeClass('is-invalid');
+		}else{
+			$('#last_name').addClass('is-invalid');
 		}
 	})
 

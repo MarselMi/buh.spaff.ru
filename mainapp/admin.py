@@ -1,9 +1,5 @@
 from django.contrib import admin
-
-from authapp.forms import CustomUserCreationForm, CustomUserChangeForm
-from authapp.models import CustomUser
 from mainapp import models
-from django.contrib.auth.admin import UserAdmin
 
 
 @admin.register(models.TransactionLog)
@@ -26,20 +22,7 @@ class AdminBalanceHolder(admin.ModelAdmin):
     pass
 
 
-@admin.register(models.Transaction)
-class AdminTransaction(admin.ModelAdmin):
-    list_display = ['name', 'type_transaction', 'amount', 'create_date', 'transaction_date',
-                    'balance_holder', 'author', 'check_img']
-    list_per_page = 10
-    search_fields = ['tags']
-
-
-class AdminCustomUser(UserAdmin):
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
-    model = CustomUser
-    list_display = ['username', 'first_name', 'is_staff']
-
-
-admin.site.register(CustomUser, AdminCustomUser)
+@admin.register(models.CustomUser)
+class AdminCustomUser(admin.ModelAdmin):
+    pass
 

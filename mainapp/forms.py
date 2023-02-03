@@ -99,13 +99,13 @@ class TransactionUpdateForm(forms.ModelForm):
 class BalanceHolderForm(forms.ModelForm):
     class Meta:
         model = BalanceHolder
-        fields = ['organization_holder', 'name_holder', 'payment_account']
+        fields = ['organization_holder', 'alias_holder', 'payment_account']
         widgets = {
             'organization_holder': forms.TextInput(
                 attrs={'class': 'form-control', 'id': 'HolderName', 'placeholder': 'Наименование организации'}
             ),
-            'name_holder': forms.TextInput(
-                attrs={'class': 'form-control', 'id': 'Holder', 'placeholder': 'Имя балансодержателя'}
+            'alias_holder': forms.TextInput(
+                attrs={'class': 'form-control', 'id': 'Holder', 'placeholder': 'Псевдоним балансодержателя'}
             ),
             'payment_account': forms.TextInput(
                 attrs={'class': 'form-control', 'id': 'HolderBalance', 'placeholder': 'Расчетный счет'}
@@ -156,8 +156,3 @@ class PayTypeForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Save PayType'))
-
-
-class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
-    file = forms.FileField()

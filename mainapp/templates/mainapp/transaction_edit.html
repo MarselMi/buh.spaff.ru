@@ -17,7 +17,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.status.label }}
-									<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2" name="transaction_status" list="datalistStatus" id="transaction_status" value="{{ transaction.status|trans_status }}"/>
+									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2" name="transaction_status" list="datalistStatus" id="transaction_status" value="{{ transaction.status|trans_status }}"/>
 									<datalist id="datalistStatus">
 										<option value="В процессе">В процессе</option>
 										<option value="Отклонен">Отклонен</option>
@@ -28,7 +28,7 @@
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.transaction_date.label }}
 									{% if transaction.transaction_date %}
-										<input autocomplete="off" class="form-control" name="transaction_date" value="{{ transaction.transaction_date|date_format }}" id="datepicker"/>
+										<input autocomplete="off" class="obligatory form-control" name="transaction_date" value="{{ transaction.transaction_date|date_format }}" id="datepicker"/>
 									{% else %}
 										{{ form.transaction_date }}
 									{% endif %}
@@ -37,7 +37,7 @@
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.amount.label }}
 									{% if transaction.amount %}
-										<input autocomplete="off" onfocus="this.value=''" class="form-control" name="amount" value="{{ transaction.amount }}" id="amount"/>
+										<input autocomplete="off" class="obligatory form-control" name="amount" value="{{ transaction.amount }}" id="amount"/>
 									{% else %}
 										{{ form.amount }}
 									{% endif %}
@@ -45,7 +45,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.type_payment.label }}
-									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="form-control" name="type_payment" id="type_payment" value="{{ transaction.type_payment }}"/>
+									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control" name="type_payment" id="type_payment" value="{{ transaction.type_payment }}"/>
 									<datalist id="list_pay">
 										{% for type in type_payments %}
 										<option value="{{ type }}">{{ type }}</option>
@@ -56,7 +56,7 @@
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="id_check_img">{{ form.check_img.label }}</label>
 									{% if transaction.check_img %}
-										<input class="form-control mb-2 fileinput fileUpload form-control-file" name="check_img" type="file" title="{{ transaction.check_img }}" id="id_check_img">
+										<input class="form-control mb-2 fileinput fileUpload form-control-file" name="check_img" type="file" title="{{ transaction.check_img }}" value="{{ transaction.check_img }}" id="id_check_img">
 									{% else %}
 										{{ form.check_img }}
 									{% endif %}
@@ -101,10 +101,64 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
-	<script type="text/javascript">
-		$(function(){
-			$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
-		});
-	</script>
+<script type="text/javascript">
+	$(function(){
+		$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
+	});
+</script>
+
+<script type="text/javascript">
+
+	$('form').on('change keyup input click focusot live', function(){
+
+		var objects = $('.obligatory')
+
+		for (let i=0; objects.length > i; i++){
+			if (objects[i].value){
+				objects[i].classList.remove('is-invalid')
+			}else{
+				objects[i].classList.add('is-invalid')
+			}
+		}
+		if ($('#transaction_status').val() == 'Успешно'){
+			if ($('#id_check_img').val() || $('#id_check_img').attr('title')){
+				$('#id_check_img').removeClass('is-invalid')
+			}else{
+				$('#id_check_img').addClass('is-invalid')
+			}
+		}else{
+			$('#id_check_img').removeClass('is-invalid')
+		}
+
+		if ($('#balance_holder').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#transaction_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#transaction_status').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#datepicker').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#type_payment').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#amount').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#type_transaction').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#id_check_img').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else{
+			$('button').removeAttr('disabled');
+		}
+	})
+
+	$('#datepicker').on('change click focusot hover', function(){
+		if ($('#datepicker').val()){
+			$('#datepicker').removeClass('is-invalid')
+		}else{
+			$('#datepicker').addClass('is-invalid')
+		}
+	})
+
+</script>
 
 {% endblock content %}

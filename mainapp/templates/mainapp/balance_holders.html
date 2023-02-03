@@ -21,7 +21,7 @@
 										<tr>
 											<th>ID</th>
 											<th>Наименование организации</th>
-											<th>Имя держателя</th>
+											<th>Псевдоним держателя</th>
 											<th>Баланс Держателя</th>
 											<th>Расчетный счет</th>
 										</tr>
@@ -31,7 +31,7 @@
 										<tr class="align-middle">
 											<td>{{ object.pk }}</td>
 											<td>{{ object.organization_holder }}</td>
-											<td>{{ object.name_holder }}</td>
+											<td>{{ object.alias_holder }}</td>
 											<td>{{ object.holder_balance|numb_format }}</td>
 											<td>{{ object.payment_account }}</td>
 										</tr>

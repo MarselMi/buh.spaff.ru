@@ -20,6 +20,7 @@
 											<th>Логин</th>
 											<th>Фамилия</th>
 											<th>Имя</th>
+											<th>Доступные балансодержатели</th>
 											<th>Статус персонала</th>
 										</tr>
 									</thead>
@@ -37,6 +38,12 @@
 											<td>{{ object.username }}</td>
 											<td>{{ object.last_name }}</td>
 											<td>{{ object.first_name }}</td>
+											<td>{% if object.available_holders %}
+													{{ object.available_holders }}
+												{% else %}
+													&ndash;
+												{% endif %}
+											</td>
 											<td>{{ object.is_staff }}</td>
 										</tr>
 									{% endfor %}
