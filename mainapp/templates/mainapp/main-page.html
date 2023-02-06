@@ -10,15 +10,16 @@
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center">
-							<button id="{{ holder.id }}" type="button" class="container-fluid holders_id btn btn-{{color_list|get_item:count}}" style="border-radius: 15px;">
+							<div id="{{ holder.id }}" type="button" class="container-fluid holders_id btn btn-{{color_list|get_item:count}}" style="border-radius: 15px;">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.organization_holder }}</h5>
 									<p>Расчетный счет - {{ holder.payment_account }}</p>
 								</div>
-								<div class="icon">
-									<i class="ion ion-bag"></i>
-								</div>
-							</button>
+								<!-- Button trigger modal -->
+								<button type="button" class="btn" data-holder-id="{{ holder.pk }}" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="{{ holder.organization_holder }}">
+									Добавить транзакцию
+								</button>
+							</div>
 						</div>
 						{% endfor %}
 					</div>
@@ -76,6 +77,119 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+	
+	<!-- Modal -->
+	<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="staticBackdropLabel">Добавление транзакции к балансодержателю {{ holder.name }}</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					
+					<input value="holder.id" hidden/>
+
+					<div>
+						<label for="transaction_name">Имя транзакции</label>
+						<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2 is-invalid" name="transaction_name" id="transaction_name" placeholder="Имя транзакции"/>
+					</div>
+
+					<div>
+						<label for="datepicker">Дата транзакции</label>
+						<input autocomplete="off" class="obligatory form-control is-invalid" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+					</div>
+
+					<div>
+						<label for="type_payment">Тип выплаты</label>
+						<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
+						<datalist id="list_pay">
+							{% for type in type_payments %}
+							<option value="{{ type }}">{{ type }}</option>
+							{% endfor %}
+						</datalist>
+					</div>
+
+					<div>
+						<label for="amount">Сумма транзакции</label>
+						<input autocomplete="off" class="obligatory form-control is-invalid" name="amount" placeholder="Сумма транзакции" id="amount"/>
+					</div>
+
+					<div>
+						<label for="type_transaction">Тип транзакции</label>
+						<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2 is-invalid" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+						<datalist id="datalist_transaction_type">
+							<option value="Приход">Приход</option>
+							<option value="Расход">Расход</option>
+						</datalist>
+					  </div>
+				
+				</div>
+					<div class="modal-footer">
+					<a href="{% url 'transaction_create' %}" class="btn btn-secondary">Перейти на полную версию</a>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+					<button type="submit" class="btn btn-primary">Сохранить</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">Новая транзакция</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form>
+
+					<div>
+						<input type="text" name="balance_holder" id="balance_holder" hidden>
+
+						<label for="transaction_name" class="col-form-label">Имя транзакции:</label>
+						<input type="text" class="form-control" id="transaction_name">
+					</div>
+
+					<div>
+
+						<label for="datepicker" class="col-form-label">Дата транзакции:</label>
+						<input class="form-control datepicker" name="transaction_date" id="datepicker">
+
+					</div>
+
+					<div>
+
+						<label for="amount" class="col-form-label">Сумма транзакции:</label>
+						<input class="form-control" name="amount" id="amount">
+
+					</div>
+
+					<div>
+
+						<label for="payment_type" class="col-form-label">Тип платежа:</label>
+						<input class="form-control" name="payment_type" id="payment_type">
+
+					</div>
+
+					<div>
+
+						<label for="transaction_type" class="col-form-label">Тип транзакции:</label>
+						<input class="form-control" name="transaction_type" id="transaction_type">
+
+					</div>
+					
+				</form>
+			</div>
+			<div class="modal-footer">
+				<a type="button" href="" class="btn btn-secondary holder_link">Полная версия</a>
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+				<button type="submit" class="btn btn-primary save_button">Сохранить</button>
+			</div>
+		</div>
+		</div>
+	</div>
 
 <script>
 
@@ -90,6 +204,63 @@
 		token = b[1]
 		}
 	}
+
+	function create_transaction(holder, transaction_name, transaction_date, amount, payment_type, transaction_type){
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'create_transaction',
+
+					holder_post: holder,
+					transaction_name_post: transaction_name,
+					transaction_date_post: transaction_date,
+					amount_post: amount,
+					payment_type_post: payment_type,
+					transaction_type_post: transaction_type
+				}
+			}).then(function(result) {
+				var x = 1;
+			}).catch(function(err) {
+				var x = 2;
+		})
+	}
+
+	$(function(){
+			$(".datepicker").datepicker({dateFormat: 'dd.mm.yy'});
+		});
+		
+	var exampleModal = document.getElementById('exampleModal')
+	exampleModal.addEventListener('show.bs.modal', function (event) {
+		
+
+		var button = event.relatedTarget
+		
+		var id_holder = button.getAttribute('data-holder-id')
+		var recipient = button.getAttribute('data-bs-whatever')
+		
+		var modalTitle = exampleModal.querySelector('.modal-title')
+		var holder_link = exampleModal.querySelector('.holder_link')
+
+		var holder = exampleModal.querySelector('#balance_holder')
+		var transaction_name = exampleModal.querySelector('#transaction_name')
+		var transaction_date = exampleModal.querySelector('#datepicker')
+		var amount = exampleModal.querySelector('#amount')
+		var payment_type = exampleModal.querySelector('#payment_type')
+		var transaction_type = exampleModal.querySelector('#transaction_type')
+		
+		$('.save_button').create_transaction(holder, transaction_name, transaction_date, amount, payment_type, transaction_type)
+
+		holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`)
+		modalTitle.textContent = 'Создать транзакцию для ' + recipient
+
+		balance_holder_input.value = recipient
+
+		var submit_button = exampleModal.querySelector('.save_button')
+		
+	})
 
 	var holders_id = document.querySelectorAll('.holders_id');
 	
@@ -110,6 +281,7 @@
 					}).then(function(result) {
 						var transaction_table = $('.info_transaction');
 						$('.holder_alert').remove();
+						$('.sum_transaction_info').remove();
 						transaction_table.empty();
 
 						var response = JSON.parse(result);

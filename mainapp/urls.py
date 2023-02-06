@@ -6,6 +6,7 @@ from mainapp.views import (
     AdditionalDataTransactionCreateView, main_page_view,
     payment_type_view, additional_data_transaction_view, balance_holder_create_view, transactions_log_view,
     transaction_view, transaction_update_view, create_transaction_view, BalanceHolderCreateView,
+    create_transaction_holder_view,
 )
 
 urlpatterns = [
@@ -29,6 +30,8 @@ urlpatterns = [
          name='transactions'),
     path('transactions-create/', login_required(create_transaction_view, login_url='login'),
          name='transaction_create'),
+    path('transactions-holder-create/<int:pk>', login_required(create_transaction_holder_view, login_url='login'),
+         name='transactions_holder_create'),
     path('transaction-edit/<int:pk>/', login_required(transaction_update_view, login_url='login'),
          name='transaction_edit'),
     path('transactions-log/', login_required(transactions_log_view, login_url='login'),

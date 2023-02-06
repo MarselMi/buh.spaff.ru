@@ -15,12 +15,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.balance_holder.label }}
-									<input autocomplete="off" onfocus="this.value=''" list="balance_holder_list" class="obligatory form-control is-invalid" name="balance_holder" id="balance_holder" placeholder="Выберите балансодержателя" "/>
-									<datalist id="balance_holder_list">
-										{% for holder in balance_holders %}
-										<option value="{{ holder }}">{{ holder }}</option>
-										{% endfor %}
-									</datalist>
+									<input class="obligatory form-control" name="balance_holder" id="balance_holder" value="{{ holder_pk }}" disabled/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">

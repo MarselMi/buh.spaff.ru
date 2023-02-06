@@ -22,7 +22,7 @@ def main_page_view(request):
     holders = BalanceHolder.objects.filter(deleted=False)
 
     if request.method == 'POST':
-
+        print(request.POST)
         if request.POST.get('type') == 'holders_id':
 
             transaction_id = request.POST.get('id')
@@ -143,6 +143,82 @@ def create_transaction_view(request):
             'form': form, 'type_payments': type_payments, 'balance_holders': balance_holders}
 
     return render(request, 'mainapp/transaction_create.html', data)
+
+
+def create_transaction_holder_view(request, pk):
+
+    transaction = Transaction
+    form = TransactionForm
+    type_payments = PayType.objects.all()
+    balance_holders_pk = BalanceHolder.objects.filter(pk=pk)
+    balance_holders = BalanceHolder.objects.all()
+
+    if request.method == 'POST':
+        holder_response = request.POST.get('balance_holder')
+        balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
+
+        name = request.POST.get('transaction_name')
+
+        status = request.POST.get('transaction_status')
+        if status == 'В процессе':
+            status = 'INPROCESS'
+        elif status == 'Отклонен':
+            status = 'REJECT'
+        else:
+            status = 'SUCCESSFULLY'
+
+        transaction_date = dt.strptime(request.POST.get('transaction_date'), '%d.%m.%Y').date()
+
+        type_payment = PayType.objects.filter(pay_type=request.POST.get('type_payment'))[0]
+
+        amount = decimal.Decimal(request.POST.get('amount').replace(',', '.').replace(' ', ''))
+
+        type_transaction = request.POST.get('type_transaction')
+        if type_transaction == 'Приход':
+            type_transaction = 'COMING'
+        else:
+            type_transaction = 'EXPENDITURE'
+
+        '''Логика для загрузки ЧЕКов'''
+        image = request.FILES.get('check_img')
+        if image:
+            check_img = f"img/{str(image).replace(' ', '_')}"
+            root = f'{settings.MEDIA_ROOT}/{str(check_img)}'
+            with open(root, 'wb+') as f:
+                for chunk in image.chunks():
+                    f.write(chunk)
+            image = check_img
+
+        description = request.POST.get('description')
+        tags = request.POST.get('tags')
+
+        author_id = request.user.id
+
+        new_data = {'transaction_date': transaction_date, 'type_transaction': type_transaction,
+                    'name': name, 'description': description, 'balance_holder': balance_holder_response[0],
+                    'amount': amount, 'type_payment': type_payment, 'status': status, 'tags': tags,
+                    'check_img': image, 'author_id': author_id}
+
+        transaction.objects.create(**new_data)
+
+        old_balance_balance_holder = balance_holder_response[0].holder_balance
+        if status == 'SUCCESSFULLY':
+            if type_transaction == 'COMING':
+                old_balance_balance_holder += amount
+                balance_holder_response.update(holder_balance=old_balance_balance_holder)
+            else:
+                old_balance_balance_holder -= amount
+                balance_holder_response.update(holder_balance=old_balance_balance_holder)
+        else:
+            pass
+
+        return redirect('transactions')
+
+    data = {'title': 'Создание транзакции', 'inside': {'page_url': 'transactions', 'page_title': 'Транзакции'},
+            'form': form, 'type_payments': type_payments, 'balance_holders': balance_holders,
+            'holder_pk': balance_holders_pk[0]}
+
+    return render(request, 'mainapp/transaction_holder_create.html', data)
 
 
 def transaction_update_view(request, pk):
