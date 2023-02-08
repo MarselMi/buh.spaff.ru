@@ -35,7 +35,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.type_payment.label }}
-									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
+									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
 									<datalist id="list_pay">
 										{% for type in type_payments %}
 										<option value="{{ type }}">{{ type }}</option>

@@ -108,3 +108,9 @@ def get_item(arr, key):
     except (KeyError, TypeError):
         return 0
     return value
+
+
+@register.filter
+def split_holders(obj):
+    result = obj.split(',')
+    return result

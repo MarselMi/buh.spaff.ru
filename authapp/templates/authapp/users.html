@@ -12,7 +12,7 @@
 						{% endif %}
 						{% if users %}
 						<div class="card-body">
-							<div class="table-responsive table-maxh-stats">
+							<div class="table-responsive">
 								<table class="table table-bordered text-nowrap mb-0">
 									<thead>
 										<tr class="text-center">
@@ -22,15 +22,16 @@
 											<th>Имя</th>
 											<th>Доступные балансодержатели</th>
 											<th>Статус персонала</th>
+											<th>Статус суперпользователя</th>
 										</tr>
 									</thead>
-									<tbody>
 									{% for object in users %}
+									<tbody>
 										<tr class="align-middle text-center">
 											<td>
-												{{ object.pk }}
+												{{ object.id }}
 												{% if user.is_superuser %}
-													<a href="{% url 'edit_user' object.pk %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+													<a href="{% url 'edit_user' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
 														<i class="fa-regular fa-pen-to-square"></i>
 													</a>
 												{% endif %}
@@ -38,18 +39,32 @@
 											<td>{{ object.username }}</td>
 											<td>{{ object.last_name }}</td>
 											<td>{{ object.first_name }}</td>
-											<td>{% if object.available_holders %}
-													{{ object.available_holders }}
+											<td>{% if object.balanceholder_id %}
+													{% for holder in object.balanceholder_id|split_holders %}
+														{{ holder }}<br>
+													{% endfor %}
 												{% else %}
 													&ndash;
 												{% endif %}
 											</td>
-											<td>{{ object.is_staff }}</td>
+											<td>{% if object.is_staff %}
+												<i class="fa-regular fa-circle-check text-success" data-bs-toggle="tooltip" data-bs-title="Статус персонала"></i>
+												{% else %}
+												&ndash;
+												{% endif %}
+											</td>
+											<td>{% if object.is_superuser %}
+												<i class="fa-regular fa-circle-check text-success" data-bs-toggle="tooltip" data-bs-title="Суперпользователь"></i>
+												{% else %}
+												&ndash;
+												{% endif %}
+											</td>
 										</tr>
-									{% endfor %}
 									</tbody>
+									{% endfor %}
 								</table> <!-- /table -->
 							</div> <!-- /table-responsive -->
+
 						</div>
 						{% else %}
 						<div class="card-body">

@@ -3,13 +3,16 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
 from authapp.forms import LoginUserForm
 from django.contrib import messages
+
+from mainapp.data_library import get_balance_holders, get_holders_user
 from mainapp.models import CustomUser, BalanceHolder
 from django.contrib.auth.hashers import make_password
 
 
 def users_view(request):
 
-    all_users = CustomUser.objects.all()
+    all_users = get_balance_holders
+
 
     data = {'title': 'Пользователи',
             'users': all_users}
@@ -70,7 +73,12 @@ def create_user_view(request):
 
 def edit_user_view(request, pk):
 
-    user = CustomUser.objects.filter(pk=pk)
+    user_edit = CustomUser.objects.filter(pk=pk)
+    bal_hol = get_holders_user(pk)
+
+    bal_hol_id_list = []
+    for holder_id in bal_hol:
+        bal_hol_id_list.append(holder_id['balanceholder_id'])
 
     balance_holders = BalanceHolder.objects.all()
 
@@ -79,7 +87,7 @@ def edit_user_view(request, pk):
         if request.POST.get('type') == 'check_username':
             username = request.POST.get('username')
             if CustomUser.objects.filter(username=username).exists():
-                if username == user[0].username:
+                if username == user_edit[0].username:
                     return JsonResponse(
                         {'message': True}
                     )
@@ -94,7 +102,7 @@ def edit_user_view(request, pk):
 
         if request.POST.get('type') == 'check_password':
             password = request.POST.get('password')
-            if user[0].check_password(password):
+            if user_edit[0].check_password(password):
                 return JsonResponse(
                     {'message': True}
                 )
@@ -106,6 +114,12 @@ def edit_user_view(request, pk):
         username = request.POST.get('username')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
+
+        holders_id = []
+        all_holders = BalanceHolder.objects.all()
+        for holder_id in all_holders:
+            if str(holder_id.pk) in request.POST:
+                holders_id.append(holder_id.pk)
 
         is_staff = request.POST.get('is_staff')
         if is_staff:
@@ -121,7 +135,7 @@ def edit_user_view(request, pk):
 
         password1 = request.POST.get('password1')
         if password1:
-            user.update(
+            user_edit.update(
                 username=username,
                 first_name=first_name,
                 last_name=last_name,
@@ -130,7 +144,7 @@ def edit_user_view(request, pk):
                 password=make_password(password1)
             )
         else:
-            user.update(
+            user_edit.update(
                 username=username,
                 first_name=first_name,
                 last_name=last_name,
@@ -138,10 +152,16 @@ def edit_user_view(request, pk):
                 is_superuser=is_superuser
             )
 
+        if user_edit[0].is_superuser:
+            pass
+        else:
+            user_edit[0].available_holders.set(holders_id)
+            user_edit[0].save()
+
         return redirect('users')
 
     data = {'title': 'Редактирование пользователя', 'inside': {'page_url': 'users', 'page_title': 'Пользователи'},
-            'user': user[0], 'balance_holders': balance_holders}
+            'user_edit': user_edit[0], 'balance_holders': balance_holders, 'bal_hol': bal_hol_id_list}
 
     return render(request, 'authapp/edit_user.html', data)
 

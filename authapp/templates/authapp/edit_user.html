@@ -15,7 +15,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="username">Логин пользователя</label>
-									<input autocomplete="off" class="form-control success" name="username" id="username" value="{{ user.username }}" placeholder="Введите Логин пользователя" required/>
+									<input autocomplete="off" class="form-control success" name="username" id="username" value="{{ user_edit.username }}" placeholder="Введите Логин пользователя" required/>
 								</div>
 								<div class="invalid-feedback">
 									Пользователь с таким логином уже существует
@@ -23,12 +23,12 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="first_name">Имя пользователя</label>
-									<input autocomplete="off" class="form-control" name="first_name" id="first_name" value="{{ user.first_name }}" placeholder="Введите Имя пользователя" required/>
+									<input autocomplete="off" class="form-control" name="first_name" id="first_name" value="{{ user_edit.first_name }}" placeholder="Введите Имя пользователя" required/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="last_name">Фамилия пользователя</label>
-									<input autocomplete="off" class="form-control" name="last_name" id="last_name" value="{{ user.last_name }}" placeholder="Введите Фамилию пользователя" required/>
+									<input autocomplete="off" class="form-control" name="last_name" id="last_name" value="{{ user_edit.last_name }}" placeholder="Введите Фамилию пользователя" required/>
 								</div>
 							</div>
 
@@ -36,22 +36,35 @@
 
 								<label>Доступные балансодержатели</label>
 
-								{% for holder in balance_holders %}
-								<div class="col-12 col-sm-3 mb-3">
-									<label for="holder-{{holder.pk}}">{{ holder }}</label>
-									<input class="form-check-input" type="checkbox" name="holder-{{holder.pk}}" id="holder-{{holder.pk}}"/>
-								</div>
-								{% endfor %}
-							</div>
+								{% if user_edit.is_superuser %}
+									{% for holder in balance_holders %}
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="{{ holder.pk }}">{{ holder }}</label>
+										<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}" checked/>
+									</div>
+									{% endfor %}
+								{% else %}
+									{% for count, holder in balance_holders|enu_list %}
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="{{ holder.pk }}">{{ holder }}</label>
 
+										{% if holder.pk in bal_hol %}
+											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}" checked/>
+										{% else %}
+											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}"/>
+										{% endif %}
+									</div>
+									{% endfor %}
+								{% endif %}
+							</div>
 
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									{% if user.is_staff %}
-									<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" checked/>
+									{% if user_edit.is_staff %}
+										<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" checked/>
 									{% else %}
-									<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff"/>
+										<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff"/>
 									{% endif %}
 									<label for="is_staff">Статус персонала</label>
 								</div>
@@ -61,10 +74,10 @@
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									{% if user.is_superuser %}
-									<input class="form-check-input" type="checkbox" name="is_superuser" id="is_superuser" checked/>
+									{% if user_edit.is_superuser %}
+										<input class="form-check-input" type="checkbox" name="is_superuser" id="is_superuser" checked/>
 									{% else %}
-									<input class="form-check-input" type="checkbox" name="is_superuser" id="is_superuser"/>
+										<input class="form-check-input" type="checkbox" name="is_superuser" id="is_superuser"/>
 									{% endif %}
 									<label for="is_superuser">Суперпользователь</label>
 								</div>

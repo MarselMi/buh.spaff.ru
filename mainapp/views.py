@@ -21,8 +21,9 @@ def main_page_view(request):
 
     holders = BalanceHolder.objects.filter(deleted=False)
 
+    type_payments = PayType.objects.all()
+
     if request.method == 'POST':
-        print(request.POST)
         if request.POST.get('type') == 'holders_id':
 
             transaction_id = request.POST.get('id')
@@ -57,9 +58,43 @@ def main_page_view(request):
             }
             return HttpResponse(json.dumps(result))
 
+        if request.POST.get('type') == 'create_transaction':
+
+            holder = BalanceHolder.objects.filter(organization_holder=request.POST.get('holder_post'))[0]
+
+            transaction_name = request.POST.get('transaction_name_post')
+
+            transaction_date = dt.strptime(request.POST.get('transaction_date_post'), '%d.%m.%Y').date()
+            amount = decimal.Decimal(request.POST.get('amount_post').replace(',', '.').replace(' ', ''))
+            payment_type = PayType.objects.filter(pay_type=request.POST.get('payment_type_post'))[0]
+
+            transaction_type = request.POST.get('transaction_type_post')
+            if transaction_type == 'Приход':
+                transaction_type = 'COMING'
+            else:
+                transaction_type = 'EXPENDITURE'
+
+            author_id = request.user.id
+
+            create_data = {'type_transaction': transaction_type,
+                           'transaction_date': transaction_date,
+                           'name': transaction_name,
+                           'balance_holder': holder,
+                           'amount': amount,
+                           'type_payment': payment_type,
+                           'author_id': author_id
+                           }
+
+            transaction = Transaction
+
+            transaction.objects.create(**create_data)
+            print(create_data)
+            return HttpResponse(json.dumps({"Status": "OK"}))
+
     color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
 
-    data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list}
+    data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list, 'type_payments': type_payments,
+            }
 
     return render(request, 'mainapp/main-page.html', data)
 
