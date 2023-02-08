@@ -18,8 +18,11 @@ from mainapp.models import (
 
 
 def main_page_view(request):
-
-    holders = BalanceHolder.objects.filter(deleted=False)
+    holders = []
+    if request.user.is_superuser:
+        holders = BalanceHolder.objects.filter(deleted=False)
+    else:
+        holders = get_allow_balance_holders(request.user.id)
 
     type_payments = PayType.objects.all()
 
@@ -88,7 +91,6 @@ def main_page_view(request):
             transaction = Transaction
 
             transaction.objects.create(**create_data)
-            print(create_data)
             return HttpResponse(json.dumps({"Status": "OK"}))
 
     color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
@@ -100,7 +102,13 @@ def main_page_view(request):
 
 
 def transaction_view(request):
-    transactions = Transaction.objects.filter(deleted=False)[::-1]
+
+    transactions = []
+    if request.user.is_superuser:
+        transactions = Transaction.objects.filter(deleted=False)[::-1]
+    else:
+        transactions = get_allow_transaction(request.user.id)
+
     data = {'title': 'Транзакции',
             'transactions': transactions}
     return render(request, 'mainapp/transactions.html', data)
@@ -111,7 +119,12 @@ def create_transaction_view(request):
     transaction = Transaction
     form = TransactionForm
     type_payments = PayType.objects.all()
-    balance_holders = BalanceHolder.objects.all()
+    balance_holders = []
+    if request.user.is_superuser:
+        balance_holders = BalanceHolder.objects.all()
+    else:
+        for holder in get_allow_balance_holders_transaction(request.user.id):
+            balance_holders.append(holder['organization_holder'])
 
     if request.method == 'POST':
         holder_response = request.POST.get('balance_holder')
@@ -352,13 +365,15 @@ def transactions_log_view(request):
     return render(request, 'mainapp/transactions_log.html', data)
 
 
-class BalanceHolderView(ListView):
-    template_name = 'mainapp/balance_holders.html'
-    extra_context = {'title': 'Балансодержатели'}
-    model = BalanceHolder
+def balance_holders_views(request):
+    holders = []
+    if request.user.is_superuser:
+        holders = BalanceHolder.objects.all()
+    else:
+        holders = get_allow_balance_holders(request.user.id)
 
-    def get_queryset(self):
-        return super().get_queryset().filter(deleted=False)
+    data = {'holders': holders}
+    return render(request, 'mainapp/balance_holders.html', data)
 
 
 class BalanceHolderCreateView(CreateView):
@@ -374,6 +389,12 @@ class BalanceHolderCreateView(CreateView):
     def form_valid(self, form):
         form.save()
         return redirect('balance_holders')
+
+
+def balance_holder_create(request):
+    data = {'title': 'Создание балансодержателя', 'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'},
+            }
+    return render(request, 'mainapp/balance_holder_create.html', data)
 
 
 def balance_holder_create_view(request):

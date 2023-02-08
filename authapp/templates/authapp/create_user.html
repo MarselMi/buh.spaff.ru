@@ -31,7 +31,18 @@
 							</div>
 
 							<div class="row">
+								<label class="mb-2">Добавить балансодержателей к пользователю</label>
 
+								{% for holder in balance_holders %}
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="{{ holder.pk }}">{{ holder }}</label>
+									<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}"/>
+								</div>
+								{% endfor %}
+
+							</div>
+
+							<div class="row">
 								<div class="col-12 col-sm-3 mb-3">
 									<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff"/>
 									<label for="is_staff">Статус персонала</label>

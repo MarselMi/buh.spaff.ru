@@ -148,3 +148,91 @@ def get_holders_user(pk):
         conn.close()
 
     return response
+
+
+def get_allow_balance_holders(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT
+                        `mb`.`id`,
+                        `mb`.`organization_holder`,
+                        `mb`.`alias_holder`,
+                        `mb`.`holder_balance`,
+                        `mb`.`payment_account`
+                    FROM `mainapp_balanceholder` mb
+                    WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+                    '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+def get_allow_balance_holders_transaction(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT
+                        `mb`.`organization_holder`
+                    FROM `mainapp_balanceholder` mb
+                    WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+                    '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+def get_allow_transaction(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT 
+                        `mt`.`id`,
+                        `mt`.`balance_holder_id`,
+                        `mt`.`type_transaction`,
+                        `mt`.`transaction_date`,
+                        `mt`.`create_date`,
+                        `mt`.`update_date`,
+                        `mt`.`name`,
+                        (SELECT `mb`.`organization_holder` FROM `mainapp_balanceholder` mb WHERE `mt`.`balance_holder_id`=`mb`.`id`) as 'balance_holder',
+                        `mt`.`amount`,
+                        (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
+                        (SELECT CONCAT(`mu`.`first_name`, ' ', `mu`.`last_name`) FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
+                        `mt`.`status`,
+                        `mt`.`check_img`                
+                    FROM `mainapp_transaction` mt
+                    WHERE `mt`.`balance_holder_id` IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk})
+                    '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response

@@ -22,6 +22,8 @@ def users_view(request):
 
 def create_user_view(request):
 
+    balalance_holders = BalanceHolder.objects.filter(deleted=False)
+
     if request.method == 'POST':
 
         if request.POST.get('type') == 'check_username':
@@ -35,11 +37,17 @@ def create_user_view(request):
                     {'message': True}
                 )
 
-        user = CustomUser
+        new_user = CustomUser
 
         username = request.POST.get('username')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
+
+        holders_id = []
+        all_holders = BalanceHolder.objects.all()
+        for holder_id in all_holders:
+            if str(holder_id.pk) in request.POST:
+                holders_id.append(holder_id.pk)
 
         is_staff = request.POST.get('is_staff')
         if is_staff:
@@ -55,18 +63,30 @@ def create_user_view(request):
 
         password1 = request.POST.get('password1')
 
-        user.objects.create_user(
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            is_staff=is_staff,
-            is_superuser=is_superuser,
-            password=password1
-        )
+        if is_superuser:
+            new_user.objects.create_user(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                is_staff=is_staff,
+                is_superuser=is_superuser,
+                password=password1
+            )
+        else:
+            object = new_user.objects.create_user(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                is_staff=is_staff,
+                password=password1
+            )
+            for i in holders_id:
+                object.available_holders.add(i)
+
         return redirect('users')
 
     data = {'title': 'Создание пользователя',  'inside': {'page_url': 'users', 'page_title': 'Пользователи'},
-            }
+            'balance_holders': balalance_holders}
 
     return render(request, 'authapp/create_user.html', data)
 

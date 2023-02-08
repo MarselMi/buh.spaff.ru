@@ -44,7 +44,7 @@
 									</div>
 									{% endfor %}
 								{% else %}
-									{% for count, holder in balance_holders|enu_list %}
+									{% for holder in balance_holders %}
 									<div class="col-12 col-sm-3 mb-3">
 										<label for="{{ holder.pk }}">{{ holder }}</label>
 
@@ -85,23 +85,23 @@
 							</div>
 
 							<div class="row">
-								<div class="col-12 col-sm-3 mb-3">
-									<label for="password">Введите старый пароль</label>
-									<input  autocomplete="new-password" class="form-control is-invalid" type="password" name="password" id="password" placeholder="Введите старый пароль" required/>
+								<label for="password">Для внесения изменений введите пароль</label>
+								<div class="col-12 col-sm-3 mb-3 mt-1">
+									<input autocomplete="new-password" class="form-control is-invalid" type="password" name="password" id="password" placeholder="Введите старый пароль" required/>
 								</div>
 							</div>
 
 							<div class="row">
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="password1">Новый пароль</label>
-									<input  autocomplete="new-password" class="form-control" type="password" name="password1" id="password1" placeholder="Введите пароль" required/>
+									<input autocomplete="new-password" class="form-control" type="password" name="password1" id="password1" placeholder="Введите пароль" required/>
 								</div>
 							</div>
 
 							<div class="row">
 								<div class="col-12 col-sm-3">
 									<label for="password2">Повторите новый пароль</label>
-									<input  autocomplete="new-password" class="form-control" type="password" name="password2" id="password2" placeholder="Повторите пароль" required/>
+									<input autocomplete="new-password" class="form-control" type="password" name="password2" id="password2" placeholder="Повторите пароль" required/>
 								</div>
 							</div>
 

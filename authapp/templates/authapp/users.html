@@ -39,12 +39,16 @@
 											<td>{{ object.username }}</td>
 											<td>{{ object.last_name }}</td>
 											<td>{{ object.first_name }}</td>
-											<td>{% if object.balanceholder_id %}
-													{% for holder in object.balanceholder_id|split_holders %}
-														{{ holder }}<br>
-													{% endfor %}
+											<td>{% if object.is_superuser %}
+												All <i class="fa-regular fa-circle-check text-success" data-bs-toggle="tooltip" data-bs-title="Суперпользователь"></i>
 												{% else %}
-													&ndash;
+													{% if object.balanceholder_id %}
+														{% for holder in object.balanceholder_id|split_holders %}
+															{{ holder }}<br>
+														{% endfor %}
+													{% else %}
+														&ndash;
+													{% endif %}
 												{% endif %}
 											</td>
 											<td>{% if object.is_staff %}
