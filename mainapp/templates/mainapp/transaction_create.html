@@ -15,7 +15,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.balance_holder.label }}
-									<input autocomplete="off" onfocus="this.value=''" list="balance_holder_list" class="obligatory form-control is-invalid" name="balance_holder" id="balance_holder" placeholder="Выберите балансодержателя"/>
+									<input class="form-control is-invalid" name="balance_holder" id="balance_holder" autocomplete="off" onfocus="this.value=''" list="balance_holder_list" placeholder="Выберите балансодержателя"/>
 									<datalist id="balance_holder_list">
 										{% for holder in balance_holders %}
 										<option value="{{ holder }}">{{ holder }}</option>
@@ -25,17 +25,17 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 								  {{ form.name.label }}
-								  	<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2 is-invalid" name="transaction_name" id="transaction_name" placeholder="Имя транзакции"/>
+								  	<input class="obligatory form-control mb-2 is-invalid" autocomplete="off" onfocus="this.value=''" name="transaction_name" id="transaction_name" placeholder="Имя транзакции"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.transaction_date.label }}
-									<input autocomplete="off" class="obligatory form-control is-invalid" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+									<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.type_payment.label }}
-									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
+									<input class="form-control is-invalid" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
 									<datalist id="list_pay">
 										{% for type in type_payments %}
 										<option value="{{ type }}">{{ type }}</option>
@@ -45,12 +45,12 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.amount.label }}
-									<input autocomplete="off" class="obligatory form-control is-invalid" name="amount" placeholder="Сумма транзакции" id="amount"/>
+									<input class="obligatory form-control is-invalid" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 								  {{ form.type_transaction.label }}
-									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2 is-invalid" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+									<input class="form-control mb-2 is-invalid" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
 								  	<datalist id="datalist_transaction_type">
 										<option value="Приход">Приход</option>
 										<option value="Расход">Расход</option>
@@ -65,12 +65,11 @@
 
 										<div class="col-12 col-sm-3 mb-3">
 										  {{ form.status.label }}
-											<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2" name="transaction_status" list="datalistStatus" id="transaction_status" value="В процессе"/>
-											<datalist id="datalistStatus">
+											<select class="obligatory form-select mb-2" name="transaction_status" id="transaction_status" value="В процессе">
 												<option value="В процессе">В процессе</option>
 												<option value="Отклонен">Отклонен</option>
 												<option value="Успешно">Успешно</option>
-											</datalist>
+											</select>
 										</div>
 
 										<div class="col-12 col-sm-3 mb-3">
@@ -95,7 +94,7 @@
 							<div class="row">
 								<div class="col-sm-3 mb-3">
 
-									<button class="btn btn-primary" type="submit" disabled>
+									<button class="btn btn-primary save_button" type="submit" disabled>
 										Сохранить
 									</button> <!-- /btn -->
 
@@ -121,8 +120,86 @@
 
 <script type="text/javascript">
 
-	$('form').on('change keyup input click focusot live', function(){
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
 
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+	$('#balance_holder').on('input', function(){
+		$('.error_holder').remove();
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_holder',
+					balance_holder: $('#balance_holder').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#balance_holder').removeClass('is-invalid');
+					$('#balance_holder').addClass('is-valid');
+				} else {
+					$('#balance_holder').removeClass('is-valid');
+					$('#balance_holder').addClass('is-invalid');
+					$('#balance_holder').after('<div class="invalid-feedback error_holder">Такого балансодержателя нет</div>')
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)
+	})
+
+	$('#type_payment').on('input', function(){
+		$('.error_type').remove();
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_type',
+					type_payment: $('#type_payment').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#type_payment').removeClass('is-invalid');
+					$('#type_payment').addClass('is-valid');
+				} else {
+					$('#type_payment').removeClass('is-valid');
+					$('#type_payment').addClass('is-invalid');
+					$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)
+	})
+
+	$('form').on('change keyup input click focusot live', function(){
+		var type_val = $('#type_transaction').val()
+
+		if (type_val){
+			if ((type_val == 'Приход') || (type_val == 'Расход')){
+				$('#type_transaction').removeClass('is-invalid');
+			}else{
+				$('#type_transaction').addClass('is-invalid');
+			}
+		}else{
+			$('#type_transaction').addClass('is-invalid');
+		}
+		
+		$('.error').remove();
 		var objects = $('.obligatory')
 
 		for (let i=0; objects.length > i; i++){
@@ -132,37 +209,32 @@
 				objects[i].classList.add('is-invalid')
 			}
 		}
-		
-		if ($('#amount').val())
 
-		// if ($('#transaction_status').val() == 'Успешно'){
-		// 	if (!$('#id_check_img').val()){
-		// 		$('#id_check_img').addClass('is-invalid')
-		// 	}else{
-		// 		$('#id_check_img').removeClass('is-invalid')
-		// 	}
-		// }else{
-		// 	$('#id_check_img').removeClass('is-invalid')
-		// }
+		if ($('#amount').val() && (!regEx.test($('#amount').val()))){
+			$('#amount').removeClass('is-invalid');
+		}else{
+			$('#amount').addClass('is-invalid');
+			$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
+		}
 
 		if ($('#balance_holder').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else if ($('#transaction_name').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else if ($('#transaction_status').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else if ($('#datepicker').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else if ($('#type_payment').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else if ($('#amount').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else if ($('#type_transaction').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else if ($('#id_check_img').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
+			$('.save_button').attr('disabled', 'true');
 		}else{
-			$('button').removeAttr('disabled');
+			$('.save_button').removeAttr('disabled');
 		}
 	})
 
@@ -173,35 +245,6 @@
 			$('#datepicker').addClass('is-invalid')
 		}
 	})
-
-	$(document).ready(function() {
-		$('form').submit(function(e) {
-			e.preventDefault();
-			var valid = true;
-			var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
-
-			var amount = $('#amount').val();
-			var dateEl = $('#datepicker').val();
-
-			var validDate = regEx.test(dateEl);
-			var validAmount = regEx.test(amount);
-
-			$(".error").remove();
-			
-			if (validDate || (dateEl.length != 10)){
-				$('#datepicker').addClass('is-invalid');
-				$('#datepicker').after('<span class="error">Введите корректные данные</span>');
-				valid = false;
-			}
-			
-			if (validAmount) {
-				$('#amount').addClass('is-invalid');
-				$('#amount').after('<span class="error">Введите корректные данные</span>');
-				valid = false;
-			}
-			if (valid) this.submit();
-		});
-	});
 
 </script>
 

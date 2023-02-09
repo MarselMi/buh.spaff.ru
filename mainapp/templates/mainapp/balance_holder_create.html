@@ -15,13 +15,19 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.organization_holder.label }}
-									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control is-invalid" name="organization_holder" id="organization_holder" placeholder="ООО 'it'"/>
+									<input autocomplete="off" class="obligatory form-control is-invalid" name="organization_holder" id="organization_holder" placeholder="ООО 'it'"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.payment_account.label }}
-									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control is-invalid" name="payment_account" id="payment_account" placeholder="********************"/>
+									<input autocomplete="off" class="obligatory form-control is-invalid" name="payment_account" id="payment_account" placeholder="********************"/>
 								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.alias_holder.label }}
+									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" placeholder="Tinkoff"/>
+								</div>
+
 							</div>
 
 							<div id="accordionStatsDaysFilter">
@@ -30,13 +36,8 @@
 									<div class="row">
 
 										<div class="col-12 col-sm-3 mb-3">
-											{{ form.alias_holder.label }}
-											<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control" name="alias_holder" id="alias_holder" placeholder="Tinkoff"/>
-										</div>
-
-										<div class="col-12 col-sm-3 mb-3">
 											<label for="holder_balance">Баланс Держателя</label>
-											<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control" name="holder_balance" id="holder_balance" placeholder="По дефолту 0"/>
+											<input autocomplete="off" class="obligatory form-control" name="holder_balance" id="holder_balance" placeholder="По дефолту 0"/>
 										</div>
 
 									</div>
@@ -48,7 +49,7 @@
 
 								<div class="col-sm-3 mb-3">
 
-									<button class="btn btn-primary" type="submit">
+									<button class="btn btn-primary create_holder" type="submit" disabled>
 										Сохранить
 									</button> <!-- /btn -->
 
@@ -65,5 +66,119 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+	
+<script type="text/javascript">
+
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+	$('#holder_balance').on('input change', function(){
+		if($('#holder_balance').val()){
+			if (regEx.test($('#holder_balance').val())){
+				$('#holder_balance').addClass('is-invalid')
+			}else{
+				$('#holder_balance').removeClass('is-invalid')
+			}
+		}else{
+			$('#holder_balance').removeClass('is-invalid')
+		}
+	})
+
+	$('#payment_account').on('input change', function(){
+		if ($('#payment_account').val()){
+			if (regEx.test($('#payment_account').val()) || (($('#payment_account').val().length != 20))){
+				$('#payment_account').addClass('is-invalid');
+				$('#payment_account').removeClass('is-valid');
+			}else{
+				$('#payment_account').removeClass('is-invalid');
+				$('#payment_account').addClass('is-valid');
+			}
+		}
+	})
+
+	$('#organization_holder').on('input', function(){
+		$(".error").remove();
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_holder',
+					organization_holder: $('#organization_holder').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#organization_holder').removeClass('is-invalid');
+					$('#organization_holder').addClass('is-valid');
+				} else {
+					$('#organization_holder').removeClass('is-valid');
+					$('#organization_holder').addClass('is-invalid');
+					$('#organization_holder').after('<div class="invalid-feedback error">Такой балансодержатель уже зарегестрирован</div>')
+				}
+				if (!$('#organization_holder').val()){
+					$('#organization_holder').removeClass('is-valid');
+					$('#organization_holder').addClass('is-invalid');
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)
+	})
+
+	$('form').on('change keyup input click focusot live', function(){
+
+		if ($('#organization_holder').hasClass('is-invalid')){
+			$('.create_holder').attr('disabled', 'true');
+		}else if ($('#payment_account').hasClass('is-invalid')){
+			$('.create_holder').attr('disabled', 'true');
+		}else if ($('#alias_holder').hasClass('is-invalid')){
+			$('.create_holder').attr('disabled', 'true');
+		}else if ($('#holder_balance').hasClass('is-invalid')){
+			$('.create_holder').attr('disabled', 'true');
+		}else{
+			$('.create_holder').removeAttr('disabled');
+		}
+	})
+
+	$(document).ready(function() {
+		$('form').submit(function(e) {
+			e.preventDefault();
+			var valid = true;
+
+			var payment_account = $('#payment_account').val();
+			var holder_balance = $('#holder_balance').val();
+			var validPayment_account = regEx.test(payment_account);
+			var validHolder_balance = regEx.test(holder_balance);
+
+			$(".error").remove();
+
+			if (validPayment_account || (payment_account.length != 20)){
+				$('#payment_account').addClass('is-invalid');
+				$('#payment_account').after('<span class="error">Введите корректные данные</span>');
+				valid = false;
+			}
+
+			if (validHolder_balance) {
+				$('#validHolder_balance').addClass('is-invalid');
+				$('#validHolder_balance').after('<span class="error">Введите корректные данные</span>');
+				valid = false;
+			}
+			if (valid) this.submit();
+		});
+	});
+
+</script>
 
 {% endblock content %}

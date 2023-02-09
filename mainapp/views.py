@@ -1,7 +1,7 @@
 import json
 import decimal
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
 from datetime import datetime as dt
@@ -27,6 +27,17 @@ def main_page_view(request):
     type_payments = PayType.objects.all()
 
     if request.method == 'POST':
+        if request.POST.get('type') == 'check_type':
+            pay_type = request.POST.get('type_payment')
+            if PayType.objects.filter(pay_type=pay_type).exists():
+                return JsonResponse(
+                    {'message': True}
+                )
+            else:
+                return JsonResponse(
+                    {'message': False}
+                )
+
         if request.POST.get('type') == 'holders_id':
 
             transaction_id = request.POST.get('id')
@@ -93,7 +104,10 @@ def main_page_view(request):
             transaction.objects.create(**create_data)
             return HttpResponse(json.dumps({"Status": "OK"}))
 
-    color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
+    color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
+                  'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
+                  'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
+                  'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
 
     data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list, 'type_payments': type_payments,
             }
@@ -127,6 +141,27 @@ def create_transaction_view(request):
             balance_holders.append(holder['organization_holder'])
 
     if request.method == 'POST':
+        if request.POST.get('type') == 'check_holder':
+            organization_holder = request.POST.get('balance_holder')
+            if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
+                return JsonResponse(
+                    {'message': True}
+                )
+            else:
+                return JsonResponse(
+                    {'message': False}
+                )
+
+        if request.POST.get('type') == 'check_type':
+            pay_type = request.POST.get('type_payment')
+            if PayType.objects.filter(pay_type=pay_type).exists():
+                return JsonResponse(
+                    {'message': True}
+                )
+            else:
+                return JsonResponse(
+                    {'message': False}
+                )
         holder_response = request.POST.get('balance_holder')
         balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
 
@@ -202,6 +237,16 @@ def create_transaction_holder_view(request, pk):
     balance_holders = BalanceHolder.objects.all()
 
     if request.method == 'POST':
+        if request.POST.get('type') == 'check_type':
+            pay_type = request.POST.get('type_payment')
+            if PayType.objects.filter(pay_type=pay_type).exists():
+                return JsonResponse(
+                    {'message': True}
+                )
+            else:
+                return JsonResponse(
+                    {'message': False}
+                )
         holder_response = request.POST.get('balance_holder')
         balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
 
@@ -278,8 +323,17 @@ def transaction_update_view(request, pk):
     old_transaction = transaction.values(
         'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img'
     )
-
     if request.method == 'POST':
+        if request.POST.get('type') == 'check_type':
+            pay_type = request.POST.get('type_payment')
+            if PayType.objects.filter(pay_type=pay_type).exists():
+                return JsonResponse(
+                    {'message': True}
+                )
+            else:
+                return JsonResponse(
+                    {'message': False}
+                )
 
         status = request.POST.get('transaction_status')
         if status == 'В процессе':
@@ -306,8 +360,13 @@ def transaction_update_view(request, pk):
         if check_img == '' or check_img is None:
             check_img = transaction[0].check_img
 
-        description = request.POST.get('description')
-        tags = request.POST.get('tags')
+        description = None
+        if request.POST.get('description'):
+            description = request.POST.get('description')
+
+        tags = None
+        if request.POST.get('tags'):
+            tags = request.POST.get('tags')
 
         '''Словарь новых данных по форме'''
         new_transaction_data = {'status': status, 'transaction_date': transaction_date,
@@ -376,37 +435,50 @@ def balance_holders_views(request):
     return render(request, 'mainapp/balance_holders.html', data)
 
 
-class BalanceHolderCreateView(CreateView):
-    template_name = 'mainapp/balance_holder_create.html'
-    extra_context = {'title': 'Создание балансодержателя',
-                     'inside': {
-                         'page_url': 'holders',
-                         'page_title': 'Балансодержатели '
-                     }}
-    model = BalanceHolder
-    form_class = BalanceHolderForm
-
-    def form_valid(self, form):
-        form.save()
-        return redirect('balance_holders')
-
-
 def balance_holder_create_view(request):
 
-    model = BalanceHolder
     form_class = BalanceHolderForm
 
-    data = {'title': 'Создание балансодержателя',
-            'inside': {
-                'page_url': 'holders',
-                'page_title': 'Балансодержатели '
-                },
-            'form': form_class,
-            }
-
     if request.method == 'POST':
-        name = request.POST.get('')
+
+        if request.POST.get('type') == 'check_holder':
+            organization_holder = request.POST.get('organization_holder')
+            if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
+                return JsonResponse(
+                    {'message': False}
+                )
+            else:
+                return JsonResponse(
+                    {'message': True}
+                )
+
+        organization_holder = request.POST.get('organization_holder')
+        payment_account = request.POST.get('payment_account')
+
+        alias_holder = None
+        if request.POST.get('alias_holder'):
+            alias_holder = request.POST.get('alias_holder')
+
+        holder_balance = 0
+        if request.POST.get('holder_balance'):
+            holder_balance = decimal.Decimal(request.POST.get('holder_balance').replace(',', '.').replace(' ', ''))
+
+        new_balance_holder = BalanceHolder.objects.create(
+            organization_holder=organization_holder,
+            payment_account=payment_account,
+            alias_holder=alias_holder,
+            holder_balance=holder_balance
+        )
+
+        if request.user.is_superuser:
+            pass
+        else:
+            request.user.available_holders.add(new_balance_holder.pk)
+
         return redirect('balance_holders')
+
+    data = {'title': 'Создание балансодержателя', 'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'},
+            'form': form_class}
 
     return render(request, 'mainapp/balance_holder_create.html', data)
 

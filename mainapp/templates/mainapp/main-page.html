@@ -9,7 +9,7 @@
 
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
-						<div class="col-lg-3 col-6 text-center">
+						<div class="col-lg-3 col-6 text-center mb-2">
 							<div id="{{ holder.id }}" type="button" class="container-fluid holders_id btn btn-{{color_list|get_item:count}}" style="border-radius: 15px;">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.organization_holder }}</h5>
@@ -93,14 +93,14 @@
 						<div class="modal-body" id="formSendTransactionElem">
 							<div class="form-floating mb-3">
 								<input type="text" name="balance_holder" id="balance_holder" hidden>
-								<input type="text" class="form-control" id="newTransactionName" placeholder="Имя" name="newTransactionName">
+								<input class="obligatory form-control is-invalid" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName">
 								<label for="newTransactionName">
 									Имя транзакции
 								</label>
 							</div> <!-- /form-floating -->
 
 							<div class="form-floating mb-3">
-								<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
+								<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
 								<datalist id="list_pay">
 									{% for type in type_payments %}
 									<option value="{{ type }}">{{ type }}</option>
@@ -113,7 +113,7 @@
 							</div> <!-- /form-floating -->
 
 							<div class="form-floating mb-3">
-								<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+								<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
 								<datalist id="datalist_transaction_type">
 									<option value="Приход">Приход</option>
 									<option value="Расход">Расход</option>
@@ -124,20 +124,15 @@
 								</label>
 							</div> <!-- /form-floating -->
 
-							<script>
-								$(function(){
-									$(".datepicker").datepicker({dateFormat: 'dd.mm.yy'});
-								});
-							</script>
 							<div class="form-floating mb-3">
-								<input autocomplete="off" class="obligatory form-control" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+								<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
 								<label for="datepicker">
 									Дата транзакции
 								</label>
 							</div> <!-- /form-floating -->
 
 							<div class="form-floating mb-3">
-								<input autocomplete="off" class="obligatory form-control" name="amount" placeholder="Сумма транзакции" id="amount"/>
+								<input class="obligatory form-control is-invalid" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount"/>
 								<label for="amount">
 									Сумма транзакции
 								</label>
@@ -152,7 +147,7 @@
 									</a> <!-- /btn -->
 								</div>
 								<div class="col-12 mb-3">
-									<button id="changeVariableList" onclick="createTransaction()" type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" aria-label="Close">
+									<button id="liveToastBtn" onclick="createTransaction()" type="button" class="btn btn-primary w-100" disabled>
 										Сохранить
 									</button> <!-- /btn -->
 								</div>
@@ -176,9 +171,87 @@
 		token = b[1]
 		}
 	}
-		
+
 	var exampleModal = document.getElementById('exampleModal')
 	
+	var elements_form = $('.obligatory')
+
+	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+	$(function(){
+		$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
+	});
+
+	$('#type_payment').on('input', function(){
+		$('.error_type').remove();
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_type',
+					type_payment: $('#type_payment').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#type_payment').removeClass('is-invalid');
+					$('#type_payment').addClass('is-valid');
+				} else {
+					$('#type_payment').removeClass('is-valid');
+					$('#type_payment').addClass('is-invalid');
+					$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)
+	})
+
+	$('form').on('change keyup input click focusot live', function(){
+		$('.error').remove();
+		if ($('#newTransactionName').val()){
+			$('#newTransactionName').removeClass('is-invalid');
+		}else{
+			$('#newTransactionName').addClass('is-invalid');
+		};
+
+		var type_val = $('#type_transaction').val()
+
+		if (type_val){
+			if ((type_val == 'Приход') || (type_val == 'Расход')){
+				$('#type_transaction').removeClass('is-invalid');
+			}else{
+				$('#type_transaction').addClass('is-invalid');
+			}
+		}else{
+			$('#type_transaction').addClass('is-invalid');
+		}
+		var date_value = $('#datepicker').val();
+		if ((date_value.length == 10) && (!regEx.test($('#datepicker').val()))){
+			$('#datepicker').removeClass('is-invalid');
+		}else{
+			$('#datepicker').addClass('is-invalid');
+		};
+		if ($('#amount').val() && (!regEx.test($('#amount').val()))){
+			$('#amount').removeClass('is-invalid');
+		}else{
+			$('#amount').addClass('is-invalid');
+			$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
+		};
+		for (let i=0; i<elements_form.length; i++){
+			if (elements_form[i].classList.contains('is-invalid')){
+				$('#liveToastBtn').removeAttr('data-bs-dismiss')
+				$('#liveToastBtn').removeAttr('aria-label')
+				$('#liveToastBtn').attr('disabled', 'true')
+			}else{
+				$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
+				$('#liveToastBtn').attr('aria-label', 'Close')
+				$('#liveToastBtn').removeAttr('disabled')
+			}
+		}
+	})
+
 	var buttonSelectModal = $('.buttonSelectModal')
 	var modalTitle = exampleModal.querySelector('.modal-title')
 	var holder_link = exampleModal.querySelector('.holder_link')
@@ -203,7 +276,7 @@
 		var transaction_type = exampleModal.querySelector('#type_transaction').value
 		var transaction_date = exampleModal.querySelector('#datepicker').value
 		var amount = exampleModal.querySelector('#amount').value
-
+		
 		$.ajax(
 		{
 			url: url,

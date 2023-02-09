@@ -30,7 +30,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.type_payment.label }}
-									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="obligatory form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
+									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
 									<datalist id="list_pay">
 										{% for type in type_payments %}
 										<option value="{{ type }}">{{ type }}</option>
@@ -45,7 +45,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 								  {{ form.type_transaction.label }}
-									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control mb-2 is-invalid" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+									<input autocomplete="off" onfocus="this.value=''" class="form-control mb-2 is-invalid" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
 								  	<datalist id="datalist_transaction_type">
 										<option value="Приход">Приход</option>
 										<option value="Расход">Расход</option>
@@ -116,7 +116,62 @@
 
 <script type="text/javascript">
 
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+	$('#type_payment').on('input', function(){
+		$('.error_type').remove();
+		if (!$('#type_payment').val()){
+			$('#type_payment').addClass('is-invalid');
+		}
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_type',
+					type_payment: $('#type_payment').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#type_payment').removeClass('is-invalid');
+					$('#type_payment').addClass('is-valid');
+				} else {
+					$('#type_payment').removeClass('is-valid');
+					$('#type_payment').addClass('is-invalid');
+					$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)
+	})
+
 	$('form').on('change keyup input click focusot live', function(){
+		$('.error').remove();
+		var type_val = $('#type_transaction').val()
+
+		if (type_val){
+			if ((type_val == 'Приход') || (type_val == 'Расход')){
+				$('#type_transaction').removeClass('is-invalid');
+			}else{
+				$('#type_transaction').addClass('is-invalid');
+			}
+		}else{
+			$('#type_transaction').addClass('is-invalid');
+		}
 
 		var objects = $('.obligatory')
 
@@ -128,7 +183,13 @@
 			}
 		}
 		
-		if ($('#amount').val())
+		
+		if ($('#amount').val() && (!regEx.test($('#amount').val()))){
+			$('#amount').removeClass('is-invalid');
+		}else{
+			$('#amount').addClass('is-invalid');
+			$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
+		}
 
 		// if ($('#transaction_status').val() == 'Успешно'){
 		// 	if (!$('#id_check_img').val()){
