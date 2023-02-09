@@ -7,8 +7,6 @@
 			<div class="card">
 				<div class="card-body">
 					<div class="table-responsive">
-						Дополнительные данные по транзакциям
-						<br>
 						{% if user.is_superuser or user.is_staff %}
 							<a href="{% url 'addition_create' %}">Создать дополнительные данные по транзакции</a>
 						{% endif %}

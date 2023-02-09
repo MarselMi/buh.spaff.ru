@@ -372,7 +372,7 @@ def balance_holders_views(request):
     else:
         holders = get_allow_balance_holders(request.user.id)
 
-    data = {'holders': holders}
+    data = {'title': 'Балансодержатели', 'holders': holders}
     return render(request, 'mainapp/balance_holders.html', data)
 
 
@@ -389,12 +389,6 @@ class BalanceHolderCreateView(CreateView):
     def form_valid(self, form):
         form.save()
         return redirect('balance_holders')
-
-
-def balance_holder_create(request):
-    data = {'title': 'Создание балансодержателя', 'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'},
-            }
-    return render(request, 'mainapp/balance_holder_create.html', data)
 
 
 def balance_holder_create_view(request):

@@ -7,24 +7,20 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-					<div >
-						Создание дополнительных данных по транзакции
-						<br>
-						<form method="POST" action="">
-							{% csrf_token %}
+					<form method="POST" action="">
+						{% csrf_token %}
 
-							<div class="w-100">
-							  <div class="mt-4">
-								{{ form|crispy }}
-							  </div>
-							</div>
-							<div>
-								<button class="btn btn-lg btn-primary mt-4" type="submit">
-									Сохранить
-								</button> <!-- /btn -->
-							</div>
-						</form>
-					</div> <!-- /table-responsive -->
+						<div class="w-100">
+						    <div class="mt-4">
+							  {{ form|crispy }}
+						    </div>
+						</div>
+						<div>
+							<button class="btn btn-lg btn-primary mt-4" type="submit">
+								Сохранить
+							</button> <!-- /btn -->
+						</div>
+					</form>
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
 		</div> <!-- /col -->

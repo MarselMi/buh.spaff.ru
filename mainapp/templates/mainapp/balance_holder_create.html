@@ -8,23 +8,57 @@
 			<div class="card">
 				<div class="card-body">
 					<div>
-						Создание нового балансодержателя
-						<br>
 						<form method="POST" action="">
 							{% csrf_token %}
 
-							<div class="w-100">
-							  <div class="mt-4">
-								  {% for element in form %}
-									{{ element.label }}
-								  	{{ element }}
-								  {% endfor %}
-							  </div>
+							<div class="row">
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.organization_holder.label }}
+									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control is-invalid" name="organization_holder" id="organization_holder" placeholder="ООО 'it'"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									{{ form.payment_account.label }}
+									<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control is-invalid" name="payment_account" id="payment_account" placeholder="********************"/>
+								</div>
 							</div>
 
-							<button class="btn btn-lg btn-primary mt-4" type="submit">
-								Сохранить
-							</button> <!-- /btn -->
+							<div id="accordionStatsDaysFilter">
+								<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
+
+									<div class="row">
+
+										<div class="col-12 col-sm-3 mb-3">
+											{{ form.alias_holder.label }}
+											<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control" name="alias_holder" id="alias_holder" placeholder="Tinkoff"/>
+										</div>
+
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="holder_balance">Баланс Держателя</label>
+											<input autocomplete="off" onfocus="this.value=''" class="obligatory form-control" name="holder_balance" id="holder_balance" placeholder="По дефолту 0"/>
+										</div>
+
+									</div>
+
+								</div>
+							</div>
+
+							<div class="row">
+
+								<div class="col-sm-3 mb-3">
+
+									<button class="btn btn-primary" type="submit">
+										Сохранить
+									</button> <!-- /btn -->
+
+									<button class="btn btn-secondary collapsed" onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
+										Раскрыть
+									</button>
+
+								</div>
+
+							</div>
 						</form>
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->

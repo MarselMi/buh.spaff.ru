@@ -15,7 +15,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.balance_holder.label }}
-									<input autocomplete="off" onfocus="this.value=''" list="balance_holder_list" class="obligatory form-control is-invalid" name="balance_holder" id="balance_holder" placeholder="Выберите балансодержателя" "/>
+									<input autocomplete="off" onfocus="this.value=''" list="balance_holder_list" class="obligatory form-control is-invalid" name="balance_holder" id="balance_holder" placeholder="Выберите балансодержателя"/>
 									<datalist id="balance_holder_list">
 										{% for holder in balance_holders %}
 										<option value="{{ holder }}">{{ holder }}</option>
@@ -93,15 +93,17 @@
 							</div>
 
 							<div class="row">
+								<div class="col-sm-3 mb-3">
 
-								<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть'); checkCollapse()" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
-									Раскрыть
-								</button>
+									<button class="btn btn-primary" type="submit" disabled>
+										Сохранить
+									</button> <!-- /btn -->
 
-								<button class="btn btn-lg btn-primary mt-4" type="submit" disabled>
-									Сохранить
-								</button> <!-- /btn -->
+									<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
+										Раскрыть
+									</button>
 
+								</div>
 							</div>
 
 						</form> <!-- /form-body -->
