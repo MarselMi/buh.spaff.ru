@@ -6,11 +6,103 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-					<div class="table-responsive">
 						{% if user.is_superuser or user.is_staff %}
 						<a href="{% url 'transaction_create' %}">Создать транзакцию</a>
 						{% endif %}
 						{% if transactions %}
+					<div class="card-body">
+
+						<div class="row">
+
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="filter_name">Фильтр по имени транзакии</label>
+								<input class="form-control" autocomplete="off" name="filter_name" id="filter_name" placeholder="Введите имя транзакции"/>
+							</div>
+
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="filter_holder">Фильтр по балансодержателям</label>
+								<input class="form-control" autocomplete="off" name="filter_holder" id="filter_holder" placeholder="Введите балансодержателя"/>
+							</div>
+
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="filter_payment">Фильтр по типу платежа</label>
+								<input class="form-control" autocomplete="off" name="filter_payment" id="filter_payment" placeholder="Введите тип платежа"/>
+							</div>
+
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="filter_tags">Фильтр по тегам</label>
+								<input class="form-control" autocomplete="off" name="filter_tags" id="filter_tags" placeholder="Введите теги"/>
+							</div>
+
+						</div>
+
+						<div id="accordionStatsDaysFilter">
+							<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
+								<div class="row">
+
+									<div class="col-12 col-sm-3 mb-3">
+
+										<label for="input-date-group">
+											Период
+										</label> <!-- /form-label -->
+
+										<div class="input-group" id="input-date-group">
+											<span class="input-group-text">С</span>
+											<input class="form-control" type="text" name="start" value="" id="datepicker"/>
+											<span class="input-group-text">По</span>
+											<input class="form-control" type="text" name="end" value="" id="datepicker1"/>
+										</div> <!-- /input-group -->
+
+									</div> <!-- /col -->
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="filter_autor">Фильтр по автору создателя</label>
+										<input class="form-control" autocomplete="off" name="filter_autor" id="filter_autor" placeholder="Введите автора транзакции"/>
+									</div> <!-- /col -->
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="filter_type">Фильтр по типу транзакии</label>
+										<select class="form-select" autocomplete="off" name="filter_type" id="filter_type">
+											<option value="">Выберите тип транзакции</option>
+											<option value="Приход">Приход</option>
+											<option value="Расход">Расход</option>
+										</select>
+									</div> <!-- /col -->
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="filter_status">Фильтр по статусу транзакии</label>
+										<select class="form-select" autocomplete="off" name="filter_status" id="filter_status">
+											<option value="">Выберите статус транзакции</option>
+											<option value="Успешно">Успешно</option>
+											<option value="В процессе">В процессе</option>
+											<option value="Отклонен">Отклонен</option>
+										</select>
+									</div> <!-- /col -->
+
+									<div class="row">
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_amount_higher">Транзакии дороже</label>
+											<input class="form-control" autocomplete="off" name="filter_amount_higher" id="filter_amount_higher" placeholder="Введите цену транзакции"/>
+										</div> <!-- /col -->
+
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_amount_below">Транзакии дешевле</label>
+											<input class="form-control" autocomplete="off" name="filter_amount_below" id="filter_amount_below" placeholder="Введите цену транзакции"/>
+										</div> <!-- /col -->
+									</div>
+
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-3">
+								<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
+									Раскрыть
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="table-responsive">
 						<div class="card-body">
 							<div class="table-responsive">
 								<table class="table table-bordered text-nowrap mb-0">
