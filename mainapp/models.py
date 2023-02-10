@@ -19,7 +19,7 @@ STATUS_CHOICES = [
 
 
 class PayType(models.Model):
-    pay_type = models.CharField(unique=True, max_length=20, verbose_name='Тип платежа')
+    pay_type = models.CharField(unique=True, max_length=60, verbose_name='Тип платежа')
 
     def __str__(self):
         return f'{self.pay_type}'

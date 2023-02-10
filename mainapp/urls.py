@@ -2,11 +2,10 @@ from django.urls import path
 from authapp.views import CustomLogoutView, CustomLoginView, users_view, create_user_view, edit_user_view
 from django.contrib.auth.decorators import login_required
 from mainapp.views import (
-    PaymentTypeCreateView,
-    AdditionalDataTransactionCreateView, main_page_view,
-    payment_type_view, additional_data_transaction_view, balance_holder_create_view, transactions_log_view,
+    main_page_view, transactions_log_view, additional_transaction_data_create_view,
+    payment_type_view, additional_data_transaction_view, balance_holder_create_view,
     transaction_view, transaction_update_view, create_transaction_view,
-    create_transaction_holder_view, balance_holders_views,
+    create_transaction_holder_view, balance_holders_views, payment_create_view,
 )
 
 urlpatterns = [
@@ -46,12 +45,12 @@ urlpatterns = [
     # Типы платежей
     path('pay-types/', login_required(payment_type_view, login_url='login'),
          name='pay_types'),
-    path('pay-create/', login_required(PaymentTypeCreateView.as_view(), login_url='login'),
+    path('pay-create/', login_required(payment_create_view, login_url='login'),
          name='pay_create'),
 
     # Доп данные по транзакциям
     path('additional-data/', login_required(additional_data_transaction_view, login_url='login'),
          name='additional_data'),
-    path('addition-create/', login_required(AdditionalDataTransactionCreateView.as_view(), login_url='login'),
+    path('addition-create/', login_required(additional_transaction_data_create_view, login_url='login'),
          name='addition_create'),
 ]

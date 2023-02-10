@@ -11,13 +11,12 @@
 						<form method="POST" action="">
 							{% csrf_token %}
 
-							<div class="w-100">
-							  <div class="mt-4">
-								{{ form|crispy }}
-							  </div>
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="type_payment">Тип платежа</label>
+								<input class="form-control" autocomplete="off" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
 							</div>
 
-							<button class="btn btn-lg btn-primary mt-4" type="submit">
+							<button class="btn btn-lg btn-primary mt-4 save_button" type="submit">
 								Сохранить
 							</button> <!-- /btn -->
 						</form>
@@ -26,5 +25,49 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+
+<script type="text/javascript">
+
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	$('#type_payment').on('input change', function(){
+		$('.error_type').remove();
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_type',
+					type_payment: $('#type_payment').val()
+				}
+			}).then(function(result) {
+				if (result.message) {
+					$('#type_payment').removeClass('is-invalid');
+					$('#type_payment').addClass('is-valid');
+					$('.save_button').removeAttr('disabled');
+				} else {
+					$('.save_button').attr('disabled', 'true');
+					$('#type_payment').removeClass('is-valid');
+					$('#type_payment').addClass('is-invalid');
+					$('#type_payment').after('<div class="invalid-feedback error_type">Такой тип платежа уже существует</div>')
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)
+	})
+
+</script>
 
 {% endblock content %}

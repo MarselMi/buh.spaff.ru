@@ -33,7 +33,7 @@
 									<tbody>
 										<tr class="align-middle text-center">
 											<td>{{ object.name }}
-												{% if user.is_superuser and object.status == 'INPROCESS' %}
+												{% if user.is_superuser %}
 													<a href="{% url 'transaction_edit' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
 														<i class="fa-regular fa-pen-to-square"></i>
 													</a>

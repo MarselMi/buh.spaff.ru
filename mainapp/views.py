@@ -491,41 +491,81 @@ def payment_type_view(request):
     return render(request, 'mainapp/payments_type.html', data)
 
 
-class PaymentTypeCreateView(CreateView):
-    template_name = 'mainapp/payment_type_add.html'
-    extra_context = {'title': 'Создание типа платежа',
-                     'inside': {
-                         'page_url': 'pay-types',
-                         'page_title': 'Типы платежей'
-                     }}
-    model = PayType
-    form_class = PayTypeForm
+def payment_create_view(request):
 
-    def form_valid(self, form):
-        form.save()
+    if request.method == 'POST':
+
+        if request.POST.get('type') == 'check_type':
+            pay_type = request.POST.get('type_payment')
+            if PayType.objects.filter(pay_type=pay_type).exists():
+                return JsonResponse(
+                    {'message': False}
+                )
+            else:
+                return JsonResponse(
+                    {'message': True}
+                )
+
+        pay_type = request.POST.get('type_payment')
+        PayType.objects.create(pay_type=pay_type)
+
         return redirect('pay_types')
+
+    data = {
+            'title': 'Создание типа платежа',
+            'inside': {'page_url': 'pay-types', 'page_title': 'Типы платежей'},
+            }
+    return render(request, 'mainapp/payment_type_add.html', data)
 
 
 def additional_data_transaction_view(request):
-    additional = AdditionalDataTransaction.objects.filter(deleted=False).values('notes', 'transaction_id__name')
+
+    additional = ''
+    if request.user.is_superuser:
+        additional = get_additional_transactions()
+    else:
+        additional = get_allow_additional_transactions(request.user.id)
 
     data = {'title': 'Дополнительные данные по транзакциям', 'additional': additional}
+
     return render(request, 'mainapp/additional_data_transactions.html', data)
 
 
-class AdditionalDataTransactionCreateView(CreateView):
-    template_name = 'mainapp/additional_data_transaction_create.html'
-    extra_context = {'title': 'Создание дополнительных данных по транзакции',
-                     'inside': {
-                         'page_url': 'additional-data',
-                         'page_title': 'Дополнительные данные по транзакциям '
-                     }}
-    model = AdditionalDataTransaction
-    form_class = AdditionalDataTransactionForm
+def additional_transaction_data_create_view(request):
+    transactions = ''
+    if request.user.is_superuser:
+        transactions = Transaction.objects.all().values('id', 'name')
+    else:
+        transactions = get_allow_transaction(request.user.id)
+    if request.method == 'POST':
+        if request.POST.get('type') == 'get_transaction_id':
+            transaction_id = request.POST.get('transaction')
+            result = set()
 
-    def form_valid(self, form):
-        form.save()
+            for transaction in transactions:
+                result.add(str(transaction_id) == f'{transaction.get("id")}: {transaction.get("name")}')
+
+            if any(result):
+                return JsonResponse(
+                        {'message': True}
+                    )
+            else:
+                return JsonResponse(
+                    {'message': False}
+                )
+
+        transaction_id = Transaction.objects.filter(pk=request.POST.get('transaction')[0])[0]
+        additional_data = request.POST.get('notes_transaction')
+
+        AdditionalDataTransaction.objects.create(transaction_id=transaction_id, notes=additional_data)
+
         return redirect('additional_data')
+
+    data = {'title': 'Создание дополнительных данных по транзакции', 'transactions': transactions,
+            'inside': {'page_url': 'additional-data', 'page_title': 'Дополнительные данные по транзакциям '},
+            }
+
+    return render(request, 'mainapp/additional_data_transaction_create.html', data)
 
 
 def handler404(request, exception):

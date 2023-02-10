@@ -10,13 +10,27 @@
 					<form method="POST" action="">
 						{% csrf_token %}
 
-						<div class="w-100">
-						    <div class="mt-4">
-							  {{ form|crispy }}
-						    </div>
+						<div calss="row">
+
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="transaction">Выберите транзакцию</label>
+								<input class="form-control" name="transaction" id="transaction" autocomplete="off" onfocus="this.value=''" list="transaction_list" placeholder="id: Имя транзакции"/>
+								<datalist id="transaction_list">
+									{% for transaction in transactions %}
+									<option value="{{ transaction.id }}: {{ transaction.name }}">{{ transaction.id }}: {{ transaction.name }}</option>
+									{% endfor %}
+								</datalist>
+							</div>
+
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="notes_transaction">Дополнительные данные по транзакции</label>
+								<textarea class="form-control" name="notes_transaction" id="notes_transaction" placeholder="Введите дополнительную ниформацию для транзакции"></textarea>
+							</div>
+
 						</div>
+
 						<div>
-							<button class="btn btn-lg btn-primary mt-4" type="submit">
+							<button class="btn btn-lg btn-primary mt-4 save_button" type="submit">
 								Сохранить
 							</button> <!-- /btn -->
 						</div>
@@ -25,5 +39,56 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+
+<script>
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	$('form').on('change keyup input click focusot live', function(){
+		$('.error_transaction').remove();
+		if (!$('#transaction').val()){
+			$('.save_button').attr('disabled', 'true');
+			$('#transaction').removeClass('is-valid');
+			$('#transaction').addClass('is-invalid');
+			$('#transaction').after('<div class="invalid-feedback error_transaction">Такой транзакции не существует</div>')
+		}
+	})
+
+	$('#transaction').on('input change', function(){
+		$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'get_transaction_id',
+					transaction: $('#transaction').val()
+				}
+			}).then(function(result) {
+				if (result.message && $('#transaction').val()) {
+					$('#transaction').removeClass('is-invalid');
+					$('#transaction').addClass('is-valid');
+					$('.save_button').removeAttr('disabled');
+				} else {
+					$('.save_button').attr('disabled', 'true');
+					$('#transaction').removeClass('is-valid');
+					$('#transaction').addClass('is-invalid');
+					$('#transaction').after('<div class="invalid-feedback error_transaction">Такой транзакции не существует</div>')
+				}
+			}).catch(function(err) {
+				var x = 1;
+			}
+		)
+	})
+</script>
 
 {% endblock content %}

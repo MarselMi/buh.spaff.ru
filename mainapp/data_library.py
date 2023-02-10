@@ -236,3 +236,66 @@ def get_allow_transaction(pk):
         conn.close()
 
     return response
+
+
+def get_allow_additional_transactions(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT 
+                        CONCAT(`mat`.`transaction_id_id`,': ',`mt`.`name`) as name,
+                        `mat`.`notes` 
+                    FROM 
+                        `mainapp_additionaldatatransaction` mat
+                    JOIN 
+                        `mainapp_transaction` mt
+                    ON 
+                        `mt`.`id`=`mat`.`transaction_id_id`
+                    JOIN 
+                        `mainapp_balanceholder` mb 
+                    ON 
+                        `mb`.`id`=`mt`.`balance_holder_id` 
+                    JOIN 
+                        `mainapp_customuser_available_holders` mcah 
+                    ON 
+                        `mcah`.`balanceholder_id`=`mb`.`id`
+                    WHERE 	
+                        `mcah`.`customuser_id`={pk}
+                    '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+def get_additional_transactions():
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT
+                        CONCAT(`mat`.`transaction_id_id`,': ', (SELECT `mt`.`name` FROM `mainapp_transaction` mt WHERE `mt`.`id`=`mat`.`transaction_id_id`)) as name,
+                        `mat`.`notes`
+                    FROM  `mainapp_additionaldatatransaction` mat
+                    '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
