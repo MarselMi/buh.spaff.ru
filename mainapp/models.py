@@ -80,7 +80,7 @@ class Transaction(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name='transaction_customuser', verbose_name='Автор')
     check_img = models.FileField(blank=True, null=True, upload_to='img/', verbose_name='Чек')
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0], verbose_name='Статус')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[2][0], verbose_name='Статус')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
 
     def __str__(self):

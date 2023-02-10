@@ -11,27 +11,27 @@
 						{% endif %}
 						{% if transactions %}
 					<div class="card-body">
-
+						<input name="all_transactions" id="all_transactions" value="{{transactions}}" hidden/>
 						<div class="row">
 
 							<div class="col-12 col-sm-3 mb-3">
 								<label for="filter_name">Фильтр по имени транзакии</label>
-								<input class="form-control" autocomplete="off" name="filter_name" id="filter_name" placeholder="Введите имя транзакции"/>
+								<input class="form-control filter" autocomplete="off" name="filter_name" id="filter_name" placeholder="Введите имя транзакции"/>
 							</div>
 
 							<div class="col-12 col-sm-3 mb-3">
 								<label for="filter_holder">Фильтр по балансодержателям</label>
-								<input class="form-control" autocomplete="off" name="filter_holder" id="filter_holder" placeholder="Введите балансодержателя"/>
+								<input class="form-control filter" autocomplete="off" name="filter_holder" id="filter_holder" placeholder="Введите балансодержателя"/>
 							</div>
 
 							<div class="col-12 col-sm-3 mb-3">
 								<label for="filter_payment">Фильтр по типу платежа</label>
-								<input class="form-control" autocomplete="off" name="filter_payment" id="filter_payment" placeholder="Введите тип платежа"/>
+								<input class="form-control filter" autocomplete="off" name="filter_payment" id="filter_payment" placeholder="Введите тип платежа"/>
 							</div>
 
 							<div class="col-12 col-sm-3 mb-3">
 								<label for="filter_tags">Фильтр по тегам</label>
-								<input class="form-control" autocomplete="off" name="filter_tags" id="filter_tags" placeholder="Введите теги"/>
+								<input class="form-control filter" autocomplete="off" name="filter_tags" id="filter_tags" placeholder="Введите теги"/>
 							</div>
 
 						</div>
@@ -48,21 +48,21 @@
 
 										<div class="input-group" id="input-date-group">
 											<span class="input-group-text">С</span>
-											<input class="form-control" type="text" name="start" value="" id="datepicker"/>
+											<input class="form-control filter" type="text" name="start" value="" id="datepicker"/>
 											<span class="input-group-text">По</span>
-											<input class="form-control" type="text" name="end" value="" id="datepicker1"/>
+											<input class="form-control filter" type="text" name="end" value="" id="datepicker1"/>
 										</div> <!-- /input-group -->
 
 									</div> <!-- /col -->
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label for="filter_autor">Фильтр по автору создателя</label>
-										<input class="form-control" autocomplete="off" name="filter_autor" id="filter_autor" placeholder="Введите автора транзакции"/>
+										<input class="form-control filter" autocomplete="off" name="filter_autor" id="filter_autor" placeholder="Введите автора транзакции"/>
 									</div> <!-- /col -->
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label for="filter_type">Фильтр по типу транзакии</label>
-										<select class="form-select" autocomplete="off" name="filter_type" id="filter_type">
+										<select class="form-select filter" autocomplete="off" name="filter_type" id="filter_type">
 											<option value="">Выберите тип транзакции</option>
 											<option value="Приход">Приход</option>
 											<option value="Расход">Расход</option>
@@ -71,7 +71,7 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label for="filter_status">Фильтр по статусу транзакии</label>
-										<select class="form-select" autocomplete="off" name="filter_status" id="filter_status">
+										<select class="form-select filter" autocomplete="off" name="filter_status" id="filter_status">
 											<option value="">Выберите статус транзакции</option>
 											<option value="Успешно">Успешно</option>
 											<option value="В процессе">В процессе</option>
@@ -79,21 +79,25 @@
 										</select>
 									</div> <!-- /col -->
 
-									<div class="row">
-										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_amount_higher">Транзакии дороже</label>
-											<input class="form-control" autocomplete="off" name="filter_amount_higher" id="filter_amount_higher" placeholder="Введите цену транзакции"/>
-										</div> <!-- /col -->
+									<div class="row mb-3">
+										
+										<label for="input-amount-group">
+											Фильтр по сумме транзакции
+										</label>
 
-										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_amount_below">Транзакии дешевле</label>
-											<input class="form-control" autocomplete="off" name="filter_amount_below" id="filter_amount_below" placeholder="Введите цену транзакции"/>
-										</div> <!-- /col -->
+										<div class="input-group" id="input-amount-group">
+											<span class="input-group-text">Мин: </span>
+											<input class="form-control filter" autocomplete="off" name="filter_amount_higher" id="filter_amount_higher" placeholder="Введите цену транзакции"/>
+											<span class="input-group-text">Макс: </span>
+											<input class="form-control filter" autocomplete="off" name="filter_amount_below" id="filter_amount_below" placeholder="Введите цену транзакции"/>
+										</div>
+
 									</div>
 
 								</div>
 							</div>
 						</div>
+
 						<div class="row">
 							<div class="col-sm-3">
 								<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
@@ -101,6 +105,7 @@
 								</button>
 							</div>
 						</div>
+
 					</div>
 					<div class="table-responsive">
 						<div class="card-body">
@@ -189,4 +194,42 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
+<script>
+
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = ''
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=')
+		b[0] = b[0].replace(/\s+/g, '')
+		if (b[0] == 'csrftoken') {
+		token = b[1]
+		}
+	}
+
+	var filters = $('.filter')
+	var filter_dict = {}
+	for (let i=0; i<filters.length; i++){
+		filters[i].addEventListener('input', function(){
+			if (filters[i].value){
+				filter_dict[filters[i].getAttribute('name')] = filters[i].value;
+				console.log(filter_dict);
+			}else{
+				delete filter_dict[filters[i].getAttribute('name')];
+				console.log(filter_dict);
+			}
+		})
+	};
+	
+	var transa = $('#all_transactions').val()
+	console.log(transa)
+
+</script>
+<script type="text/javascript">
+	$(function(){
+		$("#datepicker").datepicker();
+		$("#datepicker1").datepicker();
+	});
+</script>
 {% endblock content %}
