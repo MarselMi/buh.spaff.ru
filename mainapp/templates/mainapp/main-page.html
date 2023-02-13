@@ -93,14 +93,14 @@
 					<div class="modal-body" id="formSendTransactionElem">
 						<div class="form-floating mb-3">
 							<input type="text" name="balance_holder" id="balance_holder" hidden>
-							<input class="obligatory form-control is-invalid" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName">
+							<input class="obligatory form-control" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName">
 							<label for="newTransactionName">
 								Имя транзакции
 							</label>
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
+							<input class="obligatory form-control" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
 							<datalist id="list_pay">
 								{% for type in type_payments %}
 								<option value="{{ type }}">{{ type }}</option>
@@ -113,7 +113,7 @@
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+							<input class="obligatory form-control" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
 							<datalist id="datalist_transaction_type">
 								<option value="Приход">Приход</option>
 								<option value="Расход">Расход</option>
@@ -125,14 +125,14 @@
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+							<input class="obligatory form-control" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
 							<label for="datepicker">
 								Дата транзакции
 							</label>
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control is-invalid" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount"/>
+							<input class="obligatory form-control" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount"/>
 							<label for="amount">
 								Сумма транзакции
 							</label>
@@ -142,14 +142,14 @@
 					<div class="modal-footer">
 						<div class="row">
 							<div class="col-12 mb-3">
-								<a href="" class="btn btn-secondary w-100 holder_link">
-									Перейти на полную версию создания
-								</a> <!-- /btn -->
-							</div>
-							<div class="col-12 mb-3">
 								<button id="liveToastBtn" onclick="createTransaction()" type="button" class="btn btn-primary w-100" disabled>
 									Сохранить
 								</button> <!-- /btn -->
+							</div>
+							<div class="col-12 mb-3">
+								<a href="" class="btn btn-secondary w-100 holder_link">
+									Перейти на полную версию создания
+								</a> <!-- /btn -->
 							</div>
 						</div>
 					</div> <!-- /modal-footer -->
@@ -182,7 +182,7 @@
 		$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
 	});
 
-	$('#type_payment').on('input', function(){
+	$('#type_payment').on('input change', function(){
 		$('.error_type').remove();
 		$.ajax(
 			{
@@ -210,45 +210,56 @@
 
 	$('form').on('change keyup input click focusot live', function(){
 		$('.error').remove();
+		$('.error_type').remove();
+		if (!$('#type_payment').val()){
+			$('#type_payment').addClass('is-invalid');
+			$('#type_payment').removeClass('is-valid');
+			$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
+		}
 		if ($('#newTransactionName').val()){
 			$('#newTransactionName').removeClass('is-invalid');
+			$('#newTransactionName').addClass('is-valid');
 		}else{
 			$('#newTransactionName').addClass('is-invalid');
+			$('#newTransactionName').removeClass('is-valid');
 		};
 
-		var type_val = $('#type_transaction').val()
-
-		if (type_val){
-			if ((type_val == 'Приход') || (type_val == 'Расход')){
-				$('#type_transaction').removeClass('is-invalid');
-			}else{
-				$('#type_transaction').addClass('is-invalid');
-			}
+		if (($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход')){
+			$('#type_transaction').removeClass('is-invalid');
+			$('#type_transaction').addClass('is-valid');
 		}else{
 			$('#type_transaction').addClass('is-invalid');
-		}
+			$('#type_transaction').removeClass('is-valid');
+		};
+
 		var date_value = $('#datepicker').val();
 		if ((date_value.length == 10) && (!regEx.test($('#datepicker').val()))){
 			$('#datepicker').removeClass('is-invalid');
+			$('#datepicker').addClass('is-valid');
 		}else{
 			$('#datepicker').addClass('is-invalid');
+			$('#datepicker').removeClass('is-valid');
 		};
+
 		if ($('#amount').val() && (!regEx.test($('#amount').val()))){
 			$('#amount').removeClass('is-invalid');
+			$('#amount').addClass('is-valid');
 		}else{
 			$('#amount').addClass('is-invalid');
+			$('#amount').removeClass('is-valid');
 			$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
 		};
-		for (let i=0; i<elements_form.length; i++){
-			if (elements_form[i].classList.contains('is-invalid')){
-				$('#liveToastBtn').removeAttr('data-bs-dismiss')
-				$('#liveToastBtn').removeAttr('aria-label')
-				$('#liveToastBtn').attr('disabled', 'true')
-			}else{
-				$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
-				$('#liveToastBtn').attr('aria-label', 'Close')
-				$('#liveToastBtn').removeAttr('disabled')
-			}
+
+		if ($('#newTransactionName').hasClass('is-valid') && $('#type_payment').hasClass('is-valid') 
+		&& $('#type_transaction').hasClass('is-valid') && $('#datepicker').hasClass('is-valid') 
+		&& $('#amount').hasClass('is-valid')){
+			$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
+			$('#liveToastBtn').attr('aria-label', 'Close')
+			$('#liveToastBtn').removeAttr('disabled')
+		}else{
+			$('#liveToastBtn').removeAttr('data-bs-dismiss')
+			$('#liveToastBtn').removeAttr('aria-label')
+			$('#liveToastBtn').attr('disabled', 'true')
 		}
 	})
 
