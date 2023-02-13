@@ -79,84 +79,84 @@
 	</div> <!--/row-->
 
 	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content border-0">
-					<form action="" name="createNewTransaction" id="formSendTransaction">
-						<div class="modal-header" >
-							<h5 class="modal-title" id="newTransactionModalLabel">
-								Новая транзакция для:
-							</h5> <!-- /modal-title -->
+		<div class="modal-dialog">
+			<div class="modal-content border-0">
+				<form action="" name="createNewTransaction" id="formSendTransaction">
+					<div class="modal-header" >
+						<h5 class="modal-title" id="newTransactionModalLabel">
+							Новая транзакция для:
+						</h5> <!-- /modal-title -->
 
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-						</div> <!-- /modal-header -->
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div> <!-- /modal-header -->
 
-						<div class="modal-body" id="formSendTransactionElem">
-							<div class="form-floating mb-3">
-								<input type="text" name="balance_holder" id="balance_holder" hidden>
-								<input class="obligatory form-control is-invalid" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName">
-								<label for="newTransactionName">
-									Имя транзакции
-								</label>
-							</div> <!-- /form-floating -->
+					<div class="modal-body" id="formSendTransactionElem">
+						<div class="form-floating mb-3">
+							<input type="text" name="balance_holder" id="balance_holder" hidden>
+							<input class="obligatory form-control is-invalid" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName">
+							<label for="newTransactionName">
+								Имя транзакции
+							</label>
+						</div> <!-- /form-floating -->
 
-							<div class="form-floating mb-3">
-								<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
-								<datalist id="list_pay">
-									{% for type in type_payments %}
-									<option value="{{ type }}">{{ type }}</option>
-									{% endfor %}
-								</datalist>
+						<div class="form-floating mb-3">
+							<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
+							<datalist id="list_pay">
+								{% for type in type_payments %}
+								<option value="{{ type }}">{{ type }}</option>
+								{% endfor %}
+							</datalist>
 
-								<label for="type_payment">
-									Тип платежа
-								</label>
-							</div> <!-- /form-floating -->
+							<label for="type_payment">
+								Тип платежа
+							</label>
+						</div> <!-- /form-floating -->
 
-							<div class="form-floating mb-3">
-								<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
-								<datalist id="datalist_transaction_type">
-									<option value="Приход">Приход</option>
-									<option value="Расход">Расход</option>
-								</datalist>
+						<div class="form-floating mb-3">
+							<input class="obligatory form-control is-invalid" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+							<datalist id="datalist_transaction_type">
+								<option value="Приход">Приход</option>
+								<option value="Расход">Расход</option>
+							</datalist>
 
-								<label for="type_transaction">
-									Тип транзакции
-								</label>
-							</div> <!-- /form-floating -->
+							<label for="type_transaction">
+								Тип транзакции
+							</label>
+						</div> <!-- /form-floating -->
 
-							<div class="form-floating mb-3">
-								<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
-								<label for="datepicker">
-									Дата транзакции
-								</label>
-							</div> <!-- /form-floating -->
+						<div class="form-floating mb-3">
+							<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+							<label for="datepicker">
+								Дата транзакции
+							</label>
+						</div> <!-- /form-floating -->
 
-							<div class="form-floating mb-3">
-								<input class="obligatory form-control is-invalid" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount"/>
-								<label for="amount">
-									Сумма транзакции
-								</label>
-							</div>  <!-- /form-floating -->
-						</div> <!-- /modal-body -->
+						<div class="form-floating mb-3">
+							<input class="obligatory form-control is-invalid" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount"/>
+							<label for="amount">
+								Сумма транзакции
+							</label>
+						</div>  <!-- /form-floating -->
+					</div> <!-- /modal-body -->
 
-						<div class="modal-footer">
-							<div class="row">
-								<div class="col-12 mb-3">
-									<a href="" class="btn btn-secondary w-100 holder_link">
-										Перейти на полную версию создания
-									</a> <!-- /btn -->
-								</div>
-								<div class="col-12 mb-3">
-									<button id="liveToastBtn" onclick="createTransaction()" type="button" class="btn btn-primary w-100" disabled>
-										Сохранить
-									</button> <!-- /btn -->
-								</div>
+					<div class="modal-footer">
+						<div class="row">
+							<div class="col-12 mb-3">
+								<a href="" class="btn btn-secondary w-100 holder_link">
+									Перейти на полную версию создания
+								</a> <!-- /btn -->
 							</div>
-						</div> <!-- /modal-footer -->
-					</form>
-				</div> <!-- /modal-content -->
-			</div> <!-- /modal-dialog -->
-		</div> <!-- /modal -->
+							<div class="col-12 mb-3">
+								<button id="liveToastBtn" onclick="createTransaction()" type="button" class="btn btn-primary w-100" disabled>
+									Сохранить
+								</button> <!-- /btn -->
+							</div>
+						</div>
+					</div> <!-- /modal-footer -->
+				</form>
+			</div> <!-- /modal-content -->
+		</div> <!-- /modal-dialog -->
+	</div> <!-- /modal -->
 
 <script>
 

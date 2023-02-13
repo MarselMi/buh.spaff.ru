@@ -140,7 +140,7 @@
 						</a>
 					</li> <!-- /nav-item -->
 					<li class="nav-item">
-						<a class="{% if request.resolver_match.url_name == 'transactions' or request.resolver_match.url_name == 'transaction_create' %}
+						<a class="{% if request.resolver_match.url_name == 'transactions' or request.resolver_match.url_name == 'transaction_create' or request.resolver_match.url_name == 'transaction_edit' %}
 						active
 						{% endif %}
 						  nav-link d-inline-flex align-items-center" href="{% url 'transactions' %}">
@@ -149,7 +149,7 @@
 						</a>
 					</li> <!-- /nav-item -->
 					<li class="nav-item">
-						<a class="{% if request.resolver_match.url_name == 'balance_holders' or request.resolver_match.url_name == 'holder_create' %}
+						<a class="{% if request.resolver_match.url_name == 'balance_holders' or request.resolver_match.url_name == 'holder_create' or request.resolver_match.url_name == 'holder_update' %}
 						active
 						{% endif %}
 						 nav-link d-inline-flex align-items-center" href="{% url 'balance_holders' %}">

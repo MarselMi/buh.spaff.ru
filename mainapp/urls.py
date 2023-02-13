@@ -5,7 +5,7 @@ from mainapp.views import (
     main_page_view, transactions_log_view, additional_transaction_data_create_view,
     payment_type_view, additional_data_transaction_view, balance_holder_create_view,
     transaction_view, transaction_update_view, create_transaction_view,
-    create_transaction_holder_view, balance_holders_views, payment_create_view,
+    create_transaction_holder_view, balance_holders_views, payment_create_view, balance_holder_update_view,
 )
 
 urlpatterns = [
@@ -41,6 +41,8 @@ urlpatterns = [
          name='balance_holders'),
     path('holder-create/', login_required(balance_holder_create_view, login_url='login'),
          name='holder_create'),
+    path('holder-update/<int:pk>', login_required(balance_holder_update_view, login_url='login'),
+         name='holder_update'),
 
     # Типы платежей
     path('pay-types/', login_required(payment_type_view, login_url='login'),

@@ -18,6 +18,12 @@ STATUS_CHOICES = [
     ]
 
 
+HOLDER_ROLE = [
+    ('PRIVATE_PERSONE', 'Частное лицо'),
+    ('ORGANISATION', ' Организация')
+]
+
+
 class PayType(models.Model):
     pay_type = models.CharField(unique=True, max_length=60, verbose_name='Тип платежа')
 
@@ -30,6 +36,7 @@ class PayType(models.Model):
 
 
 class BalanceHolder(models.Model):
+    holder_type = models.CharField(blank=True, null=True, max_length=20, choices=HOLDER_ROLE, verbose_name='Тип балансодержателя')
     organization_holder = models.CharField(blank=True, null=True, max_length=65, verbose_name='Наименование организации')
     alias_holder = models.CharField(blank=True, null=True, default=None, max_length=35, verbose_name='Псевдоним')
     holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Баланс Держателя')

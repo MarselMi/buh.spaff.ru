@@ -17,7 +17,7 @@
 								<table class="table table-bordered text-nowrap mb-0">
 									<thead class="text-center">
 										<tr>
-											<th>Наименование организации</th>
+											<th>Наименование организации/ <br>ФИО лица</th>
 											<th>Псевдоним держателя</th>
 											<th>Баланс Держателя</th>
 											<th>Расчетный счет</th>
@@ -26,7 +26,13 @@
 									{% for object in holders %}
 									<tbody class="text-center">
 										<tr class="align-middle">
-											<td>{{ object.organization_holder }}</td>
+											<td>{{ object.organization_holder }}
+												{% if user.is_superuser %}
+													<a href="{% url 'holder_update' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+														<i class="fa-regular fa-pen-to-square"></i>
+													</a>
+												{% endif %}
+											</td>
 											<td>{{ object.alias_holder }}</td>
 											<td>{{ object.holder_balance|numb_format }}</td>
 											<td>{{ object.payment_account }}</td>

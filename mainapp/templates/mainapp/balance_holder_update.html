@@ -1,6 +1,5 @@
 {% extends 'mainapp/base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 {% block content %}
 
 	<div class="row mb-4">
@@ -15,58 +14,44 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="holder_type">Тип балансодержателя</label>
-									<select autocomplete="off" class="obligatory form-select is-invalid" name="holder_type" id="holder_type">
-										<option selected value="">Выберите тип балансодержателя</option>
-										<option value="PRIVATE_PERSONE">Частное лицо</option>
-										<option value="ORGANISATION">Организация</option>
+									<select autocomplete="off" class="obligatory form-select" name="holder_type" id="holder_type">
+										<option selected value="{{ holder.holder_type }}">{{ holder.holder_type|translate_type_balance_holder }}</option>
+										{% if holder.holder_type == "PRIVATE_PERSONE" %}
+											<option value="ORGANISATION">Организация</option>
+										{% else %}
+											<option value="PRIVATE_PERSONE">Частное лицо</option>
+										{% endif %}
 									</select>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label id="label_organisation" for="organization_holder">Наименование организации</label>
-									<input autocomplete="off" class="obligatory form-control is-invalid" name="organization_holder" id="organization_holder" placeholder="ООО 'it'"/>
+									<label id="label_organisation" for="organization_holder">
+										{% if holder.holder_type == "PRIVATE_PERSONE" %}
+										ФИО держателя
+										{% else %}
+										Наименование организации
+										{% endif %}
+									</label>
+									<input autocomplete="off" class="obligatory form-control" name="organization_holder" id="organization_holder" value="{{ holder.organization_holder }}"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="payment_account">Расчетный счет</label>
-									<input autocomplete="off" class="obligatory form-control is-invalid" name="payment_account" id="payment_account" placeholder="********************"/>
+									<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" value="{{ holder.payment_account }}"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="alias_holder">Псевдоним</label>
-									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" placeholder="Tinkoff"/>
+									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" value="{{ holder.alias_holder }}"/>
 								</div>
 
-							</div>
-
-							<div id="accordionStatsDaysFilter">
-								<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
-
-									<div class="row">
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label for="holder_balance">Баланс Держателя</label>
-											<input autocomplete="off" class="obligatory form-control" name="holder_balance" id="holder_balance" placeholder="По дефолту 0"/>
-										</div>
-
-									</div>
-
-								</div>
 							</div>
 
 							<div class="row">
 
-								<div class="col-sm-3 mb-3">
-
-									<button class="btn btn-primary create_holder" type="submit" disabled>
-										Сохранить
-									</button> <!-- /btn -->
-
-									<button class="btn btn-secondary collapsed" onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
-										Раскрыть
-									</button>
-
-								</div>
+								<button class="btn btn-primary create_holder" type="submit" disabled>
+									Сохранить
+								</button> <!-- /btn -->
 
 							</div>
 						</form>
@@ -184,7 +169,6 @@
 			var payment_account = $('#payment_account').val();
 			var holder_balance = $('#holder_balance').val();
 			var validPayment_account = regEx.test(payment_account);
-			var validHolder_balance = regEx.test(holder_balance);
 
 			$(".error").remove();
 
@@ -194,11 +178,6 @@
 				valid = false;
 			}
 
-			if (validHolder_balance) {
-				$('#validHolder_balance').addClass('is-invalid');
-				$('#validHolder_balance').after('<span class="error">Введите корректные данные</span>');
-				valid = false;
-			}
 			if (valid) this.submit();
 		});
 	});

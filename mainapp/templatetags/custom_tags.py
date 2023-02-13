@@ -114,3 +114,11 @@ def get_item(arr, key):
 def split_holders(obj):
     result = obj.split(',')
     return result
+
+
+@register.filter
+def translate_type_balance_holder(obj):
+    if obj == 'PRIVATE_PERSONE':
+        return 'Частное лицо'
+    elif obj == 'ORGANISATION':
+        return 'Организация'

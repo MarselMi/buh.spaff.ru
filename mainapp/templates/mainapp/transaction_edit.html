@@ -17,10 +17,20 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.status.label }}
-									<select class="obligatory form-select mb-2" name="transaction_status" id="transaction_status" value="{{ transaction.status|trans_status }}">
-										<option value="В процессе">В процессе</option>
-										<option value="Отклонен">Отклонен</option>
-										<option value="Успешно">Успешно</option>
+									<select class="obligatory form-select mb-2" name="transaction_status" id="transaction_status">
+										{% if transaction.status == 'INPROCESS' %}
+											<option selected value="INPROCESS">В процессе</option>
+											<option value="REJECT">Отклонен</option>
+											<option value="SUCCESSFULLY">Успешно</option>
+										{% elif transaction.status == 'REJECT' %}
+											<option selected value="REJECT">Отклонен</option>
+											<option value="INPROCESS">В процессе</option>
+											<option value="SUCCESSFULLY">Успешно</option>
+										{% else %}
+											<option selected value="SUCCESSFULLY">Успешно</option>
+											<option value="INPROCESS">В процессе</option>
+											<option value="REJECT">Отклонен</option>
+										{% endif %}
 									</select>
 								</div>
 

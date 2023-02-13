@@ -3,7 +3,6 @@ import decimal
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-import re
 from datetime import datetime as dt
 from mainapp.data_library import *
 from mainapp.forms import (TransactionForm, BalanceHolderForm, TransactionUpdateForm)
@@ -83,18 +82,30 @@ def main_page_view(request):
 
             author_id = request.user.id
 
-            create_data = {'type_transaction': transaction_type,
-                           'transaction_date': transaction_date,
-                           'name': transaction_name,
-                           'balance_holder': holder,
-                           'amount': amount,
-                           'type_payment': payment_type,
-                           'author_id': author_id
-                           }
+            create_transaction = {
+                'type_transaction': transaction_type,
+                'transaction_date': transaction_date,
+                'name': transaction_name,
+                'balance_holder': holder,
+                'amount': amount,
+                'type_payment': payment_type,
+                'author_id': author_id
+            }
 
             transaction = Transaction
 
-            transaction.objects.create(**create_data)
+            transaction.objects.create(**create_transaction)
+
+            balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder)
+            old_balance_balance_holder = balance_holder_response[0].holder_balance
+
+            if transaction_type == 'COMING':
+                old_balance_balance_holder += amount
+                balance_holder_response.update(holder_balance=old_balance_balance_holder)
+            else:
+                old_balance_balance_holder -= amount
+                balance_holder_response.update(holder_balance=old_balance_balance_holder)
+
             return HttpResponse(json.dumps({"Status": "OK"}))
 
     color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
@@ -316,6 +327,7 @@ def transaction_update_view(request, pk):
     old_transaction = transaction.values(
         'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img'
     )
+
     if request.method == 'POST':
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
@@ -329,12 +341,6 @@ def transaction_update_view(request, pk):
                 )
 
         status = request.POST.get('transaction_status')
-        if status == 'В процессе':
-            status = 'INPROCESS'
-        elif status == 'Отклонен':
-            status = 'REJECT'
-        else:
-            status = 'SUCCESSFULLY'
 
         '''Данные через форму'''
         transaction_date = dt.strptime(request.POST.get('transaction_date'), '%d.%m.%Y').date()
@@ -391,15 +397,48 @@ def transaction_update_view(request, pk):
 
         transaction.update(update_date=dt.now())
 
-        if status == 'SUCCESSFULLY':
+        if transaction[0].status != 'SUCCESSFULLY':
+            if status == 'SUCCESSFULLY':
+                if Transaction.objects.filter(pk=transaction[0].id).values('type_transaction')[0]['type_transaction'] == 'COMING':
+                    old_balance_balance_holder += transaction[0].amount
+                    balance_hodler.update(holder_balance=old_balance_balance_holder)
+                else:
+                    old_balance_balance_holder -= transaction[0].amount
+                    balance_hodler.update(holder_balance=old_balance_balance_holder)
+            else:
+                pass
+
+        if status == 'SUCCESSFULLY' and (amount != old_transaction[0]['amount']):
             if Transaction.objects.filter(pk=transaction[0].id).values('type_transaction')[0]['type_transaction'] == 'COMING':
-                old_balance_balance_holder += transaction[0].amount
+                if amount > transaction[0].amount:
+                    diff = amount - transaction[0].amount
+                    old_balance_balance_holder += diff
+                else:
+                    diff = transaction[0].amount - amount
+                    old_balance_balance_holder -= diff
                 balance_hodler.update(holder_balance=old_balance_balance_holder)
             else:
-                old_balance_balance_holder -= transaction[0].amount
+                if amount > transaction[0].amount:
+                    diff = amount - transaction[0].amount
+                    old_balance_balance_holder -= diff
+                else:
+                    diff = transaction[0].amount - amount
+                    old_balance_balance_holder += diff
                 balance_hodler.update(holder_balance=old_balance_balance_holder)
-        else:
-            pass
+
+        if (transaction[0].status == 'SUCCESSFULLY') and (status != 'SUCCESSFULLY'):
+            if Transaction.objects.filter(pk=transaction[0].id).values('type_transaction')[0]['type_transaction'] == 'COMING':
+                if amount > transaction[0].amount:
+                    old_balance_balance_holder += amount
+                else:
+                    old_balance_balance_holder -= amount
+                balance_hodler.update(holder_balance=old_balance_balance_holder)
+            else:
+                if amount > transaction[0].amount:
+                    old_balance_balance_holder -= amount
+                else:
+                    old_balance_balance_holder += amount
+                balance_hodler.update(holder_balance=old_balance_balance_holder)
 
         transaction.update(**new_transaction_data)
 
@@ -444,7 +483,7 @@ def balance_holder_create_view(request):
                 return JsonResponse(
                     {'message': True}
                 )
-
+        holder_type = request.POST.get('holder_type')
         organization_holder = request.POST.get('organization_holder')
         payment_account = request.POST.get('payment_account')
 
@@ -457,6 +496,7 @@ def balance_holder_create_view(request):
             holder_balance = decimal.Decimal(request.POST.get('holder_balance').replace(',', '.').replace(' ', ''))
 
         new_balance_holder = BalanceHolder.objects.create(
+            holder_type=holder_type,
             organization_holder=organization_holder,
             payment_account=payment_account,
             alias_holder=alias_holder,
@@ -474,6 +514,49 @@ def balance_holder_create_view(request):
             'form': form_class}
 
     return render(request, 'mainapp/balance_holder_create.html', data)
+
+
+def balance_holder_update_view(request, pk):
+
+    update_balance_holder = BalanceHolder.objects.filter(pk=pk)
+
+    if request.method == 'POST':
+
+        if request.POST.get('type') == 'check_holder':
+            organization_holder = request.POST.get('organization_holder')
+            if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
+                if BalanceHolder.objects.filter(organization_holder=organization_holder)[0] == BalanceHolder.objects.filter(pk=pk)[0]:
+                    return JsonResponse(
+                        {'message': True}
+                    )
+                return JsonResponse(
+                    {'message': False}
+                )
+            else:
+                return JsonResponse(
+                    {'message': True}
+                )
+        holder_type = request.POST.get('holder_type')
+        organization_holder = request.POST.get('organization_holder')
+        payment_account = request.POST.get('payment_account')
+
+        alias_holder = None
+        if request.POST.get('alias_holder'):
+            alias_holder = request.POST.get('alias_holder')
+
+        update_balance_holder.update(
+            holder_type=holder_type,
+            organization_holder=organization_holder,
+            payment_account=payment_account,
+            alias_holder=alias_holder,
+        )
+
+        return redirect('balance_holders')
+
+    data = {'title': 'Редактирование балансодержателя', 'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'},
+            'holder': update_balance_holder[0]}
+
+    return render(request, 'mainapp/balance_holder_update.html', data)
 
 
 def payment_type_view(request):
