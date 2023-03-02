@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from datetime import datetime as dt
 from mainapp.data_library import *
 from mainapp.forms import (TransactionForm, BalanceHolderForm, TransactionUpdateForm)
-from mainapp.models import (Transaction, BalanceHolder, PayType, AdditionalDataTransaction, TransactionLog)
+from mainapp.models import (CustomUser, Transaction, BalanceHolder, PayType, AdditionalDataTransaction, TransactionLog)
 
 
 def main_page_view(request):
@@ -120,15 +120,34 @@ def main_page_view(request):
 
 
 def transaction_view(request):
-
+    balance_holders = []
     transactions = []
+    authors = CustomUser.objects.all()
+    type_payments = PayType.objects.all()
     if request.user.is_superuser:
+        balance_holders = BalanceHolder.objects.all()
         transactions = Transaction.objects.filter(deleted=False)[::-1]
     else:
+        for holder in get_allow_balance_holders_transaction(request.user.id):
+            balance_holders.append(holder['organization_holder'])
         transactions = get_allow_transaction(request.user.id)
 
-    data = {'title': 'Транзакции',
-            'transactions': transactions}
+    if request.method == 'POST':
+        filter_name = request.POST.get('filter_name')
+        filter_holder = request.POST.get('filter_holder')
+        filter_payment = request.POST.get('filter_payment')
+        filter_tags = request.POST.get('filter_tags')
+        filter_start = request.POST.get('start')
+        filter_end = request.POST.get('end')
+        filter_autor = request.POST.get('filter_autor')
+        filter_end = request.POST.get('end')
+        filter_type = request.POST.get('filter_type')
+        filter_status = request.POST.get('filter_status')
+        filter_amount_start = request.POST.get('filter_amount_start')
+        filter_amount_end = request.POST.get('filter_amount_end')
+
+    data = {'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
+            'transactions': transactions, 'authors': authors}
     return render(request, 'mainapp/transactions.html', data)
 
 

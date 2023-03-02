@@ -11,101 +11,124 @@
 						{% endif %}
 						{% if transactions %}
 					<div class="card-body">
+						<form method="POST" action="">
+						{% csrf_token %}
 						<input name="all_transactions" id="all_transactions" value="{{transactions}}" hidden/>
-						<div class="row">
+							<div class="row">
 
-							<div class="col-12 col-sm-3 mb-3">
-								<label for="filter_name">Фильтр по имени транзакии</label>
-								<input class="form-control filter" autocomplete="off" name="filter_name" id="filter_name" placeholder="Введите имя транзакции"/>
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="filter_name">Фильтр по имени транзакии</label>
+									<input class="form-control filter" autocomplete="off" list="transaction_name" name="filter_name" id="filter_name" placeholder="Введите имя транзакции"/>
+									<datalist id="transaction_name">
+										{% for transaction in transactions %}
+										<option value="{{ transaction.name }}">{{ transaction.name }}</option>
+										{% endfor %}
+									</datalist>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="filter_holder">Фильтр по балансодержателям</label>
+									<input class="form-control filter" list="balance_holder" autocomplete="off" name="filter_holder" id="filter_holder" placeholder="Введите балансодержателя"/>
+									<datalist id="balance_holder">
+										{% for holder in balance_holders %}
+										<option value="{{ holder }}">{{ holder }}</option>
+										{% endfor %}
+									</datalist>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="filter_payment">Фильтр по типу платежа</label>
+									<input class="form-control filter" list="pay_type" autocomplete="off" name="filter_payment" id="filter_payment" placeholder="Введите тип платежа"/>
+									<datalist id="pay_type">
+										{% for type in type_payments %}
+										<option value="{{ type }}">{{ type }}</option>
+										{% endfor %}
+									</datalist>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="filter_tags">Фильтр по тегам</label>
+									<input class="form-control filter" autocomplete="off" name="filter_tags" id="filter_tags" placeholder="Введите теги"/>
+								</div>
+
 							</div>
 
-							<div class="col-12 col-sm-3 mb-3">
-								<label for="filter_holder">Фильтр по балансодержателям</label>
-								<input class="form-control filter" autocomplete="off" name="filter_holder" id="filter_holder" placeholder="Введите балансодержателя"/>
-							</div>
+							<div id="accordionStatsDaysFilter">
+								<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
+									<div class="row">
 
-							<div class="col-12 col-sm-3 mb-3">
-								<label for="filter_payment">Фильтр по типу платежа</label>
-								<input class="form-control filter" autocomplete="off" name="filter_payment" id="filter_payment" placeholder="Введите тип платежа"/>
-							</div>
+										<div class="col-12 col-sm-3 mb-3">
 
-							<div class="col-12 col-sm-3 mb-3">
-								<label for="filter_tags">Фильтр по тегам</label>
-								<input class="form-control filter" autocomplete="off" name="filter_tags" id="filter_tags" placeholder="Введите теги"/>
-							</div>
+											<label for="input-date-group">
+												Период
+											</label> <!-- /form-label -->
 
-						</div>
+											<div class="input-group" id="input-date-group">
+												<span class="input-group-text">С</span>
+												<input class="form-control filter" type="text" name="start" value="" id="datepicker"/>
+												<span class="input-group-text">По</span>
+												<input class="form-control filter" type="text" name="end" value="" id="datepicker1"/>
+											</div> <!-- /input-group -->
 
-						<div id="accordionStatsDaysFilter">
-							<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
-								<div class="row">
+										</div> <!-- /col -->
 
-									<div class="col-12 col-sm-3 mb-3">
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_autor">Фильтр по автору создателя</label>
+											<input class="form-control filter" list="user_filter" autocomplete="off" name="filter_autor" id="filter_autor" placeholder="Введите автора транзакции"/>
+											<datalist id="user_filter">
+												{% for author in authors %}
+												<option value="{{ author }}">{{ author }}</option>
+												{% endfor %}
+											</datalist>
+										</div> <!-- /col -->
 
-										<label for="input-date-group">
-											Период
-										</label> <!-- /form-label -->
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_type">Фильтр по типу транзакии</label>
+											<select class="form-select filter" autocomplete="off" name="filter_type" id="filter_type">
+												<option value="">Выберите тип транзакции</option>
+												<option value="COMING">Приход</option>
+												<option value="EXPENDITURE">Расход</option>
+											</select>
+										</div> <!-- /col -->
 
-										<div class="input-group" id="input-date-group">
-											<span class="input-group-text">С</span>
-											<input class="form-control filter" type="text" name="start" value="" id="datepicker"/>
-											<span class="input-group-text">По</span>
-											<input class="form-control filter" type="text" name="end" value="" id="datepicker1"/>
-										</div> <!-- /input-group -->
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_status">Фильтр по статусу транзакии</label>
+											<select class="form-select filter" autocomplete="off" name="filter_status" id="filter_status">
+												<option value="">Выберите статус транзакции</option>
+												<option value="SUCCESSFULLY">Успешно</option>
+												<option value="INPROCESS">В процессе</option>
+												<option value="REJECT">Отклонен</option>
+											</select>
+										</div> <!-- /col -->
 
-									</div> <!-- /col -->
+										<div class="row mb-3">
 
-									<div class="col-12 col-sm-3 mb-3">
-										<label for="filter_autor">Фильтр по автору создателя</label>
-										<input class="form-control filter" autocomplete="off" name="filter_autor" id="filter_autor" placeholder="Введите автора транзакции"/>
-									</div> <!-- /col -->
+											<label for="input-amount-group">
+												Фильтр по сумме транзакции
+											</label>
 
-									<div class="col-12 col-sm-3 mb-3">
-										<label for="filter_type">Фильтр по типу транзакии</label>
-										<select class="form-select filter" autocomplete="off" name="filter_type" id="filter_type">
-											<option value="">Выберите тип транзакции</option>
-											<option value="Приход">Приход</option>
-											<option value="Расход">Расход</option>
-										</select>
-									</div> <!-- /col -->
-
-									<div class="col-12 col-sm-3 mb-3">
-										<label for="filter_status">Фильтр по статусу транзакии</label>
-										<select class="form-select filter" autocomplete="off" name="filter_status" id="filter_status">
-											<option value="">Выберите статус транзакции</option>
-											<option value="Успешно">Успешно</option>
-											<option value="В процессе">В процессе</option>
-											<option value="Отклонен">Отклонен</option>
-										</select>
-									</div> <!-- /col -->
-
-									<div class="row mb-3">
-										
-										<label for="input-amount-group">
-											Фильтр по сумме транзакции
-										</label>
-
-										<div class="input-group" id="input-amount-group">
-											<span class="input-group-text">Мин: </span>
-											<input class="form-control filter" autocomplete="off" name="filter_amount_higher" id="filter_amount_higher" placeholder="Введите цену транзакции"/>
-											<span class="input-group-text">Макс: </span>
-											<input class="form-control filter" autocomplete="off" name="filter_amount_below" id="filter_amount_below" placeholder="Введите цену транзакции"/>
+											<div class="input-group" id="input-amount-group">
+												<span class="input-group-text">Мин: </span>
+												<input class="form-control filter" autocomplete="off" name="filter_amount_start" id="filter_amount_higher" placeholder="Введите цену транзакции"/>
+												<span class="input-group-text">Макс: </span>
+												<input class="form-control filter" autocomplete="off" name="filter_amount_end" id="filter_amount_below" placeholder="Введите цену транзакции"/>
+											</div>
 										</div>
-
 									</div>
-
 								</div>
 							</div>
-						</div>
 
-						<div class="row">
-							<div class="col-sm-3">
-								<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
-									Раскрыть
-								</button>
+							<div class="row">
+								<div class="col-sm-3">
+									<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
+										Раскрыть
+									</button>
+									<button type="submit" class="btn btn-primary ms-3">
+										Показать
+									</button>
+								</div>
 							</div>
-						</div>
-
+						</form>
 					</div>
 					<div class="table-responsive">
 						<div class="card-body">
