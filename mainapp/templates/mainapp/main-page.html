@@ -81,8 +81,8 @@
 	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content border-0">
-				<form action="" name="createNewTransaction" id="formSendTransaction">
-					<div class="modal-header" >
+				<form class="needs-validation" action="" name="createNewTransaction" id="formSendTransaction" novalidate>
+					<div class="modal-header">
 						<h5 class="modal-title" id="newTransactionModalLabel">
 							Новая транзакция для:
 						</h5> <!-- /modal-title -->
@@ -92,15 +92,15 @@
 
 					<div class="modal-body" id="formSendTransactionElem">
 						<div class="form-floating mb-3">
-							<input type="text" name="balance_holder" id="balance_holder" hidden>
-							<input class="obligatory form-control" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName">
-							<label for="newTransactionName">
-								Имя транзакции
-							</label>
+							<input type="text" name="balance_holder" id="balance_holder" hidden/>
+
+							<input class="form-control" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName" required/>
+							<label for="newTransactionName">Имя транзакции</label>
+
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
+							<input class="form-control" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа" required/>
 							<datalist id="list_pay">
 								{% for type in type_payments %}
 								<option value="{{ type }}">{{ type }}</option>
@@ -110,10 +110,14 @@
 							<label for="type_payment">
 								Тип платежа
 							</label>
+
+							<div class="invalid-feedback">
+								Пожалуйста, выберите корректный тип платежа
+							</div>
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
+							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции" required/>
 							<datalist id="datalist_transaction_type">
 								<option value="Приход">Приход</option>
 								<option value="Расход">Расход</option>
@@ -122,27 +126,40 @@
 							<label for="type_transaction">
 								Тип транзакции
 							</label>
+
+							<div class="invalid-feedback">
+								Пожалуйста, выберите корректный тип транзакции
+							</div>
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
+							<input class="form-control" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker" required/>
 							<label for="datepicker">
 								Дата транзакции
 							</label>
+
+							<div class="invalid-feedback">
+								Пожалуйста, введите дату
+							</div>
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="obligatory form-control" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount"/>
+							<input class="form-control" autocomplete="off" name="amount" placeholder="Сумма транзакции" id="amount" required/>
 							<label for="amount">
 								Сумма транзакции
 							</label>
+
+							<div class="invalid-feedback">
+								Пожалуйста, введите правильную сумму транзакции
+							</div>
+
 						</div>  <!-- /form-floating -->
 					</div> <!-- /modal-body -->
 
 					<div class="modal-footer">
 						<div class="row">
 							<div class="col-12 mb-3">
-								<button id="liveToastBtn" onclick="createTransaction()" type="button" class="btn btn-primary w-100" disabled>
+								<button id="liveToastBtn" type="submit" class="btn btn-primary w-100">
 									Сохранить
 								</button> <!-- /btn -->
 							</div>
@@ -174,7 +191,7 @@
 
 	var exampleModal = document.getElementById('exampleModal')
 	
-	var elements_form = $('.obligatory')
+	// var elements_form = $('.obligatory')
 
 	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
 
@@ -182,86 +199,119 @@
 		$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
 	});
 
-	$('#type_payment').on('input change', function(){
-		$('.error_type').remove();
-		$.ajax(
-			{
-				url: url,
-				method: 'POST',
-				data: {
-					csrfmiddlewaretoken: token,
-					type: 'check_type',
-					type_payment: $('#type_payment').val()
+	
+
+	// $('form').on('change keyup input click focusot live', function(){
+	// 	$('.error').remove();
+	// 	$('.error_type').remove();
+	// 	if (!$('#type_payment').val()){
+	// 		$('#type_payment').addClass('is-invalid');
+	// 		$('#type_payment').removeClass('is-valid');
+	// 		$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
+	// 	}
+	// 	if ($('#newTransactionName').val()){
+	// 		$('#newTransactionName').removeClass('is-invalid');
+	// 		$('#newTransactionName').addClass('is-valid');
+	// 	}else{
+	// 		$('#newTransactionName').addClass('is-invalid');
+	// 		$('#newTransactionName').removeClass('is-valid');
+	// 	};
+
+	// 	if (($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход')){
+	// 		$('#type_transaction').removeClass('is-invalid');
+	// 		$('#type_transaction').addClass('is-valid');
+	// 	}else{
+	// 		$('#type_transaction').addClass('is-invalid');
+	// 		$('#type_transaction').removeClass('is-valid');
+	// 	};
+
+	// 	var date_value = $('#datepicker').val();
+	// 	if ((date_value.length == 10) && (!regEx.test($('#datepicker').val()))){
+	// 		$('#datepicker').removeClass('is-invalid');
+	// 		$('#datepicker').addClass('is-valid');
+	// 	}else{
+	// 		$('#datepicker').addClass('is-invalid');
+	// 		$('#datepicker').removeClass('is-valid');
+	// 	};
+
+	// 	if ($('#amount').val() && (!regEx.test($('#amount').val()))){
+	// 		$('#amount').removeClass('is-invalid');
+	// 		$('#amount').addClass('is-valid');
+	// 	}else{
+	// 		$('#amount').addClass('is-invalid');
+	// 		$('#amount').removeClass('is-valid');
+	// 		$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
+	// 	};
+
+	// 	if ($('#newTransactionName').hasClass('is-valid') && $('#type_payment').hasClass('is-valid') 
+	// 	&& $('#type_transaction').hasClass('is-valid') && $('#datepicker').hasClass('is-valid') 
+	// 	&& $('#amount').hasClass('is-valid')){
+	// 		$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
+	// 		$('#liveToastBtn').attr('aria-label', 'Close')
+	// 		$('#liveToastBtn').removeAttr('disabled')
+	// 	}else{
+	// 		$('#liveToastBtn').removeAttr('data-bs-dismiss')
+	// 		$('#liveToastBtn').removeAttr('aria-label')
+	// 		$('#liveToastBtn').attr('disabled', 'true')
+	// 	}
+	// })
+
+	(function () {
+		// Получите все формы, к которым мы хотим применить пользовательские стили проверки Bootstrap
+		var forms = document.querySelectorAll('.needs-validation')
+		var date_value = $('#datepicker').val();
+		$('#type_payment').on('input change', function(){
+			$.ajax(
+				{
+					url: url,
+					method: 'POST',
+					data: {
+						csrfmiddlewaretoken: token,
+						type: 'check_type',
+						type_payment: $('#type_payment').val()
+					}
+				}).then(function(result) {
+					if (result.message) {
+						$('#type_payment').removeClass('is-invalid');
+						$('#type_payment').addClass('is-valid');
+					} else {
+						$('#type_payment').removeClass('is-valid');
+						$('#type_payment').addClass('is-invalid');
+						$('#liveToastBtn').removeAttr('data-bs-dismiss')
+						$('#liveToastBtn').removeAttr('aria-label')
+					}
+				}).catch(function(err) {
+					var x = 1;
 				}
-			}).then(function(result) {
-				if (result.message) {
-					$('#type_payment').removeClass('is-invalid');
-					$('#type_payment').addClass('is-valid');
-				} else {
+			)
+		})
+		// Зацикливайтесь на них и предотвращайте отправку
+		Array.prototype.slice.call(forms).forEach(function (form) {
+			form.addEventListener('submit', function (event) {
+				if ($('#amount').val() && (!regEx.test($('#amount').val()))) {
+					event.preventDefault()
+					event.stopPropagation()
+				}else if (!((date_value.length == 10) && (!regEx.test($('#datepicker').val())))){
+					event.preventDefault()
+					event.stopPropagation()
+				}else if (!(($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход'))){
+					event.preventDefault()
+					event.stopPropagation()
+				}else if (!$('#type_payment').val()){
 					$('#type_payment').removeClass('is-valid');
 					$('#type_payment').addClass('is-invalid');
-					$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
+					event.preventDefault()
+					event.stopPropagation()
+				}else if (!form.checkValidity()) {
+					event.preventDefault()
+					event.stopPropagation()
 				}
-			}).catch(function(err) {
-				var x = 1;
-			}
-		)
-	})
-
-	$('form').on('change keyup input click focusot live', function(){
-		$('.error').remove();
-		$('.error_type').remove();
-		if (!$('#type_payment').val()){
-			$('#type_payment').addClass('is-invalid');
-			$('#type_payment').removeClass('is-valid');
-			$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
-		}
-		if ($('#newTransactionName').val()){
-			$('#newTransactionName').removeClass('is-invalid');
-			$('#newTransactionName').addClass('is-valid');
-		}else{
-			$('#newTransactionName').addClass('is-invalid');
-			$('#newTransactionName').removeClass('is-valid');
-		};
-
-		if (($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход')){
-			$('#type_transaction').removeClass('is-invalid');
-			$('#type_transaction').addClass('is-valid');
-		}else{
-			$('#type_transaction').addClass('is-invalid');
-			$('#type_transaction').removeClass('is-valid');
-		};
-
-		var date_value = $('#datepicker').val();
-		if ((date_value.length == 10) && (!regEx.test($('#datepicker').val()))){
-			$('#datepicker').removeClass('is-invalid');
-			$('#datepicker').addClass('is-valid');
-		}else{
-			$('#datepicker').addClass('is-invalid');
-			$('#datepicker').removeClass('is-valid');
-		};
-
-		if ($('#amount').val() && (!regEx.test($('#amount').val()))){
-			$('#amount').removeClass('is-invalid');
-			$('#amount').addClass('is-valid');
-		}else{
-			$('#amount').addClass('is-invalid');
-			$('#amount').removeClass('is-valid');
-			$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
-		};
-
-		if ($('#newTransactionName').hasClass('is-valid') && $('#type_payment').hasClass('is-valid') 
-		&& $('#type_transaction').hasClass('is-valid') && $('#datepicker').hasClass('is-valid') 
-		&& $('#amount').hasClass('is-valid')){
-			$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
-			$('#liveToastBtn').attr('aria-label', 'Close')
-			$('#liveToastBtn').removeAttr('disabled')
-		}else{
-			$('#liveToastBtn').removeAttr('data-bs-dismiss')
-			$('#liveToastBtn').removeAttr('aria-label')
-			$('#liveToastBtn').attr('disabled', 'true')
-		}
-	})
+				form.classList.add('was-validated')
+				$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
+				$('#liveToastBtn').attr('aria-label', 'Close')
+			}, false)
+		})
+	})()
 
 	var buttonSelectModal = $('.buttonSelectModal')
 	var modalTitle = exampleModal.querySelector('.modal-title')

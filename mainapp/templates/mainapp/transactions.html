@@ -13,11 +13,11 @@
 					<div class="card-body">
 						<form method="POST" action="">
 						{% csrf_token %}
-						<input name="all_transactions" id="all_transactions" value="{{transactions}}" hidden/>
+						
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_name">Фильтр по имени транзакии</label>
+									<label class="label" for="filter_name">Фильтр по имени транзакии</label>
 									<input class="form-control filter" autocomplete="off" list="transaction_name" name="filter_name" id="filter_name" placeholder="Введите имя транзакции"/>
 									<datalist id="transaction_name">
 										{% for transaction in transactions %}
@@ -92,7 +92,7 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_status">Фильтр по статусу транзакии</label>
+											<label class="label" for="filter_status">Фильтр по статусу транзакии</label>
 											<select class="form-select filter" autocomplete="off" name="filter_status" id="filter_status">
 												<option value="">Выберите статус транзакции</option>
 												<option value="SUCCESSFULLY">Успешно</option>
@@ -119,13 +119,21 @@
 							</div>
 
 							<div class="row">
-								<div class="col-sm-3">
+
+								<div class="col-12">
+
 									<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
 										Раскрыть
 									</button>
+
 									<button type="submit" class="btn btn-primary ms-3">
 										Показать
 									</button>
+
+									<button type="button" onclick="cleare_filter()" class="clear btn btn-light ms-3" hidden="">
+										Сбросить
+									</button>
+
 								</div>
 							</div>
 						</form>
@@ -236,19 +244,24 @@
 	for (let i=0; i<filters.length; i++){
 		filters[i].addEventListener('input', function(){
 			if (filters[i].value){
-				filter_dict[filters[i].getAttribute('name')] = filters[i].value;
-				console.log(filter_dict);
+				$('.clear').removeAttr('hidden')
 			}else{
-				delete filter_dict[filters[i].getAttribute('name')];
-				console.log(filter_dict);
+				$('.clear').attr('hidden', 'true')
 			}
 		})
 	};
-	
-	var transa = $('#all_transactions').val()
-	console.log(transa)
+
+	function cleare_filter(){
+		for (let i=0; i<filters.length; i++){
+			if (filters[i].value){
+				filters[i].value = ''
+			}
+		};
+		location.reload()
+	}	
 
 </script>
+
 <script type="text/javascript">
 	$(function(){
 		$("#datepicker").datepicker();
