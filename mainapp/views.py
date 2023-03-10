@@ -124,63 +124,52 @@ def transaction_view(request):
     transactions = []
     authors = CustomUser.objects.all()
     type_payments = PayType.objects.all()
-    print(authors)
-    print(authors.filter())
-    # print(type_payments.filter(pay_type='Офис').values('id')[0].get('id'))
+    dict_for_sql_filter = dict()
+    get_param_filter = dict(request.GET)
+
+    collapsed = request.session.get('transaction_collapse')
+    if collapsed is None:
+        request.session['transaction_collapse'] = 2
+
+    ''' Заполенние словаря для SQL-запроса '''
+    for element in get_param_filter:
+        if get_param_filter.get(element) != [''] and element != 'collapse' and element != 'csrfmiddlewaretoken':
+            dict_for_sql_filter.setdefault(element, get_param_filter[element][0])
+
+    '''Заменяю данные для отработки SQL запроса '''
+    if dict_for_sql_filter.get('type_payment_id'):
+        dict_for_sql_filter['type_payment_id'] = type_payments.filter(pay_type=dict_for_sql_filter.get('type_payment_id')).values('id')[0].get('id')
+    if dict_for_sql_filter.get('author_id'):
+        dict_for_sql_filter['author_id'] = authors.filter(username=dict_for_sql_filter.get('author_id')).values('id')[0].get('id')
+    if dict_for_sql_filter.get('balance_holder_id'):
+        dict_for_sql_filter['balance_holder_id'] = BalanceHolder.objects.filter(organization_holder=dict_for_sql_filter.get('balance_holder_id')).values('id')[0].get('id')
+    if dict_for_sql_filter.get('amount_start'):
+        dict_for_sql_filter['amount_start'] = dict_for_sql_filter.get('amount_start').replace(' ', '').replace(',', '.')
+    if dict_for_sql_filter.get('amount_end'):
+        dict_for_sql_filter['amount_end'] = dict_for_sql_filter.get('amount_end').replace(' ', '').replace(',', '.')
+    if dict_for_sql_filter.get('start'):
+        dict_for_sql_filter['start'] = dt.strptime(dict_for_sql_filter.get('start'), '%d.%m.%Y').strftime('%Y-%m-%d')
+    if dict_for_sql_filter.get('end'):
+        dict_for_sql_filter['end'] = dt.strptime(dict_for_sql_filter.get('end'), '%d.%m.%Y').strftime('%Y-%m-%d')
+
     if request.user.is_superuser:
-        balance_holders = BalanceHolder.objects.all()
-        transactions = get_allow_transaction_filter(request.user.id)
+        balance_holders = get_allow_balance_holders_transaction(request.user.id, superuser_role=True)
+        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter)
     else:
-        for holder in get_allow_balance_holders_transaction(request.user.id):
-            balance_holders.append(holder['organization_holder'])
-        transactions = get_allow_transaction_filter(request.user.id, author_res=True)
+        balance_holders = get_allow_balance_holders_transaction(request.user.id)
+        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True)
 
-    if request.method == 'POST':
-        filter_name = request.POST.get('filter_name')
-        filter_holder = request.POST.get('filter_holder')
-        filter_payment = request.POST.get('filter_payment')
-        if filter_payment:
-            filter_payment = type_payments.filter(pay_type=filter_payment).values('id')[0].get('id')
-        filter_tags = request.POST.get('filter_tags')
-        filter_start = request.POST.get('start')
-        filter_end = request.POST.get('end')
-        filter_autor = request.POST.get('filter_autor')
-        if filter_autor:
-            pass
-        filter_type = request.POST.get('filter_type')
-        filter_status = request.POST.get('filter_status')
-        filter_amount_start = request.POST.get('filter_amount_start')
-        filter_amount_end = request.POST.get('filter_amount_end')
-
-        filter_post = {
-            'name': filter_name,
-            'balance_holder_id': filter_holder,
-            'type_payment_id': filter_payment,
-            'tags': filter_tags,
-            'transaction_date_start': filter_start,
-            'transaction_date_end': filter_end,
-            'author_id': filter_autor,
-            'type_transaction': filter_type,
-            'status': filter_status,
-            'amount_start': filter_amount_start,
-            'amount_end': filter_amount_end
-        }
-
-        filter_sql = dict()
-        transactions = []
-        for key, val in filter_post.items():
-            if val:
-                filter_sql.setdefault(key, val)
-        if request.user.is_superuser:
-            transactions = get_allow_transaction_filter(request.user.id, filter_data=filter_sql)
+    if request.GET.get('collapse'):
+        collapsed = request.session.get('transaction_collapse')
+        if collapsed == 2:
+            request.session['transaction_collapse'] = 1
         else:
-            transactions = get_allow_transaction_filter(request.user.id, author_res=True, filter_data=filter_sql)
-        data = {'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
-                'transactions': transactions, 'authors': authors}
-        return render(request, 'mainapp/transactions.html', data)
+            request.session['transaction_collapse'] = 2
 
     data = {'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
-            'transactions': transactions, 'authors': authors}
+            'transactions': transactions, 'authors': authors, 'get_param_filter': get_param_filter,
+            'collapsed': collapsed}
+
     return render(request, 'mainapp/transactions.html', data)
 
 
@@ -503,7 +492,7 @@ def transaction_update_view(request, pk):
 
 
 def transactions_log_view(request):
-    transactions_log = TransactionLog.objects.all()
+    transactions_log = TransactionLog.objects.all()[::-1]
     data = {'title': 'Логи транзакций', 'transactions_log': transactions_log}
     return render(request, 'mainapp/transactions_log.html', data)
 

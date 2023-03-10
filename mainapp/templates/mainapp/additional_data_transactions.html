@@ -6,11 +6,14 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-					<div class="table-responsive">
+					<div class="card-header d-flex align-items-center card-header-no-bg border-bottom-0">
 						{% if user.is_superuser or user.is_staff %}
-							<a href="{% url 'addition_create' %}">Создать дополнительные данные по транзакции</a>
+						<div class="card-options ms-auto">
+							<a href="{% url 'addition_create' %}" class="btn btn-primary btn-sm">Создать дополнительные данные по транзакции</a>
+						</div>
 						{% endif %}
-
+					</div>
+					<div class="table-responsive">
 						{% if additional %}
 						<div class="card-body">
 							<div class="table-responsive">

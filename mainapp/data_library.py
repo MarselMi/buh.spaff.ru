@@ -178,7 +178,7 @@ def get_allow_balance_holders(pk):
     return response
 
 
-def get_allow_balance_holders_transaction(pk):
+def get_allow_balance_holders_transaction(pk, superuser_role=False):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -187,15 +187,26 @@ def get_allow_balance_holders_transaction(pk):
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
     try:
-        with conn.cursor() as cursor:
-            response = f'''
-                    SELECT
-                        `mb`.`organization_holder`
-                    FROM `mainapp_balanceholder` mb
-                    WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
-                    '''
-            cursor.execute(response)
-            response = cursor.fetchall()
+        if superuser_role:
+            with conn.cursor() as cursor:
+                response = f'''
+                        SELECT
+                            `mb`.`organization_holder`
+                        FROM `mainapp_balanceholder` mb
+                        WHERE `mb`.`deleted`=0
+                        '''
+                cursor.execute(response)
+                response = cursor.fetchall()
+        else:
+            with conn.cursor() as cursor:
+                response = f'''
+                        SELECT
+                            `mb`.`organization_holder`
+                        FROM `mainapp_balanceholder` mb
+                        WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+                        '''
+                cursor.execute(response)
+                response = cursor.fetchall()
     finally:
         conn.close()
 
@@ -377,19 +388,42 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None):
 
     author_req = ''
     if author_res:
-        author_req = f'''
+        author_req = \
+            f'''
             WHERE `mt`.`balance_holder_id` IN 
             (SELECT `mah`.`balanceholder_id` 
                 FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk}
             )
-        '''
+            '''
 
     if filter_data:
         for key, val in filter_data.items():
             if len(filters) == 5:
-                filters += f''' `mt`.`{key}` = '{val}' '''
+                if key == 'amount_start':
+                    filters += f''' `mt`.`amount` >= '{val}' '''
+                elif key == 'amount_end':
+                    filters += f''' `mt`.`amount` <= '{val}' '''
+                elif key == 'start':
+                    filters += f''' `mt`.`transaction_date` >= '{val}' '''
+                elif key == 'end':
+                    filters += f''' `mt`.`transaction_date` <= '{val}' '''
+                elif key == 'tags':
+                    filters += f''' `mt`.`tags` LIKE '%{val}%' '''
+                else:
+                    filters += f''' `mt`.`{key}` = '{val}' '''
             else:
-                filters += f''' AND `mt`.`{key}` = '{val}' '''
+                if key == 'amount_start':
+                    filters += f''' AND `mt`.`amount` => '{val}' '''
+                elif key == 'amount_end':
+                    filters += f''' AND `mt`.`amount` <= '{val}' '''
+                elif key == 'start':
+                    filters += f''' AND `mt`.`transaction_date` >= '{val}' '''
+                elif key == 'end':
+                    filters += f''' AND `mt`.`transaction_date` <= '{val}' '''
+                elif key == 'tags':
+                    filters += f''' AND `mt`.`tags` LIKE '%{val}%' '''
+                else:
+                    filters += f''' AND `mt`.`{key}` = '{val}' '''
 
     try:
         with conn.cursor() as cursor:
@@ -405,7 +439,7 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None):
                             (SELECT `mb`.`organization_holder` FROM `mainapp_balanceholder` mb WHERE `mt`.`balance_holder_id`=`mb`.`id`) as 'balance_holder',
                             `mt`.`amount`,
                             (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
-                            (SELECT CONCAT(`mu`.`first_name`, ' ', `mu`.`last_name`) FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
+                            (SELECT `mu`.`username` FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
                             `mt`.`status`,
                             `mt`.`check_img`                
                         FROM `mainapp_transaction` mt
@@ -416,47 +450,4 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None):
             response = cursor.fetchall()
     finally:
         conn.close()
-
     return response
-
-# inp_filters = {
-#     'name': 'Ivan',
-#     'status': 'Paid',
-#     'type_transaction': 'In'
-# }
-
-# holder_rule = f'''
-#             mt.balance_holder_id
-#             IN
-#             (SELECT mah.balanceholder_id FROM mainapp_customuser_available_holders mah WHERE mah.customuser_id={pk})
-#         '''
-
-# if holder_id:
-#     holder_rule = f'mt.balance_holder_id = {holder_id}'
-
-# filters = ''
-
-# if inp_filters:
-#     for k, v in inp_filters.items():
-#         filters += f' AND mt.{k} = "{v}"'
-
-# query = f'''
-#         SELECT
-#             mt.id,
-#             mt.balance_holder_id,
-#             mt.type_transaction,
-#             mt.transaction_date,
-#             mt.create_date,
-#             mt.update_date,
-#             mt.name,
-#             (SELECT mb.organization_holder FROM mainapp_balanceholder mb WHERE mt.balance_holder_id=mb.id) as 'balance_holder',
-#             mt.amount,
-#             (SELECT mp.pay_type FROM mainapp_paytype mp WHERE mt.type_payment_id=mp.id) as 'type_payment',
-#             (SELECT CONCAT(mu.first_name, ' ', mu.last_name)
-#                 FROM mainapp_customuser mu WHERE mt.author_id=mu.id
-#             ) as 'author',
-#             mt.status,
-#             mt.check_img
-#         FROM mainapp_transaction mt
-#         WHERE {holder_rule} {filters}
-#         '''

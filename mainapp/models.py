@@ -17,7 +17,6 @@ STATUS_CHOICES = [
         ('SUCCESSFULLY', 'Успешно')
     ]
 
-
 HOLDER_ROLE = [
     ('PRIVATE_PERSONE', 'Частное лицо'),
     ('ORGANISATION', ' Организация')
@@ -60,7 +59,7 @@ class CustomUser(AbstractUser, models.Model):
     available_holders = models.ManyToManyField(BalanceHolder)
 
     def __str__(self):
-        return f'{self.last_name} {self.first_name}'
+        return f'{self.username}'
 
     class Meta:
         verbose_name = 'Пользователя'

@@ -6,19 +6,22 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
+					<div class="card-header d-flex align-items-center card-header-no-bg border-bottom-0">
 						{% if user.is_superuser or user.is_staff %}
-						<a href="{% url 'transaction_create' %}">Создать транзакцию</a>
+						<div class="card-options ms-auto">
+							<a href="{% url 'transaction_create' %}" class="btn btn-primary btn-sm">Создать транзакцию</a>
+						</div>
 						{% endif %}
-						{% if transactions %}
+					</div>
 					<div class="card-body">
-						<form method="POST" action="">
-						{% csrf_token %}
+						<form action="">
 						
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label class="label" for="filter_name">Фильтр по имени транзакии</label>
-									<input class="form-control filter" autocomplete="off" list="transaction_name" name="filter_name" id="filter_name" placeholder="Введите имя транзакции"/>
+									<input class="form-control filter" autocomplete="off" list="transaction_name" name="name" id="filter_name"
+										   {% if get_param_filter.name.0 %} value="{{ get_param_filter.name.0 }}" {% endif %} placeholder="Введите имя транзакции"/>
 									<datalist id="transaction_name">
 										{% for transaction in transactions %}
 										<option value="{{ transaction.name }}">{{ transaction.name }}</option>
@@ -28,17 +31,19 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="filter_holder">Фильтр по балансодержателям</label>
-									<input class="form-control filter" list="balance_holder" autocomplete="off" name="filter_holder" id="filter_holder" placeholder="Введите балансодержателя"/>
+									<input class="form-control filter" list="balance_holder" autocomplete="off" name="balance_holder_id" id="filter_holder"
+										    {% if get_param_filter.balance_holder_id.0 %} value="{{ get_param_filter.balance_holder_id.0 }}" {% endif %} placeholder="Введите балансодержателя"/>
 									<datalist id="balance_holder">
 										{% for holder in balance_holders %}
-										<option value="{{ holder }}">{{ holder }}</option>
+										<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
 										{% endfor %}
 									</datalist>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="filter_payment">Фильтр по типу платежа</label>
-									<input class="form-control filter" list="pay_type" autocomplete="off" name="filter_payment" id="filter_payment" placeholder="Введите тип платежа"/>
+									<input class="form-control filter" list="pay_type" autocomplete="off" name="type_payment_id" id="filter_payment"
+										   {% if get_param_filter.type_payment_id.0 %} value="{{ get_param_filter.type_payment_id.0 }}" {% endif %} placeholder="Введите тип платежа"/>
 									<datalist id="pay_type">
 										{% for type in type_payments %}
 										<option value="{{ type }}">{{ type }}</option>
@@ -48,13 +53,14 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="filter_tags">Фильтр по тегам</label>
-									<input class="form-control filter" autocomplete="off" name="filter_tags" id="filter_tags" placeholder="Введите теги"/>
+									<input class="form-control filter" autocomplete="off" name="tags" id="filter_tags"
+									{% if get_param_filter.tags.0 %} value="{{ get_param_filter.tags.0 }}" {% endif %} placeholder="Введите теги"/>
 								</div>
 
 							</div>
 
 							<div id="accordionStatsDaysFilter">
-								<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
+								<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse{% if collapsed == 2 %}{% else %} show{% endif %}" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
 									<div class="row">
 
 										<div class="col-12 col-sm-3 mb-3">
@@ -65,39 +71,57 @@
 
 											<div class="input-group" id="input-date-group">
 												<span class="input-group-text">С</span>
-												<input class="form-control filter" type="text" name="start" value="" id="datepicker"/>
+												<input class="form-control filter" type="text" name="start"
+													   {% if get_param_filter.start.0 %} value="{{ get_param_filter.start.0 }}" {% endif %} id="datepicker"/>
 												<span class="input-group-text">По</span>
-												<input class="form-control filter" type="text" name="end" value="" id="datepicker1"/>
+												<input class="form-control filter" type="text" name="end"
+													   {% if get_param_filter.end.0 %} value="{{ get_param_filter.end.0 }}" {% endif %} id="datepicker1"/>
 											</div> <!-- /input-group -->
 
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
 											<label for="filter_autor">Фильтр по автору создателя</label>
-											<input class="form-control filter" list="user_filter" autocomplete="off" name="filter_autor" id="filter_autor" placeholder="Введите автора транзакции"/>
+											<input class="form-control filter" list="user_filter" autocomplete="off" name="author_id" id="filter_autor"
+												   {% if get_param_filter.author_id.0 %} value="{{ get_param_filter.author_id.0 }}" {% endif %} placeholder="Введите автора транзакции"/>
 											<datalist id="user_filter">
 												{% for author in authors %}
-												<option value="{{ author }}">{{ author }}</option>
+													<option value="{{ author }}">{{ author }}</option>
 												{% endfor %}
 											</datalist>
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
 											<label for="filter_type">Фильтр по типу транзакии</label>
-											<select class="form-select filter" autocomplete="off" name="filter_type" id="filter_type">
-												<option value="">Выберите тип транзакции</option>
-												<option value="COMING">Приход</option>
-												<option value="EXPENDITURE">Расход</option>
+											<select class="form-select filter" autocomplete="off" name="type_transaction" id="filter_type">
+												{% if get_param_filter.type_transaction.0 %}
+													<option selected value="{{ get_param_filter.type_transaction.0 }}">{{ get_param_filter.type_transaction.0|trans_type }}</option>
+													<option value="">Выберите тип транзакции</option>
+													<option value="COMING">Приход</option>
+													<option value="EXPENDITURE">Расход</option>
+												{% else %}
+													<option value="">Выберите тип транзакции</option>
+													<option value="COMING">Приход</option>
+													<option value="EXPENDITURE">Расход</option>
+												{% endif %}
 											</select>
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
 											<label class="label" for="filter_status">Фильтр по статусу транзакии</label>
-											<select class="form-select filter" autocomplete="off" name="filter_status" id="filter_status">
-												<option value="">Выберите статус транзакции</option>
-												<option value="SUCCESSFULLY">Успешно</option>
-												<option value="INPROCESS">В процессе</option>
-												<option value="REJECT">Отклонен</option>
+											<select class="form-select filter" autocomplete="off" name="status" id="filter_status">
+												{% if get_param_filter.status.0 %}
+													<option selected value="{{ get_param_filter.status.0 }}">{{ get_param_filter.status.0|trans_status }}</option>
+													<option value="">Выберите статус транзакции</option>
+													<option value="SUCCESSFULLY">Успешно</option>
+													<option value="INPROCESS">В процессе</option>
+													<option value="REJECT">Отклонен</option>
+												{% else %}
+													<option value="">Выберите статус транзакции</option>
+													<option value="SUCCESSFULLY">Успешно</option>
+													<option value="INPROCESS">В процессе</option>
+													<option value="REJECT">Отклонен</option>
+												{% endif %}
 											</select>
 										</div> <!-- /col -->
 
@@ -109,9 +133,11 @@
 
 											<div class="input-group" id="input-amount-group">
 												<span class="input-group-text">Мин: </span>
-												<input class="form-control filter" autocomplete="off" name="filter_amount_start" id="filter_amount_higher" placeholder="Введите цену транзакции"/>
+												<input class="form-control filter" autocomplete="off" name="amount_start" id="filter_amount_higher"
+												{% if get_param_filter.amount_start.0 %} value="{{ get_param_filter.amount_start.0 }}" {% endif %} placeholder="Введите цену транзакции"/>
 												<span class="input-group-text">Макс: </span>
-												<input class="form-control filter" autocomplete="off" name="filter_amount_end" id="filter_amount_below" placeholder="Введите цену транзакции"/>
+												<input class="form-control filter" autocomplete="off" name="amount_end" id="filter_amount_below"
+												{% if get_param_filter.amount_end.0 %} value="{{ get_param_filter.amount_end.0 }}" {% endif %} placeholder="Введите цену транзакции"/>
 											</div>
 										</div>
 									</div>
@@ -122,9 +148,11 @@
 
 								<div class="col-12">
 
-									<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть');" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">
-										Раскрыть
-									</button>
+									{% if collapsed == 2 %}
+										<button onclick="$(this).text($(this).text() == 'Скрыть' ? 'Раскрыть' : 'Скрыть'); checkCollapse()" type="button" class="btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="false" aria-controls="collapseStatsDaysFilter-1">Раскрыть</button>
+									{% else %}
+										<button onclick="$(this).text($(this).text() == 'Раскрыть' ? 'Скрыть' : 'Раскрыть'); checkCollapse()" type="button" class="btn btn-secondary text-white" data-bs-toggle="collapse" data-bs-target="#collapseStatsDaysFilter-1" aria-expanded="true" aria-controls="collapseStatsDaysFilter-1">Скрыть</button>
+									{% endif %}
 
 									<button type="submit" class="btn btn-primary ms-3">
 										Показать
@@ -136,11 +164,13 @@
 
 								</div>
 							</div>
+
 						</form>
 					</div>
 					<div class="table-responsive">
+						{% if transactions %}
 						<div class="card-body">
-							<div class="table-responsive">
+							<div class="table-responsive table-maxh-stats">
 								<table class="table table-bordered text-nowrap mb-0">
 									<thead>
 										<tr class="text-center">
@@ -215,8 +245,11 @@
 							</div> <!-- /table-responsive -->
 						</div>
 						{% else %}
-						<div class="card-body">
-							Нет данных
+						<div class="alert alert-warning" role="alert">
+							<h5 class="alert-heading text-center">
+								<i class="fa-regular fa-octagon-exclamation me-2"></i>
+								Нет доступных транзакций
+							</h5>
 						</div>
 						{% endif %}
 					</div> <!-- /table-responsive -->
@@ -225,47 +258,101 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
-<script>
+	<script>
 
-	var url = document.location.href;
-	var a = document.cookie.split(';');
-	var token = ''
+		var url = document.location.href;
+		var a = document.cookie.split(';');
+		var token = ''
 
-	for (i = 0; i < a.length; i++) {
-		var b = a[i].split('=')
-		b[0] = b[0].replace(/\s+/g, '')
-		if (b[0] == 'csrftoken') {
-		token = b[1]
+		for (i = 0; i < a.length; i++) {
+			var b = a[i].split('=')
+			b[0] = b[0].replace(/\s+/g, '')
+			if (b[0] == 'csrftoken') {
+			token = b[1]
+			}
 		}
-	}
 
-	var filters = $('.filter')
-	var filter_dict = {}
-	for (let i=0; i<filters.length; i++){
-		filters[i].addEventListener('input', function(){
-			if (filters[i].value){
-				$('.clear').removeAttr('hidden')
-			}else{
-				$('.clear').attr('hidden', 'true')
+		var filters = document.querySelectorAll('.filter')
+
+		function check_filter(){
+			let check_val = 0
+			for (let i = 0; i < filters.length; i++){
+				if (filters[i].value){
+					check_val += 1
+				}
+			}
+			return check_val
+		}
+
+		console.log(check_filter())
+
+		if (check_filter()){
+			$('.clear').removeAttr('hidden')
+		}else{
+			$('.clear').attr('hidden', 'true')
+		}
+
+		for (let i = 0; i < filters.length; i++){
+			filters[i].addEventListener('input', function(){
+				if (filters[i].value){
+					$('.clear').removeAttr('hidden')
+				}else{
+					$('.clear').attr('hidden', 'true')
+				}
+			})
+		};
+
+		function cleare_filter(){
+			for (let i=0; i<filters.length; i++){
+				if (filters[i].value){
+					filters[i].removeAttribute('value');
+					filters[i].value = '';
+				}
+			};
+		}
+
+		function checkCollapse() {
+		    $.ajax(
+			    {
+			  	    url: url,
+			  	    method: 'GET',
+			  	    data: {
+					    csrfmiddlewaretoken: token,
+					    collapse: 1
+			  	    }
+			    }
+		    ).then(function(result) {
+			    var x = 1;
+		    }).catch(function(err) {
+				var x = 1;
+		    });
+		};
+	</script>
+
+	<script type="text/javascript">
+		$(function(){
+			$("#datepicker").datepicker();
+			$("#datepicker1").datepicker();
+		});
+	</script>
+
+	<script>
+		var dirtly_url = new URL(location);
+		var dirtly_params = dirtly_url.searchParams;
+		var new_params = '?';
+
+		dirtly_params.forEach((val, key) =>{
+			if (val){
+				new_params += key+'='+val+'&'
 			}
 		})
-	};
 
-	function cleare_filter(){
-		for (let i=0; i<filters.length; i++){
-			if (filters[i].value){
-				filters[i].value = ''
-			}
-		};
-		location.reload()
-	}	
+		new_params = new_params.slice(0, -1);
 
-</script>
+		var new_url = new URL(new_params, location);
 
-<script type="text/javascript">
-	$(function(){
-		$("#datepicker").datepicker();
-		$("#datepicker1").datepicker();
-	});
-</script>
+		history.pushState(null, null, new_url);
+
+	</script>
+
 {% endblock content %}
