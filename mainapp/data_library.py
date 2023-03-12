@@ -41,6 +41,56 @@ def get_transaction_holder(pk):
     return response
 
 
+def get_all_coming_sum(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+            SELECT SUM(`amount`) as `coming` 
+            FROM `mainapp_transaction` t 
+            WHERE 
+            `t`.`status`="SUCCESSFULLY" 
+            AND 
+            `t`.`type_transaction`="COMING"
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+def get_all_expenditure_sum(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                SELECT SUM(`amount`) as `expenditure` 
+                FROM `mainapp_transaction` mt 
+                WHERE `mt`.`status`="SUCCESSFULLY" 
+                AND `mt`.`type_transaction`="EXPENDITURE"
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
 def get_coming_sum(pk):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),

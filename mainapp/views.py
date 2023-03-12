@@ -113,7 +113,8 @@ def main_page_view(request):
                   'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
                   'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
 
-    data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list, 'type_payments': type_payments,
+    data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list,
+            'type_payments': type_payments,
             }
 
     return render(request, 'mainapp/main-page.html', data)

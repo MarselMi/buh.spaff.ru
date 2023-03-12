@@ -13,7 +13,11 @@
 							<div id="{{ holder.id }}" type="button" class="container-fluid holders_id btn btn-{{color_list|get_item:count}}" style="border-radius: 15px;">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.organization_holder }}</h5>
-									<p>Расчетный счет - {{ holder.payment_account }}</p>
+									<p>Расчетный счет
+										<span onclick="copyTextToClipboard( {{ holder.payment_account }} ); return false;" type="button" class="small ms-1" data-bs-toggle="tooltip" data-bs-title="Скопировать {{ holder.payment_account }}">
+											<i class="fa-regular fa-clipboard"></i>
+										</span>
+									</p>
 								</div>
 								<!-- Button trigger modal -->
 								<button type="button" class="btn buttonSelectModal" data-holder-id="{{ holder.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="{{ holder.organization_holder }}">
