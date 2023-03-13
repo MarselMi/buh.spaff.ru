@@ -11,8 +11,8 @@ from mainapp.models import (CustomUser, Transaction, BalanceHolder, PayType, Add
 
 def main_page_view(request):
     holders = []
-    comming_sum = 0
-    expenditure_sum = 0
+    comming_sum = ''
+    expenditure_sum = ''
     if request.user.is_superuser:
         holders = BalanceHolder.objects.filter(deleted=False)
         comming_sum = get_all_coming_sum(request.user.id, simpleuser=False)

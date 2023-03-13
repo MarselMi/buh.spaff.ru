@@ -6,14 +6,23 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-
+				{% if holders %}
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center mb-2">
-							<div id="{{ holder.id }}" type="button" class="container-fluid holders_id btn btn-{{color_list|get_item:count}}" style="border-radius: 15px;">
+							<div id="{{ holder.id }}" class="container-fluid holders_id" style="border-radius: 15px; background: lightblue">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
-									<h1>{{ holder.holder_balance|numb_format }}</h1><h5>{{ holder.organization_holder }}</h5>
-									<p>Расчетный счет
+									<h1>
+										{{ holder.holder_balance|numb_format }}
+									</h1>
+									<span data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="Нажмите для получения детальной информации">
+										{{ holder.organization_holder }}
+										<button type="button" class="btn btn-sm ms-1">
+											<i class="fa-regular fa-info"></i>
+										</button>
+									</span>
+									<p>
+										Расчетный счет
 										<span onclick="copyTextToClipboard( {{ holder.payment_account }} ); return false;" type="button" class="small ms-1" data-bs-toggle="tooltip" data-bs-title="Скопировать {{ holder.payment_account }}">
 											<i class="fa-regular fa-clipboard"></i>
 										</span>
@@ -38,7 +47,13 @@
 					</div>
 
 					<div class="row mb-4 mt-4">
-
+						<div class="h2 text-center">
+							Общая информация по транзакциям
+							<i class="fa-solid fa-circle-info text-info ms-1"
+							   data-bs-toggle="popover" data-bs-trigger="hover focus"
+							   data-bs-content="Для получения информации по отдельному балансодержателю нажмите на него">
+							</i>
+						</div>
 						<div class="col-12 col-md-6">
 							<div class="h3 text-center">Входящие транзакции</div>
 							<div id="ChartStatsPartIncome"></div>
@@ -99,7 +114,18 @@
 							</div> <!-- /card -->
 						</div> <!-- /col -->
 					</div> <!-- /row -->
+				{% else %}
+					<div class="table-responsive">
 
+						<div class="alert alert-warning" role="alert">
+							<h5 class="alert-heading text-center">
+								<i class="fa-regular fa-octagon-exclamation me-2"></i>
+								Для работы необходимо создать "Тип платежа", "Балансодержателя", "Транзакцию"
+							</h5>
+						</div>
+
+					</div>
+				{% endif %}
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
 		</div> <!-- /col -->
