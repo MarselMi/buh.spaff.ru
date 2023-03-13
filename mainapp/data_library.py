@@ -41,7 +41,7 @@ def get_transaction_holder(pk):
     return response
 
 
-def get_all_coming_sum(pk):
+def get_all_coming_sum(pk, simpleuser=False):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -50,14 +50,27 @@ def get_all_coming_sum(pk):
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
     try:
+        allow_data_user = ''
+        if simpleuser:
+            allow_data_user = f'''
+                AND `t`.`balance_holder_id` IN 
+                    (
+                        SELECT `mah`.`balanceholder_id` 
+                        FROM `mainapp_customuser_available_holders` mah 
+                        WHERE `mah`.`customuser_id`={pk}
+                    )
+                '''
         with conn.cursor() as cursor:
             response = f'''
-            SELECT SUM(`amount`) as `coming` 
+            SELECT SUM(`amount`) as `coming`,
+            (SELECT `pt`.`pay_type` FROM `mainapp_paytype` pt WHERE `pt`.`id` = `t`.`type_payment_id`) as `type`
             FROM `mainapp_transaction` t 
             WHERE 
             `t`.`status`="SUCCESSFULLY" 
             AND 
             `t`.`type_transaction`="COMING"
+            {allow_data_user}
+            GROUP BY `t`.`type_payment_id`
             '''
             cursor.execute(response)
             response = cursor.fetchall()
@@ -67,7 +80,7 @@ def get_all_coming_sum(pk):
     return response
 
 
-def get_all_expenditure_sum(pk):
+def get_all_expenditure_sum(pk, simpleuser=False):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -76,12 +89,26 @@ def get_all_expenditure_sum(pk):
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
     try:
+        allow_data_user = ''
+        if simpleuser:
+            allow_data_user = f'''
+                AND `t`.`balance_holder_id` IN 
+                    (
+                        SELECT `mah`.`balanceholder_id` 
+                        FROM `mainapp_customuser_available_holders` mah 
+                        WHERE `mah`.`customuser_id`={pk}
+                    )
+                '''
+
         with conn.cursor() as cursor:
             response = f'''
-                SELECT SUM(`amount`) as `expenditure` 
-                FROM `mainapp_transaction` mt 
-                WHERE `mt`.`status`="SUCCESSFULLY" 
-                AND `mt`.`type_transaction`="EXPENDITURE"
+                SELECT SUM(`amount`) as `expenditure`,
+                (SELECT `pt`.`pay_type` FROM `mainapp_paytype` pt WHERE `pt`.`id` = `t`.`type_payment_id`) as `type`
+                FROM `mainapp_transaction` t 
+                WHERE `t`.`status`="SUCCESSFULLY" 
+                AND `t`.`type_transaction`="EXPENDITURE"
+                {allow_data_user}
+                GROUP BY `t`.`type_payment_id`
             '''
             cursor.execute(response)
             response = cursor.fetchall()

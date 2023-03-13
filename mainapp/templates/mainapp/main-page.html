@@ -37,16 +37,30 @@
 						{% endfor %}
 					</div>
 
+					<div class="row mb-4 mt-4">
+
+						<div class="col-12 col-md-6">
+							<div class="h3 text-center">Входящие транзакции</div>
+							<div id="ChartStatsPartIncome"></div>
+						</div>
+
+						<div class="col-12 col-md-6">
+							<div class="h3 text-center">Исходящие транзакции</div>
+							<div id="ChartStatsPartExpenditure"></div>
+						</div>
+
+					</div>
+
 					<div class="row mt-4">
 						<div class="col-12 col-sm-12">
 							<div class="card mb-4 card_info_trans">
 								
-								<div class="alert align-items-center mb-0 holder_alert text-center">
+								<!-- <div class="alert align-items-center mb-0 holder_alert text-center">
 									<i class="fa-regular fa-triangle-exclamation me-2"></i>
 									<div>
 										<strong>Выберите балансодержателя для просмотра информации</strong>
 									</div>
-								</div>
+								</div> -->
 
 								<div class="card-header card-header-no-bg border-bottom-0 holder_table" hidden>
 									<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-0">
@@ -172,7 +186,7 @@
 					<div class="modal-footer">
 						<div class="row">
 							<div class="col-12 mb-3">
-								<button id="liveToastBtn" type="submit" class="btn btn-primary w-100">
+								<button id="liveToastBtn" onclick="createTransaction()" type="submit" class="btn btn-primary w-100">
 									Сохранить
 								</button> <!-- /btn -->
 							</div>
@@ -188,328 +202,340 @@
 		</div> <!-- /modal-dialog -->
 	</div> <!-- /modal -->
 
-<script>
+	<script>
 
-	var url = document.location.href;
-	var a = document.cookie.split(';');
-	var token = ''
+		var profit_sum = {{ profit_coming|safe }};
+		var label_comming = {{ label_coming|safe }};
+		var option_comming = {
+			series: profit_sum,
+			labels: label_comming,
+			chart: {
+				type: 'donut',
+			},
+			legend: {
+				show: true,
+				position: 'top',
+			},
+			stroke: {
+				width: 4,
+				colors: ['#fff']
+			},
+			dataLabels: {
+				style: {
+					colors: ['#000000', '#000000', '#000000']
+				},
+				dropShadow: {
+					enabled: true,
+					top: 0,
+					left: 0,
+					blur: 1,
+					color: '#ffffff',
+					opacity: 70
+				}
+			}
+		};
+		var chart_comming = new ApexCharts(document.querySelector("#ChartStatsPartIncome"), option_comming);
+		chart_comming.render();
 
-	for (i = 0; i < a.length; i++) {
-		var b = a[i].split('=')
-		b[0] = b[0].replace(/\s+/g, '')
-		if (b[0] == 'csrftoken') {
-		token = b[1]
+		var expenditure_sum = {{ profit_expenditure|safe }}
+		var expenditure_label = {{ label_expenditure|safe }}
+		var option_expenditure = {
+			series: expenditure_sum,
+			labels: expenditure_label,
+			chart: {
+				type: 'donut',
+			},
+			legend: {
+				show: true,
+				position: 'top',
+			},
+			stroke: {
+				width: 4,
+				colors: ['#fff']
+			},
+			dataLabels: {
+				style: {
+					colors: ['#000000', '#000000', '#000000']
+				},
+				dropShadow: {
+					enabled: true,
+					top: 0,
+					left: 0,
+					blur: 1,
+					color: '#ffffff',
+					opacity: 70
+				}
+			}
 		}
-	}
+		var chart_expenditure = new ApexCharts(document.querySelector("#ChartStatsPartExpenditure"), option_expenditure);
+		chart_expenditure.render();
 
-	var exampleModal = document.getElementById('exampleModal')
-	
-	// var elements_form = $('.obligatory')
+	</script>
 
-	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+	<script>
 
-	$(function(){
-		$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
-	});
+		var url = document.location.href;
+		var a = document.cookie.split(';');
+		var token = ''
 
-	
-
-	// $('form').on('change keyup input click focusot live', function(){
-	// 	$('.error').remove();
-	// 	$('.error_type').remove();
-	// 	if (!$('#type_payment').val()){
-	// 		$('#type_payment').addClass('is-invalid');
-	// 		$('#type_payment').removeClass('is-valid');
-	// 		$('#type_payment').after('<div class="invalid-feedback error_type">Нет такого типа платежа</div>')
-	// 	}
-	// 	if ($('#newTransactionName').val()){
-	// 		$('#newTransactionName').removeClass('is-invalid');
-	// 		$('#newTransactionName').addClass('is-valid');
-	// 	}else{
-	// 		$('#newTransactionName').addClass('is-invalid');
-	// 		$('#newTransactionName').removeClass('is-valid');
-	// 	};
-
-	// 	if (($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход')){
-	// 		$('#type_transaction').removeClass('is-invalid');
-	// 		$('#type_transaction').addClass('is-valid');
-	// 	}else{
-	// 		$('#type_transaction').addClass('is-invalid');
-	// 		$('#type_transaction').removeClass('is-valid');
-	// 	};
-
-	// 	var date_value = $('#datepicker').val();
-	// 	if ((date_value.length == 10) && (!regEx.test($('#datepicker').val()))){
-	// 		$('#datepicker').removeClass('is-invalid');
-	// 		$('#datepicker').addClass('is-valid');
-	// 	}else{
-	// 		$('#datepicker').addClass('is-invalid');
-	// 		$('#datepicker').removeClass('is-valid');
-	// 	};
-
-	// 	if ($('#amount').val() && (!regEx.test($('#amount').val()))){
-	// 		$('#amount').removeClass('is-invalid');
-	// 		$('#amount').addClass('is-valid');
-	// 	}else{
-	// 		$('#amount').addClass('is-invalid');
-	// 		$('#amount').removeClass('is-valid');
-	// 		$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
-	// 	};
-
-	// 	if ($('#newTransactionName').hasClass('is-valid') && $('#type_payment').hasClass('is-valid') 
-	// 	&& $('#type_transaction').hasClass('is-valid') && $('#datepicker').hasClass('is-valid') 
-	// 	&& $('#amount').hasClass('is-valid')){
-	// 		$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
-	// 		$('#liveToastBtn').attr('aria-label', 'Close')
-	// 		$('#liveToastBtn').removeAttr('disabled')
-	// 	}else{
-	// 		$('#liveToastBtn').removeAttr('data-bs-dismiss')
-	// 		$('#liveToastBtn').removeAttr('aria-label')
-	// 		$('#liveToastBtn').attr('disabled', 'true')
-	// 	}
-	// })
-
-	(function () {
-		// Получите все формы, к которым мы хотим применить пользовательские стили проверки Bootstrap
-		var forms = document.querySelectorAll('.needs-validation')
-		var date_value = $('#datepicker').val();
-		$('#type_payment').on('input change', function(){
-			$.ajax(
-				{
-					url: url,
-					method: 'POST',
-					data: {
-						csrfmiddlewaretoken: token,
-						type: 'check_type',
-						type_payment: $('#type_payment').val()
-					}
-				}).then(function(result) {
-					if (result.message) {
-						$('#type_payment').removeClass('is-invalid');
-						$('#type_payment').addClass('is-valid');
-					} else {
-						$('#type_payment').removeClass('is-valid');
-						$('#type_payment').addClass('is-invalid');
-						$('#liveToastBtn').removeAttr('data-bs-dismiss')
-						$('#liveToastBtn').removeAttr('aria-label')
-					}
-				}).catch(function(err) {
-					var x = 1;
-				}
-			)
-		})
-		// Зацикливайтесь на них и предотвращайте отправку
-		Array.prototype.slice.call(forms).forEach(function (form) {
-			form.addEventListener('submit', function (event) {
-				if ($('#amount').val() && (!regEx.test($('#amount').val()))) {
-					event.preventDefault()
-					event.stopPropagation()
-				}else if (!((date_value.length == 10) && (!regEx.test($('#datepicker').val())))){
-					event.preventDefault()
-					event.stopPropagation()
-				}else if (!(($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход'))){
-					event.preventDefault()
-					event.stopPropagation()
-				}else if (!$('#type_payment').val()){
-					$('#type_payment').removeClass('is-valid');
-					$('#type_payment').addClass('is-invalid');
-					event.preventDefault()
-					event.stopPropagation()
-				}else if (!form.checkValidity()) {
-					event.preventDefault()
-					event.stopPropagation()
-				}
-				form.classList.add('was-validated')
-				$('#liveToastBtn').attr('data-bs-dismiss', 'modal')
-				$('#liveToastBtn').attr('aria-label', 'Close')
-			}, false)
-		})
-	})()
-
-	var buttonSelectModal = $('.buttonSelectModal')
-	var modalTitle = exampleModal.querySelector('.modal-title')
-	var holder_link = exampleModal.querySelector('.holder_link')
-
-	for (let i=0;  buttonSelectModal.length > i; i++){
-		buttonSelectModal[i].addEventListener('click', function(event){
-			if (event.currentTarget == buttonSelectModal[i]){
-				var holder = exampleModal.querySelector('#balance_holder')
-				var id_holder = buttonSelectModal[i].getAttribute('data-holder-id')
-				holder.value = buttonSelectModal[i].getAttribute('data-bs-whatever')
-				modalTitle.textContent = 'Создать транзакцию для ' + buttonSelectModal[i].getAttribute('data-bs-whatever')
-				holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`)
+		for (i = 0; i < a.length; i++) {
+			var b = a[i].split('=')
+			b[0] = b[0].replace(/\s+/g, '')
+			if (b[0] == 'csrftoken') {
+			token = b[1]
 			}
-		})
-	}
+		}
 
-	function createTransaction(){
+		var exampleModal = document.getElementById('exampleModal')
 
-		var holder = exampleModal.querySelector('#balance_holder').value
-		var transaction_name = exampleModal.querySelector('#newTransactionName').value
-		var payment_type = exampleModal.querySelector('#type_payment').value
-		var transaction_type = exampleModal.querySelector('#type_transaction').value
-		var transaction_date = exampleModal.querySelector('#datepicker').value
-		var amount = exampleModal.querySelector('#amount').value
-		
-		$.ajax(
-		{
-			url: url,
-			method: 'POST',
-			data: {
-				csrfmiddlewaretoken: token,
-				type: 'create_transaction',
+		var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
 
-				holder_post: holder,
-				transaction_name_post: transaction_name,
-				transaction_date_post: transaction_date,
-				amount_post: amount,
-				payment_type_post: payment_type,
-				transaction_type_post: transaction_type
-			}
-		}).then(function(result) {
-			var x = 1;
-		}).catch(function(err) {
-			var x = 2;
-		})
-	}
+		$(function(){
+			$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
+		});
 
-	var holders_id = document.querySelectorAll('.holders_id');
-
-	for (let i = 0; i < holders_id.length; i++){
-		
-		holders_id[i].addEventListener('click', function(event) {
-			if (event.currentTarget == holders_id[i]){
-				holders_id[i].classList.add('border-dark');
+		(function () {
+			// Получите все формы, к которым мы хотим применить пользовательские стили проверки Bootstrap
+			var forms = document.querySelectorAll('.needs-validation')
+			var date_value = $('#datepicker').val();
+			$('#type_payment').on('input change', function(){
 				$.ajax(
 					{
 						url: url,
 						method: 'POST',
 						data: {
 							csrfmiddlewaretoken: token,
-							type: 'holders_id',
-							id: holders_id[i].getAttribute("id")
+							type: 'check_type',
+							type_payment: $('#type_payment').val()
 						}
 					}).then(function(result) {
-						var transaction_table = $('.info_transaction');
-						$('.holder_alert').remove();
-						$('.sum_transaction_info').remove();
-						transaction_table.empty();
-
-						var response = JSON.parse(result);
-						var transa = response.transactions;
-						var sum_coming = response.sum_coming;
-						var sum_expenditure = response.sum_expenditure;
-						var balance_holder = response.balance_holder
-						
-						if (transa.length) {
-							if ($('.sum_transaction_info')){
-								$('.sum_transaction_info').remove();
-							}
-							var sum_transaction_info = `<div class="row sum_transaction_info">
-															<div class="text-center">
-																<strong>Балансодержатель - ${balance_holder}</strong>
-																</div>
-															<div class="row">
-																<div class="col-lg-3 col-6 container-fluid ">
-																	<div class="pt-4 pb-3">
-																		<div class="d-flex">
-																			<div class="h6 mb-2 small">
-																				<strong>Сумма входящих транзакция</strong>
-																			</div>
-																		</div>
-																		<div class="pb-0 mt-0">
-																			<div class="d-flex">
-																				<div class="fs-5 fw-light mb-0">
-																					${sum_coming.coming} <i class="fa-regular fa-ruble-sign ms-1"></i>
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-																</div> <!-- /col -->
-
-																<div class="col-lg-3 col-6 container-fluid ">
-																	<div class="pt-4 pb-3">
-																		<div class="d-flex">
-																			<div class="h6 mb-2 small">
-																				<strong>Сумма исходящих транзакция</strong>
-																			</div>
-																		</div>
-																		<div class="pb-0 mt-0">
-																			<div class="d-flex">
-																				<div class="fs-5 fw-light mb-0">
-																					${sum_expenditure.expenditure} <i class="fa-regular fa-ruble-sign ms-1"></i>
-																				</div>
-																			</div>
-																		</div>
-																	</div> <!-- /col -->
-																</div> <!-- /col -->
-															</div> <!-- /row -->
-														</div> <!-- /row -->`
-							$('.holder_non_transaction').remove()
-							$('.holder_table').removeAttr('hidden');
-							
-							$('.card_info_trans').prepend(sum_transaction_info);
-							for (let i = 0; i < transa.length; i++) {
-								if (transa[i].type_transaction == 'COMING') {
-									var type = `<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
-													Приход
-												</span>`
-								} else {
-									var type = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
-													Расход
-												</span>`
-								};
-
-								if (transa[i].check_img) {
-									var img = `<a href="/media/${transa[i].check_img}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
-													<i class="fa-regular fa-clipboard"></i>
-												</a>`
-								} else {
-									var img = '&ndash;'
-								}
-
-								if (transa[i].update_date){
-									var update_date = transa[i].update_date
-								} else {
-									var update_date = '&ndash;'
-								}
-
-								var transaction_info =`<tr class="text-center">
-															<td>${transa[i].create_date}</td>
-															<td>${transa[i].transaction_date}</td>
-															<td>${update_date}</td>
-															<td>${type}</td>
-															<td>${transa[i].amount}</td>
-															<td>${transa[i].author_id}</td>
-															<td>${transa[i].balance_holder_id}</td>
-															<td>${transa[i].name}</td>
-															<td>${transa[i].type_payment_id}</td>
-															<td>${img}</td>
-														</tr>`;
-								transaction_table.prepend(transaction_info);
-							}
+						if (result.message) {
+							$('#type_payment').removeClass('is-invalid');
+							$('#type_payment').addClass('is-valid');
 						} else {
-							var no_transactions = `<div class="alert d-flex align-items-center mb-0 holder_non_transaction">
-														<i class="fa-regular fa-triangle-exclamation me-2"></i>
-														<div>
-															У Балансодержателя отсутствуют завершенные транзакции
-														</div>
-													</div>`
-							if ($('.holder_non_transaction')){
-								$('.holder_non_transaction').remove();
-							}
-							$('.holder_table').attr('hidden', 'true');
-							$('.card_info_trans').prepend(no_transactions);
+							$('#type_payment').removeClass('is-valid');
+							$('#type_payment').addClass('is-invalid');
+							$('#liveToastBtn').removeAttr('data-bs-dismiss')
+							$('#liveToastBtn').removeAttr('aria-label')
 						}
 					}).catch(function(err) {
 						var x = 1;
-				})
-			} else {
-				holders_id[i].classList.remove('border-dark');
-			}
-		})
-	};
+					}
+				)
+			})
+			// Зацикливайтесь на них и предотвращайте отправку
+			Array.prototype.slice.call(forms).forEach(function (form) {
+				form.addEventListener('submit', function (event) {
+					if ($('#amount').val() && (!regEx.test($('#amount').val()))) {
+						event.preventDefault()
+						event.stopPropagation()
+					}else if (!((date_value.length == 10) && (!regEx.test($('#datepicker').val())))){
+						event.preventDefault()
+						event.stopPropagation()
+					}else if (!(($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход'))){
+						event.preventDefault()
+						event.stopPropagation()
+					}else if (!$('#type_payment').val()){
+						$('#type_payment').removeClass('is-valid');
+						$('#type_payment').addClass('is-invalid');
+						event.preventDefault()
+						event.stopPropagation()
+					}else if (!form.checkValidity()) {
+						event.preventDefault()
+						event.stopPropagation()
+					}
+					form.classList.add('was-validated')
+				}, false)
+			})
+		})()
 
-</script>
+		var buttonSelectModal = $('.buttonSelectModal')
+		var modalTitle = exampleModal.querySelector('.modal-title')
+		var holder_link = exampleModal.querySelector('.holder_link')
+
+		for (let i=0;  buttonSelectModal.length > i; i++){
+			buttonSelectModal[i].addEventListener('click', function(event){
+				if (event.currentTarget == buttonSelectModal[i]){
+					var holder = exampleModal.querySelector('#balance_holder')
+					var id_holder = buttonSelectModal[i].getAttribute('data-holder-id')
+					holder.value = buttonSelectModal[i].getAttribute('data-bs-whatever')
+					modalTitle.textContent = 'Создать транзакцию для ' + buttonSelectModal[i].getAttribute('data-bs-whatever')
+					holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`)
+				}
+			})
+		}
+
+		function createTransaction(){
+
+			var holder = exampleModal.querySelector('#balance_holder').value
+			var transaction_name = exampleModal.querySelector('#newTransactionName').value
+			var payment_type = exampleModal.querySelector('#type_payment').value
+			var transaction_type = exampleModal.querySelector('#type_transaction').value
+			var transaction_date = exampleModal.querySelector('#datepicker').value
+			var amount = exampleModal.querySelector('#amount').value
+			
+			$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'create_transaction',
+
+					holder_post: holder,
+					transaction_name_post: transaction_name,
+					transaction_date_post: transaction_date,
+					amount_post: amount,
+					payment_type_post: payment_type,
+					transaction_type_post: transaction_type
+				}
+			}).then(function(result) {
+				console.log('OK');
+				location.reload();
+				var x = 1;
+			}).catch(function(err) {
+				console.log('ERR')
+				var x = 2;
+			})
+		}
+
+		var holders_id = document.querySelectorAll('.holders_id');
+
+		// for (let i = 0; i < holders_id.length; i++){
+			
+		// 	holders_id[i].addEventListener('click', function(event) {
+		// 		if (event.currentTarget == holders_id[i]){
+		// 			holders_id[i].classList.add('border-dark');
+		// 			$.ajax(
+		// 				{
+		// 					url: url,
+		// 					method: 'POST',
+		// 					data: {
+		// 						csrfmiddlewaretoken: token,
+		// 						type: 'holders_id',
+		// 						id: holders_id[i].getAttribute("id")
+		// 					}
+		// 				}).then(function(result) {
+		// 					var transaction_table = $('.info_transaction');
+		// 					$('.holder_alert').remove();
+		// 					$('.sum_transaction_info').remove();
+		// 					transaction_table.empty();
+
+		// 					var response = JSON.parse(result);
+		// 					var transa = response.transactions;
+		// 					var sum_coming = response.sum_coming;
+		// 					var sum_expenditure = response.sum_expenditure;
+		// 					var balance_holder = response.balance_holder
+							
+		// 					if (transa.length) {
+		// 						if ($('.sum_transaction_info')){
+		// 							$('.sum_transaction_info').remove();
+		// 						}
+		// 						var sum_transaction_info = `<div class="row sum_transaction_info">
+		// 														<div class="text-center">
+		// 															<strong>Балансодержатель - ${balance_holder}</strong>
+		// 															</div>
+		// 														<div class="row">
+		// 															<div class="col-lg-3 col-6 container-fluid ">
+		// 																<div class="pt-4 pb-3">
+		// 																	<div class="d-flex">
+		// 																		<div class="h6 mb-2 small">
+		// 																			<strong>Сумма входящих транзакция</strong>
+		// 																		</div>
+		// 																	</div>
+		// 																	<div class="pb-0 mt-0">
+		// 																		<div class="d-flex">
+		// 																			<div class="fs-5 fw-light mb-0">
+		// 																				${sum_coming.coming} <i class="fa-regular fa-ruble-sign ms-1"></i>
+		// 																			</div>
+		// 																		</div>
+		// 																	</div>
+		// 																</div>
+		// 															</div> <!-- /col -->
+
+		// 															<div class="col-lg-3 col-6 container-fluid ">
+		// 																<div class="pt-4 pb-3">
+		// 																	<div class="d-flex">
+		// 																		<div class="h6 mb-2 small">
+		// 																			<strong>Сумма исходящих транзакция</strong>
+		// 																		</div>
+		// 																	</div>
+		// 																	<div class="pb-0 mt-0">
+		// 																		<div class="d-flex">
+		// 																			<div class="fs-5 fw-light mb-0">
+		// 																				${sum_expenditure.expenditure} <i class="fa-regular fa-ruble-sign ms-1"></i>
+		// 																			</div>
+		// 																		</div>
+		// 																	</div>
+		// 																</div> <!-- /col -->
+		// 															</div> <!-- /col -->
+		// 														</div> <!-- /row -->
+		// 													</div> <!-- /row -->`
+		// 						$('.holder_non_transaction').remove()
+		// 						$('.holder_table').removeAttr('hidden');
+								
+		// 						$('.card_info_trans').prepend(sum_transaction_info);
+		// 						for (let i = 0; i < transa.length; i++) {
+		// 							if (transa[i].type_transaction == 'COMING') {
+		// 								var type = `<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+		// 												Приход
+		// 											</span>`
+		// 							} else {
+		// 								var type = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+		// 												Расход
+		// 											</span>`
+		// 							};
+
+		// 							if (transa[i].check_img) {
+		// 								var img = `<a href="/media/${transa[i].check_img}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
+		// 												<i class="fa-regular fa-clipboard"></i>
+		// 											</a>`
+		// 							} else {
+		// 								var img = '&ndash;'
+		// 							}
+
+		// 							if (transa[i].update_date){
+		// 								var update_date = transa[i].update_date
+		// 							} else {
+		// 								var update_date = '&ndash;'
+		// 							}
+
+		// 							var transaction_info =`<tr class="text-center">
+		// 														<td>${transa[i].create_date}</td>
+		// 														<td>${transa[i].transaction_date}</td>
+		// 														<td>${update_date}</td>
+		// 														<td>${type}</td>
+		// 														<td>${transa[i].amount}</td>
+		// 														<td>${transa[i].author_id}</td>
+		// 														<td>${transa[i].balance_holder_id}</td>
+		// 														<td>${transa[i].name}</td>
+		// 														<td>${transa[i].type_payment_id}</td>
+		// 														<td>${img}</td>
+		// 													</tr>`;
+		// 							transaction_table.prepend(transaction_info);
+		// 						}
+		// 					} else {
+		// 						var no_transactions = `<div class="alert d-flex align-items-center mb-0 holder_non_transaction">
+		// 													<i class="fa-regular fa-triangle-exclamation me-2"></i>
+		// 													<div>
+		// 														У Балансодержателя отсутствуют завершенные транзакции
+		// 													</div>
+		// 												</div>`
+		// 						if ($('.holder_non_transaction')){
+		// 							$('.holder_non_transaction').remove();
+		// 						}
+		// 						$('.holder_table').attr('hidden', 'true');
+		// 						$('.card_info_trans').prepend(no_transactions);
+		// 					}
+		// 				}).catch(function(err) {
+		// 					var x = 1;
+		// 			})
+		// 		} else {
+		// 			holders_id[i].classList.remove('border-dark');
+		// 		}
+		// 	})
+		// };
+
+	</script>
 
 {% endblock content %}

@@ -11,10 +11,16 @@ from mainapp.models import (CustomUser, Transaction, BalanceHolder, PayType, Add
 
 def main_page_view(request):
     holders = []
+    comming_sum = 0
+    expenditure_sum = 0
     if request.user.is_superuser:
         holders = BalanceHolder.objects.filter(deleted=False)
+        comming_sum = get_all_coming_sum(request.user.id, simpleuser=False)
+        expenditure_sum = get_all_expenditure_sum(request.user.id, simpleuser=False)
     else:
         holders = get_allow_balance_holders(request.user.id)
+        comming_sum = get_all_coming_sum(request.user.id, simpleuser=True)
+        expenditure_sum = get_all_expenditure_sum(request.user.id, simpleuser=True)
 
     type_payments = PayType.objects.all()
 
@@ -113,8 +119,22 @@ def main_page_view(request):
                   'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
                   'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
 
+    label_coming = []
+    profit_coming = []
+    for i in comming_sum:
+        label_coming.append(i['type'])
+        profit_coming.append(float(i['coming']))
+
+    label_expenditure = []
+    profit_expenditure = []
+    for i in expenditure_sum:
+        label_expenditure.append(i['type'])
+        profit_expenditure.append(float(i['expenditure']))
+
     data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list,
-            'type_payments': type_payments,
+            'type_payments': type_payments, 'comming_sum': comming_sum, 'expenditure_sum': expenditure_sum,
+            'label_coming': label_coming, 'profit_coming': profit_coming, 'profit_expenditure': profit_expenditure,
+            'label_expenditure': label_expenditure,
             }
 
     return render(request, 'mainapp/main-page.html', data)
