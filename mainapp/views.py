@@ -25,6 +25,7 @@ def main_page_view(request):
     type_payments = PayType.objects.all()
 
     if request.method == 'POST':
+
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
             if PayType.objects.filter(pay_type=pay_type).exists():
@@ -113,6 +114,33 @@ def main_page_view(request):
                 balance_holder_response.update(holder_balance=old_balance_balance_holder)
 
             return HttpResponse(json.dumps({"Status": "OK"}))
+
+        if request.POST.get('type') == 'holder':
+            holder_id = request.POST.get('id')
+            holder_transaction_coming = get_all_coming_sum(request.user.id, holder=holder_id)
+            holder_transaction_expenditure = get_all_expenditure_sum(request.user.id, holder=holder_id)
+
+            holder_label_expenditure = []
+            holder_profit_expenditure = []
+            holder_label_coming = []
+            holder_profit_coming = []
+
+            for i in holder_transaction_coming:
+                holder_label_coming.append(i['type'])
+                holder_profit_coming.append(float(i['coming']))
+
+            for i in holder_transaction_expenditure:
+                holder_label_expenditure.append(i['type'])
+                holder_profit_expenditure.append(float(i['expenditure']))
+
+            data = {
+                'holder_label_expenditure': holder_label_expenditure,
+                'holder_profit_expenditure': holder_profit_expenditure,
+                'holder_label_coming': holder_label_coming,
+                'holder_profit_coming': holder_profit_coming
+            }
+            print(data, holder_id)
+            return HttpResponse(json.dumps(data))
 
     color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
                   'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',

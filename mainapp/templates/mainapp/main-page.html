@@ -7,6 +7,7 @@
 			<div class="card">
 				<div class="card-body">
 				{% if holders %}
+
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center mb-2">
@@ -46,20 +47,21 @@
 						{% endfor %}
 					</div>
 
-					<div class="row mb-4 mt-4">
-						<div class="h2 text-center">
+					<div class="row mb-4 mt-4 holderGraph">
+
+						<div class="h2 text-center mainInformation">
 							Общая информация по транзакциям
 							<i class="fa-solid fa-circle-info text-info ms-1"
 							   data-bs-toggle="popover" data-bs-trigger="hover focus"
 							   data-bs-content="Для получения информации по отдельному балансодержателю нажмите на него">
 							</i>
 						</div>
-						<div class="col-12 col-md-6">
+						<div class="col-12 col-md-6 mainInformation">
 							<div class="h3 text-center">Входящие транзакции</div>
 							<div id="ChartStatsPartIncome"></div>
 						</div>
 
-						<div class="col-12 col-md-6">
+						<div class="col-12 col-md-6 mainInformation">
 							<div class="h3 text-center">Исходящие транзакции</div>
 							<div id="ChartStatsPartExpenditure"></div>
 						</div>
@@ -114,17 +116,18 @@
 							</div> <!-- /card -->
 						</div> <!-- /col -->
 					</div> <!-- /row -->
-				{% else %}
-					<div class="table-responsive">
 
+				{% else %}
+
+					<div class="table-responsive">
 						<div class="alert alert-warning" role="alert">
 							<h5 class="alert-heading text-center">
 								<i class="fa-regular fa-octagon-exclamation me-2"></i>
 								Для работы необходимо создать "Тип платежа", "Балансодержателя", "Транзакцию"
 							</h5>
 						</div>
-
 					</div>
+
 				{% endif %}
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
@@ -426,6 +429,130 @@
 		}
 
 		var holders_id = document.querySelectorAll('.holders_id');
+
+		for (let i=0; i < holders_id.length; i++){
+			holders_id[i].addEventListener('click', function(event) {
+				$.ajax(
+					{
+					url: url,
+						method: 'POST',
+						data: {
+							csrfmiddlewaretoken: token,
+							type: 'holder',
+							id: holders_id[i].getAttribute("id")
+						}
+					}).then(function(result){
+						var graphElement = $('.holderGraph');
+						var result_el = JSON.parse(result);
+
+						var holder_label_coming = result_el.holder_label_coming;
+						var holder_profit_coming = result_el.holder_profit_coming;
+						var holder_label_expenditure = result_el.holder_label_expenditure;
+						var holder_profit_expenditure = result_el.holder_profit_expenditure;
+
+						var option__holder_comming = {
+							series: holder_profit_coming,
+							labels: holder_label_coming,
+							chart: {
+								type: 'donut',
+							},
+							legend: {
+								show: true,
+								position: 'top',
+							},
+							stroke: {
+								width: 4,
+								colors: ['#fff']
+							},
+							dataLabels: {
+								style: {
+									colors: ['#000000', '#000000', '#000000']
+								},
+								dropShadow: {
+									enabled: true,
+									top: 0,
+									left: 0,
+									blur: 1,
+									color: '#ffffff',
+									opacity: 70
+								}
+							}
+						};
+
+						var option__holder_expend = {
+							series: holder_profit_expenditure,
+							labels: holder_label_expenditure,
+							chart: {
+								type: 'donut',
+							},
+							legend: {
+								show: true,
+								position: 'top',
+							},
+							stroke: {
+								width: 4,
+								colors: ['#fff']
+							},
+							dataLabels: {
+								style: {
+									colors: ['#000000', '#000000', '#000000']
+								},
+								dropShadow: {
+									enabled: true,
+									top: 0,
+									left: 0,
+									blur: 1,
+									color: '#ffffff',
+									opacity: 70
+								}
+							}
+						};
+
+						graphElement.empty();
+
+						var informationTable = `
+							<div class="h2 text-center">
+								Общая информация по балансодержателю
+							</div>`;
+						
+						var incom = `
+							<div class="col-12 col-md-6 mainInformation">
+								<div class="h3 text-center">Нет данных</div>
+							</div>`
+						if (holder_profit_coming.length){
+							var incom = `
+								<div class="col-12 col-md-6 mainInformation">
+									<div class="h3 text-center">Входящие транзакции</div>
+									<div id="ChartStatsPartIncomeHolder"></div>
+								</div>`
+						}
+
+						var expend = `
+							<div class="col-12 col-md-6 mainInformation">
+								<div class="h3 text-center">Нет данных</div>
+							</div>`
+						if (holder_profit_expenditure.length){
+							var expend = `
+								<div class="col-12 col-md-6 mainInformation">
+									<div class="h3 text-center">Исходящие транзакции</div>
+									<div id="ChartStatsPartExpenditureHolder"></div>
+								</div>`
+						}
+						
+						graphElement.prepend(informationTable, incom, expend);
+
+						var chart_comming_holder = new ApexCharts(document.querySelector("#ChartStatsPartIncomeHolder"), option__holder_comming);						
+						chart_comming_holder.render();
+
+						var chart_exp_holder = new ApexCharts(document.querySelector("#ChartStatsPartExpenditureHolder"), option__holder_expend);
+						chart_exp_holder.render();
+
+					}).catch(function(err){
+						var x = 1
+					})
+				}
+			)
+		}
 
 		// for (let i = 0; i < holders_id.length; i++){
 			

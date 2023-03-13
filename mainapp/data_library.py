@@ -41,7 +41,7 @@ def get_transaction_holder(pk):
     return response
 
 
-def get_all_coming_sum(pk, simpleuser=False):
+def get_all_coming_sum(pk, simpleuser=None, holder=None):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -60,6 +60,10 @@ def get_all_coming_sum(pk, simpleuser=False):
                         WHERE `mah`.`customuser_id`={pk}
                     )
                 '''
+        if holder:
+            allow_data_user += f'''
+                AND `t`.`balance_holder_id`={holder}
+            '''
         with conn.cursor() as cursor:
             response = f'''
             SELECT SUM(`amount`) as `coming`,
@@ -80,7 +84,7 @@ def get_all_coming_sum(pk, simpleuser=False):
     return response
 
 
-def get_all_expenditure_sum(pk, simpleuser=False):
+def get_all_expenditure_sum(pk, simpleuser=None, holder=None):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -99,7 +103,10 @@ def get_all_expenditure_sum(pk, simpleuser=False):
                         WHERE `mah`.`customuser_id`={pk}
                     )
                 '''
-
+        if holder:
+            allow_data_user += f'''
+                AND `t`.`balance_holder_id`={holder}
+            '''
         with conn.cursor() as cursor:
             response = f'''
                 SELECT SUM(`amount`) as `expenditure`,
