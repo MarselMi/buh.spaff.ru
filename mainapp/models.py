@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-
 ACTION_CREATE = 'create'
 ACTION_UPDATE = 'update'
 ACTION_DELETE = 'delete'
@@ -57,6 +56,7 @@ class BalanceHolder(models.Model):
 class CustomUser(AbstractUser, models.Model):
 
     available_holders = models.ManyToManyField(BalanceHolder)
+    telegram_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='Телеграмм')
 
     def __str__(self):
         return f'{self.username}'
@@ -79,7 +79,11 @@ class Transaction(models.Model):
     description = models.TextField(blank=True, null=True, default=None, verbose_name='Подробнее')
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='transaction_balanceholder', verbose_name='Балансодержатель')
+
+    transaction_sum = models.DecimalField(default=0, max_digits=10, decimal_places=2, verbose_name='Сумма транзакции')
+    commission = models.DecimalField(default=0, max_digits=10, decimal_places=2, verbose_name='Сумма комиссии')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма')
+
     type_payment = models.ForeignKey(PayType, on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='transaction_paytype', verbose_name='Тип')
     tags = models.TextField(blank=True, null=True, default=None, verbose_name='Теги')

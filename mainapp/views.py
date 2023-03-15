@@ -5,8 +5,13 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from datetime import datetime as dt
 from mainapp.data_library import *
-from mainapp.forms import (TransactionForm, BalanceHolderForm, TransactionUpdateForm)
-from mainapp.models import (CustomUser, Transaction, BalanceHolder, PayType, AdditionalDataTransaction, TransactionLog)
+from mainapp.forms import (
+    TransactionForm, BalanceHolderForm, TransactionUpdateForm
+)
+from mainapp.models import (
+    CustomUser, Transaction, BalanceHolder, PayType,
+    AdditionalDataTransaction, TransactionLog
+)
 
 
 def main_page_view(request):
