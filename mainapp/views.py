@@ -42,51 +42,22 @@ def main_page_view(request):
                     {'message': False}
                 )
 
-        if request.POST.get('type') == 'holders_id':
-
-            transaction_id = request.POST.get('id')
-
-            transactions = get_transaction_holder(transaction_id)
-
-            for transaction in transactions:
-                transaction['create_date'] = transaction['create_date'].strftime('%d.%m.%Y в %H:%M:%S')
-                if transaction.get('update_date'):
-                    transaction['update_date'] = transaction['update_date'].strftime('%d.%m.%Y')
-                transaction['transaction_date'] = transaction['transaction_date'].strftime('%d.%m.%Y')
-                if round(transaction['amount'], 2) % 1 == 0:
-                    transaction['amount'] = '{0:,}'.format(int(transaction['amount'])).replace(',', ' ')
-                else:
-                    transaction['amount'] = round(transaction['amount'], 2)
-                    transaction['amount'] = '{0:,}'.format(transaction['amount']).replace(',', ' ').replace('.', ',')
-
-            sum_coming_obj = get_coming_sum(transaction_id)
-            sum_expenditure_obj = get_expenditure_sum(transaction_id)
-            sum_coming = {}
-            sum_expenditure = {}
-            balance_holder = BalanceHolder.objects.filter(pk=transaction_id).values('organization_holder')[0]['organization_holder']
-
-            sum_coming['coming'] = numb_format(sum_coming_obj[0]['coming'])
-            sum_expenditure['expenditure'] = numb_format(sum_expenditure_obj[0]['expenditure'])
-
-            result = {
-                'transactions': transactions,
-                'sum_coming': sum_coming,
-                'sum_expenditure': sum_expenditure,
-                'balance_holder': balance_holder
-            }
-            return HttpResponse(json.dumps(result))
-
         if request.POST.get('type') == 'create_transaction':
 
             holder = BalanceHolder.objects.filter(organization_holder=request.POST.get('holder_post'))[0]
 
             transaction_name = request.POST.get('transaction_name_post')
-
             transaction_date = dt.strptime(request.POST.get('transaction_date_post'), '%d.%m.%Y').date()
-            amount = decimal.Decimal(request.POST.get('amount_post').replace(',', '.').replace(' ', ''))
             payment_type = PayType.objects.filter(pay_type=request.POST.get('payment_type_post'))[0]
 
+            commission = 0
+            if request.POST.get('commission_post'):
+                commission = decimal.Decimal(request.POST.get('commission_post').replace(',', '.').replace(' ', ''))
+            transaction_sum = decimal.Decimal(request.POST.get('transaction_sum_post').replace(',', '.').replace(' ', ''))
+            amount = transaction_sum + commission
+
             transaction_type = request.POST.get('transaction_type_post')
+
             if transaction_type == 'Приход':
                 transaction_type = 'COMING'
             else:
@@ -99,6 +70,8 @@ def main_page_view(request):
                 'transaction_date': transaction_date,
                 'name': transaction_name,
                 'balance_holder': holder,
+                'commission': commission,
+                'transaction_sum': transaction_sum,
                 'amount': amount,
                 'type_payment': payment_type,
                 'author_id': author_id
@@ -110,7 +83,6 @@ def main_page_view(request):
 
             balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder)
             old_balance_balance_holder = balance_holder_response[0].holder_balance
-
             if transaction_type == 'COMING':
                 old_balance_balance_holder += amount
                 balance_holder_response.update(holder_balance=old_balance_balance_holder)
@@ -261,6 +233,7 @@ def create_transaction_view(request):
                 return JsonResponse(
                     {'message': False}
                 )
+
         holder_response = request.POST.get('balance_holder')
         balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
 
@@ -278,7 +251,11 @@ def create_transaction_view(request):
 
         type_payment = PayType.objects.filter(pay_type=request.POST.get('type_payment'))[0]
 
-        amount = decimal.Decimal(request.POST.get('amount').replace(',', '.').replace(' ', ''))
+        commission = 0
+        if request.POST.get('commission_post'):
+            commission = decimal.Decimal(request.POST.get('commission_post').replace(',', '.').replace(' ', ''))
+        transaction_sum = decimal.Decimal(request.POST.get('transaction_sum_post').replace(',', '.').replace(' ', ''))
+        amount = transaction_sum + commission
 
         type_transaction = request.POST.get('type_transaction')
         if type_transaction == 'Приход':
@@ -301,10 +278,12 @@ def create_transaction_view(request):
 
         author_id = request.user.id
 
-        new_data = {'transaction_date': transaction_date, 'type_transaction': type_transaction,
-                    'name': name, 'description': description, 'balance_holder': balance_holder_response[0],
-                    'amount': amount, 'type_payment': type_payment, 'status': status, 'tags': tags,
-                    'check_img': image, 'author_id': author_id}
+        new_data = {
+            'transaction_date': transaction_date, 'type_transaction': type_transaction,
+            'name': name, 'description': description, 'balance_holder': balance_holder_response[0],
+            'amount': amount, 'type_payment': type_payment, 'status': status, 'tags': tags,
+            'check_img': image, 'author_id': author_id, 'commission': commission, 'transaction_sum': transaction_sum,
+        }
 
         transaction.objects.create(**new_data)
 
@@ -346,6 +325,7 @@ def create_transaction_holder_view(request, pk):
                 return JsonResponse(
                     {'message': False}
                 )
+
         holder_response = request.POST.get('balance_holder')
         balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
 
@@ -363,7 +343,11 @@ def create_transaction_holder_view(request, pk):
 
         type_payment = PayType.objects.filter(pay_type=request.POST.get('type_payment'))[0]
 
-        amount = decimal.Decimal(request.POST.get('amount').replace(',', '.').replace(' ', ''))
+        commission = 0
+        if request.POST.get('commission_post'):
+            commission = decimal.Decimal(request.POST.get('commission_post').replace(',', '.').replace(' ', ''))
+        transaction_sum = decimal.Decimal(request.POST.get('transaction_sum_post').replace(',', '.').replace(' ', ''))
+        amount = transaction_sum + commission
 
         type_transaction = request.POST.get('type_transaction')
         if type_transaction == 'Приход':
@@ -386,10 +370,12 @@ def create_transaction_holder_view(request, pk):
 
         author_id = request.user.id
 
-        new_data = {'transaction_date': transaction_date, 'type_transaction': type_transaction,
-                    'name': name, 'description': description, 'balance_holder': balance_holder_response[0],
-                    'amount': amount, 'type_payment': type_payment, 'status': status, 'tags': tags,
-                    'check_img': image, 'author_id': author_id}
+        new_data = {
+            'transaction_date': transaction_date, 'type_transaction': type_transaction,
+            'name': name, 'description': description, 'balance_holder': balance_holder_response[0],
+            'amount': amount, 'type_payment': type_payment, 'status': status, 'tags': tags,
+            'check_img': image, 'author_id': author_id, 'commission': commission, 'transaction_sum': transaction_sum,
+        }
 
         transaction.objects.create(**new_data)
 

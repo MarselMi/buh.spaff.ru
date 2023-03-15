@@ -39,8 +39,16 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.amount.label }}
-									<input autocomplete="off" class="obligatory form-control is-invalid" name="amount" placeholder="Сумма транзакции" id="amount"/>
+									<label for="transaction_sum_post">Сумма транзакции</label>
+									<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_sum_post" placeholder="Сумма транзакции" id="transaction_sum_post"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="flexCheckDefault" class="mb-1"> 
+										<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+										Наличие комиссии
+									</label>
+									<input class="obligatory form-control" autocomplete="off" value="0" name="commission_post" placeholder="Сумма комиссии" id="commission_post" disabled/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -112,6 +120,15 @@
 	$(function(){
 		$("#datepicker").datepicker({dateFormat: 'dd.mm.yy'});
 	});
+
+	$('#flexCheckDefault').on('click', function(){
+		if ($('#flexCheckDefault').is(':checked')){
+			$('#commission_post').removeAttr('disabled')
+		}else{
+			$('#commission_post').attr('disabled', 'true')
+		}
+	})
+
 </script>
 
 <script type="text/javascript">
@@ -182,13 +199,19 @@
 				objects[i].classList.add('is-invalid')
 			}
 		}
-		
-		
-		if ($('#amount').val() && (!regEx.test($('#amount').val()))){
-			$('#amount').removeClass('is-invalid');
+
+		if ($('#transaction_sum_post').val() && (!regEx.test($('#transaction_sum_post').val()))){
+			$('#transaction_sum_post').removeClass('is-invalid');
 		}else{
-			$('#amount').addClass('is-invalid');
-			$('#amount').after('<div class="invalid-feedback error">Введите корректные данные</div>')
+			$('#transaction_sum_post').addClass('is-invalid');
+			$('#transaction_sum_post').after('<div class="invalid-feedback error">Введите корректные данные</div>')
+		}
+
+		if ((!regEx.test($('#commission_post').val()))){
+			$('#commission_post').removeClass('is-invalid');
+		}else{
+			$('#commission_post').addClass('is-invalid');
+			$('#commission_post').after('<div class="invalid-feedback error">Введите корректные данные</div>')
 		}
 
 		// if ($('#transaction_status').val() == 'Успешно'){
