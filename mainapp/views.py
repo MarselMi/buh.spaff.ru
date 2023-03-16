@@ -18,6 +18,8 @@ def main_page_view(request):
     holders = []
     comming_sum = ''
     expenditure_sum = ''
+    all_coming = 0
+    all_expenditure = 0
     if request.user.is_superuser:
         holders = BalanceHolder.objects.filter(deleted=False)
         comming_sum = get_all_coming_sum(request.user.id, simpleuser=False)
@@ -28,6 +30,18 @@ def main_page_view(request):
         expenditure_sum = get_all_expenditure_sum(request.user.id, simpleuser=True)
 
     type_payments = PayType.objects.all()
+
+    try:
+        for k in comming_sum:
+            all_coming += k.get('coming')
+    except:
+        pass
+
+    try:
+        for k in expenditure_sum:
+            all_expenditure += k.get('expenditure')
+    except:
+        pass
 
     if request.method == 'POST':
 
@@ -116,7 +130,7 @@ def main_page_view(request):
                 'holder_label_coming': holder_label_coming,
                 'holder_profit_coming': holder_profit_coming
             }
-            print(data, holder_id)
+
             return HttpResponse(json.dumps(data))
 
     color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
@@ -139,7 +153,7 @@ def main_page_view(request):
     data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list,
             'type_payments': type_payments, 'comming_sum': comming_sum, 'expenditure_sum': expenditure_sum,
             'label_coming': label_coming, 'profit_coming': profit_coming, 'profit_expenditure': profit_expenditure,
-            'label_expenditure': label_expenditure,
+            'label_expenditure': label_expenditure, 'all_coming': all_coming, 'all_expenditure': all_expenditure
             }
 
     return render(request, 'mainapp/main-page.html', data)
@@ -327,6 +341,7 @@ def create_transaction_holder_view(request, pk):
                 )
 
         holder_response = request.POST.get('balance_holder')
+
         balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
 
         name = request.POST.get('transaction_name')
@@ -389,7 +404,6 @@ def create_transaction_holder_view(request, pk):
                 balance_holder_response.update(holder_balance=old_balance_balance_holder)
         else:
             pass
-
         return redirect('transactions')
 
     data = {'title': 'Создание транзакции', 'inside': {'page_url': 'transactions', 'page_title': 'Транзакции'},

@@ -16,6 +16,7 @@
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.balance_holder.label }}
 									<input class="obligatory form-control" name="balance_holder" id="balance_holder" value="{{ holder_pk }}" disabled/>
+									<input class="obligatory form-control" name="balance_holder" id="balance_holder" value="{{ holder_pk }}" hidden/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -126,6 +127,7 @@
 			$('#commission_post').removeAttr('disabled')
 		}else{
 			$('#commission_post').attr('disabled', 'true')
+			$('#commission_post').val('0')
 		}
 	})
 
@@ -245,25 +247,19 @@
 		}
 	})
 
-	$('#datepicker').on('change click focusot hover', function(){
-		if ($('#datepicker').val()){
-			$('#datepicker').removeClass('is-invalid')
-		}else{
-			$('#datepicker').addClass('is-invalid')
-		}
-	})
-
 	$(document).ready(function() {
 		$('form').submit(function(e) {
 			e.preventDefault();
 			var valid = true;
 			var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
 
-			var amount = $('#amount').val();
+			var amount = $('#transaction_sum_post').val();
+			var comsa = $('#commission_post').val()
 			var dateEl = $('#datepicker').val();
 
 			var validDate = regEx.test(dateEl);
 			var validAmount = regEx.test(amount);
+			var validComsa = regEx.test(comsa);
 
 			$(".error").remove();
 			
@@ -272,15 +268,29 @@
 				$('#datepicker').after('<span class="error">Введите корректные данные</span>');
 				valid = false;
 			}
+
+			if (validComsa) {
+				$('#commission_post').addClass('is-invalid');
+				$('#commission_post').after('<span class="error">Введите корректные данные</span>');
+				valid = false;
+			}
 			
 			if (validAmount) {
-				$('#amount').addClass('is-invalid');
-				$('#amount').after('<span class="error">Введите корректные данные</span>');
+				$('#transaction_sum_post').addClass('is-invalid');
+				$('#transaction_sum_post').after('<span class="error">Введите корректные данные</span>');
 				valid = false;
 			}
 			if (valid) this.submit();
 		});
 	});
+
+	$('#datepicker').on('change click focusot hover', function(){
+		if ($('#datepicker').val()){
+			$('#datepicker').removeClass('is-invalid')
+		}else{
+			$('#datepicker').addClass('is-invalid')
+		}
+	})
 
 </script>
 

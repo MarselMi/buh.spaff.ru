@@ -57,12 +57,12 @@
 							</i>
 						</div>
 						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Входящие транзакции</div>
+							<div class="h3 text-center">Входящие транзакции - {{ all_coming|numb_format }}</div>
 							<div id="ChartStatsPartIncome"></div>
 						</div>
 
 						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Исходящие транзакции</div>
+							<div class="h3 text-center">Исходящие транзакции - {{ all_expenditure|numb_format }}</div>
 							<div id="ChartStatsPartExpenditure"></div>
 						</div>
 
@@ -485,6 +485,11 @@
 						id: holders_id[i].getAttribute("id")
 					}
 				}).then(function(result){
+
+					function add(accumulator, a) {
+						return accumulator + a;
+					}
+
 					var graphElement = $('.holderGraph');
 					var result_el = JSON.parse(result);
 
@@ -563,9 +568,11 @@
 							<div class="h3 text-center">Нет данных</div>
 						</div>`
 					if (holder_profit_coming.length){
+						let sumComming = holder_profit_coming.reduce(add, 0);
+
 						var incom = `
 							<div class="col-12 col-md-6 mainInformation">
-								<div class="h3 text-center">Входящие транзакции</div>
+								<div class="h3 text-center">Входящие транзакции - ${sumComming}</div>
 								<div id="ChartStatsPartIncomeHolder"></div>
 							</div>`
 					}
@@ -575,9 +582,10 @@
 							<div class="h3 text-center">Нет данных</div>
 						</div>`
 					if (holder_profit_expenditure.length){
+						let sumEpend = holder_profit_expenditure.reduce(add, 0);
 						var expend = `
 							<div class="col-12 col-md-6 mainInformation">
-								<div class="h3 text-center">Исходящие транзакции</div>
+								<div class="h3 text-center">Исходящие транзакции - ${sumEpend}</div>
 								<div id="ChartStatsPartExpenditureHolder"></div>
 							</div>`
 					}

@@ -130,6 +130,7 @@
 			$('#commission_post').removeAttr('disabled')
 		}else{
 			$('#commission_post').attr('disabled', 'true')
+			$('#commission_post').val('0')
 		}
 	})
 
@@ -179,6 +180,9 @@
 
 	$('#type_payment').on('input', function(){
 		$('.error_type').remove();
+		if (!$('#type_payment').val()){
+			$('#type_payment').addClass('is-invalid');
+		}
 		$.ajax(
 			{
 				url: url,
