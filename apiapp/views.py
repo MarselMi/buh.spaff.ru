@@ -1,6 +1,7 @@
-from urllib import request
-from django.shortcuts import render
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from mainapp.data_library import *
 from apiapp.serializers import (
     PayTypeSerializer,  BalanceHolderSerializer, CustomUserSerializer,
     TransactionSerializer, AdditionalDataTransactionSerializer,
@@ -12,31 +13,69 @@ from mainapp.models import (
 )
 
 
-class UserModelView(ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+class UserModelView(APIView):
+
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request, format=None):
+        users = CustomUser.objects.all()
+        serializer = CustomUserSerializer(users, many=True)
+        return Response(serializer.data)
 
 
-class PayTypeModelView(ModelViewSet):
-    queryset = PayType.objects.all()
-    serializer_class = PayTypeSerializer
+class PayTypeModelView(APIView):
+
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        pay_type = PayType.objects.all()
+        serializer = PayTypeSerializer(pay_type, many=True)
+        return Response(serializer.data)
 
 
-class BalanceHolderModelView(ModelViewSet):
-    queryset = BalanceHolder.objects.all()
-    serializer_class = BalanceHolderSerializer
+class BalanceHolderModelView(APIView):
+
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        if request.user.is_superuser:
+            holders = get_allow_balance_holders(request.user.id, simple_user=False)
+        else:
+            holders = get_allow_balance_holders(request.user.id, simple_user=True)
+        serializer = BalanceHolderSerializer(holders, many=True)
+        return Response(serializer.data)
 
 
-class TransactionModelView(ModelViewSet):
-    queryset = Transaction.objects.all()
-    serializer_class = TransactionSerializer
+class TransactionModelView(APIView):
+
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        if request.user.is_superuser:
+            transactions = get_allow_transaction_filter(request.user.id)
+        else:
+            transactions = get_allow_transaction_filter(request.user.id, author_res=True)
+        serializer = TransactionSerializer(transactions, many=True)
+        return Response(serializer.data)
 
 
-class AdditionalDataTransactionModelView(ModelViewSet):
-    queryset = AdditionalDataTransaction.objects.all()
-    serializer_class = AdditionalDataTransactionSerializer
+class AdditionalDataTransactionModelView(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        if request.user.is_superuser:
+            additional = AdditionalDataTransaction.objects.all()
+        else:
+            additional = get_allow_additional_transactions(request.user.id)
+        serializer = AdditionalDataTransactionSerializer(additional, many=True)
+        return Response(serializer.data)
 
 
-class TransactionLogModelView(ModelViewSet):
-    queryset = TransactionLog.objects.all()
-    serializer_class = TransactionLogSerializer
+class TransactionLogModelView(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        transactions_log = TransactionLog.objects.all()
+
+        serializer = TransactionLogSerializer(transactions_log, many=True)
+        return Response(serializer.data)

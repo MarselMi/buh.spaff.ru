@@ -234,7 +234,7 @@ def get_holders_user(pk):
     return response
 
 
-def get_allow_balance_holders(pk):
+def get_allow_balance_holders(pk, simple_user=True):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -243,6 +243,13 @@ def get_allow_balance_holders(pk):
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
     try:
+        if simple_user:
+            add_request = f'''
+            WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+            '''
+        else:
+            add_request = ''
+
         with conn.cursor() as cursor:
             response = f'''
                     SELECT
@@ -252,7 +259,7 @@ def get_allow_balance_holders(pk):
                         `mb`.`holder_balance`,
                         `mb`.`payment_account`
                     FROM `mainapp_balanceholder` mb
-                    WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+                    {add_request}
                     '''
             cursor.execute(response)
             response = cursor.fetchall()

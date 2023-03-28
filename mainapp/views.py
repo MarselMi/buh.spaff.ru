@@ -552,11 +552,10 @@ def transactions_log_view(request):
 
 
 def balance_holders_views(request):
-    holders = []
     if request.user.is_superuser:
-        holders = BalanceHolder.objects.all()
+        holders = get_allow_balance_holders(request.user.id, simple_user=False)
     else:
-        holders = get_allow_balance_holders(request.user.id)
+        holders = get_allow_balance_holders(request.user.id, simple_user=True)
 
     data = {'title': 'Балансодержатели', 'holders': holders}
     return render(request, 'mainapp/balance_holders.html', data)

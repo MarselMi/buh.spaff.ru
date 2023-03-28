@@ -11,7 +11,7 @@
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center mb-2">
-							<div id="{{ holder.id }}" class="container-fluid holders_id" style="border-radius: 15px; background: lightblue">
+							<div id="{{ holder.id }}" class="container-fluid holders_id" data-holder-name="{{ holder.organization_holder }}" style="border-radius: 15px; background: lightblue">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h1>
 										{{ holder.holder_balance|numb_format }}
@@ -560,7 +560,7 @@
 
 					var informationTable = `
 						<div class="h2 text-center">
-							Общая информация по балансодержателю
+							Общая информация по балансодержателю - ${holders_id[i].getAttribute('data-holder-name')}
 						</div>`;
 					
 					var incom = `
