@@ -10,7 +10,7 @@ from mainapp.forms import (
 )
 from mainapp.models import (
     CustomUser, Transaction, BalanceHolder, PayType,
-    AdditionalDataTransaction, TransactionLog
+    AdditionalDataTransaction, TransactionLog, SubPayType
 )
 
 
@@ -655,8 +655,62 @@ def balance_holder_update_view(request, pk):
 
 def payment_type_view(request):
     pay_type = PayType.objects.all()
+    sub_pay_types = SubPayType.objects.all()
 
-    data = {'title': 'Типы платежей', 'pay_type': pay_type}
+    if request.method == 'POST':
+        '''Проверка наличия подтипа платежа'''
+        if request.POST.get('type') == 'check_sub_pay_type':
+            sub_type = request.POST.get('sub_type_payment')
+            if SubPayType.objects.filter(sub_type=sub_type).exists():
+                return JsonResponse({'message': False})
+            else:
+                return JsonResponse({'message': True})
+        '''создание подтипа платежа'''
+        if request.POST.get('type') == 'new_sub_pay_type':
+            sub_type = request.POST.get('sub_type_payment')
+            print(sub_type)
+            sub_pay = SubPayType
+            sub_pay.objects.create(sub_type=sub_type)
+            return JsonResponse({'status': 'ok'})
+
+        '''Проверка наличия идентичного типа платежа во избежания дублирования'''
+        if request.POST.get('type') == 'check_type':
+            pay_type = request.POST.get('type_payment')
+            if PayType.objects.filter(pay_type=pay_type).exists():
+                return JsonResponse({'message': False})
+            else:
+                return JsonResponse({'message': True})
+        '''создание типа платежа, с привязкой доп параметров при наличии'''
+        if request.POST.get('type') == 'new_pay_type':
+            pay_type = request.POST.get('type_payment')
+
+            all_sub_pay_type = SubPayType.objects.all()
+            sub_pay_type = []
+            for sub in all_sub_pay_type:
+                if str(sub.id) in request.POST:
+                    sub_pay_type.append(sub.id)
+            new_pay_type = PayType.objects.create(pay_type=pay_type)
+            if sub_pay_type:
+                new_pay_type.subtypes_of_the_type.set(sub_pay_type)
+            new_pay_type.save()
+            print(new_pay_type)
+            return JsonResponse({'status': 'ok'})
+        print(request.POST)
+
+        '''Добавление подтипов платежа к типу платежа'''
+        if request.POST.get('type') == 'add_sub_pay_type':
+            type_payment = request.POST.get('type_payment')
+            pay_type = PayType.objects.filter(pay_type=type_payment)
+            if request.POST.getlist('sub_type_payments[]'):
+                sub_type_pay = request.POST.getlist('sub_type_payments[]')
+                print(sub_type_pay)
+                for i in sub_type_pay:
+                    print(int(i))
+                    pay_type[0].subtypes_of_the_type.add(int(i))
+            pay_type[0].save()
+            return JsonResponse({})
+
+    data = {'title': 'Типы платежей', 'pay_type': pay_type, 'sub_pay_types': sub_pay_types}
 
     return render(request, 'mainapp/payments_type.html', data)
 

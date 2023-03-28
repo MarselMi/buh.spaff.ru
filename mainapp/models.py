@@ -22,8 +22,20 @@ HOLDER_ROLE = [
 ]
 
 
+class SubPayType(models.Model):
+    sub_type = models.CharField(unique=True, max_length=60, verbose_name='Подтип платежа')
+
+    def __str__(self):
+        return f'{self.sub_type}'
+
+    class Meta:
+        verbose_name = 'Подтип платежа'
+        verbose_name_plural = 'Подтипы платежей'
+
+
 class PayType(models.Model):
     pay_type = models.CharField(unique=True, max_length=60, verbose_name='Тип платежа')
+    subtypes_of_the_type = models.ManyToManyField(SubPayType)
 
     def __str__(self):
         return f'{self.pay_type}'

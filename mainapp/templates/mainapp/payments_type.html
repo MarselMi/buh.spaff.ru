@@ -9,8 +9,17 @@
 					<div class="card-header d-flex align-items-center card-header-no-bg border-bottom-0">
 						{% if user.is_superuser or user.is_staff %}
 						<div class="card-options ms-auto">
-							<a href="{% url 'pay_create' %}" class="btn btn-primary btn-sm">Создание нового типа платежа</a>
+							<button type="button" class="btn btn-primary btn-sm buttonSelectModal" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="{{ holder.organization_holder }}">
+								Создание нового типа платежа
+							</button>
 						</div>
+
+						<div class="card-options ms-auto">
+							<button type="button" class="btn btn-secondary btn-sm buttonSelectModal" data-bs-toggle="modal" data-bs-target="#subPayType">
+								Создание подтипа платежа
+							</button>
+						</div>
+
 						{% endif %}
 					</div>
 					<div class="table-responsive">
@@ -26,9 +35,34 @@
 									</thead>
 									{% for object in pay_type %}
 									<tbody>
-										<tr class="align-middle">
-											<td>{{ object.pk }}</td>
-											<td>{{ object.pay_type }}</td>
+										<tr class="align-middle pay-type-container">
+											<td class="d-flex">
+												{{ object.subtypes_of_the_type }}  
+
+												{% if object.subtypes_of_the_type %}
+													{% for i in object.subtypes_of_the_type %} 
+														{{ i }}
+													{% endfor %}
+												{% endif %}
+													<!-- &nbsp;
+												<div class="Box-sc-1gh2r6s-0 CXccO" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="{{ object.subtypes_of_the_type }}">
+													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
+														<path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+														<path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8zm0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+													</svg>
+												</div> -->
+											</td>
+											<td>
+												{{ object.pay_type }} &nbsp;
+												<button
+													type="button" 
+													class="btn btn-light btn-sm buttonSelectModal" 
+													data-bs-toggle="modal" 
+													data-bs-target="#subPayTypeAdd" 
+													data-bs-whatever="{{ object.pay_type }}">
+													<i class="fa-regular fa-pen-to-square"></i>
+												</button>
+											</td>
 										</tr>
 									</tbody>
 									{% endfor %}
@@ -49,4 +83,263 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
+
+	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content border-0">
+				<div action="" name="newTypePay" id="newTypePay">
+					<div class="modal-header">
+						<h5 class="modal-title" id="newPayTypeModalLabel">
+							Новый тип платежа:
+						</h5> <!-- /modal-title -->
+						<button type="button" class="btn-close close_type_payment" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div> <!-- /modal-header -->
+
+					<div class="modal-body" id="form_type_payment">
+						
+						<div class="form-floating mb-3">
+							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
+							<label for="type_payment">
+								Тип платежа
+							</label>
+						</div> <!-- /form-floating -->
+					</div> <!-- /modal-body -->
+
+					<div class="modal-footer">
+						<div class="row">
+							<div class="col-12 mb-3">
+								<button id="create_pay_btn" type="button" class="btn btn-primary w-100">
+									Сохранить
+								</button> <!-- /btn -->
+							</div>
+						</div>
+					</div> <!-- /modal-footer -->
+				</div>
+			</div> <!-- /modal-content -->
+		</div> <!-- /modal-dialog -->
+	</div> <!-- /modal -->
+
+
+	<div class="modal fade" id="subPayType" tabindex="-1" aria-labelledby="subPayTypeLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content border-0">
+				<div action="" name="newSubTypePay" id="newSubTypePay">
+					<div class="modal-header">
+						<h5 class="modal-title" id="newSubTypePayModalLabel">
+							Новый подтип платежа:
+						</h5> <!-- /modal-title -->
+
+						<button type="button" class="btn-close subPayTypeClose" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div> <!-- /modal-header -->
+
+					<div class="modal-body" id="form_sub_type_payment">
+						
+						<div class="form-floating mb-3">
+							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="sub_type_payment" id="sub_type_payment" placeholder="Подтип платежа"/>
+							<label for="sub_type_payment">
+								Подтип платежа
+							</label>
+						</div> <!-- /form-floating -->
+					</div> <!-- /modal-body -->
+
+					<div class="modal-footer">
+						<div class="row">
+							<div class="col-12 mb-3">
+								<button id="create_sub_pay" onclick="createSubPayType()" type="button" class="btn btn-primary w-100">
+									Сохранить
+								</button> <!-- /btn -->
+							</div>
+						</div>
+					</div> <!-- /modal-footer -->
+				</div>
+			</div> <!-- /modal-content -->
+		</div> <!-- /modal-dialog -->
+	</div> <!-- /modal -->
+
+
+
+	<div class="modal fade" id="subPayTypeAdd" tabindex="-1" aria-labelledby="subPayTypeAddLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content border-0">
+				<form action="" name="newsubPayTypeAdd" id="newsubPayTypeAdd">
+					<div class="modal-header">
+
+						<h5 class="modal-title" id="newsubPayTypeAddModalLabel">
+							
+						</h5> <!-- /modal-title -->
+
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					
+					</div> <!-- /modal-header -->
+					<input class="type_payment_modal" value="" hidden>
+					<div class="modal-body" id="form_subPayTypeAdd">
+						<div class="row">
+							{% for sub_type in sub_pay_types %}
+								<div class="col-12">
+									<input class="form-check-input sup_pay_types_checked" type="checkbox" name="{{ sub_type.pk }}" id="{{ sub_type.pk }}"/>
+									<label for="{{ sub_type.pk }}">{{ sub_type }}</label>
+								</div>
+							{% endfor %}
+						</div>
+					</div> <!-- /modal-body -->
+
+					<div class="modal-footer">
+						<div class="row">
+							<div class="col-12 mb-3">
+								<button id="subPayTypeAddFunc" type="button" class="btn btn-primary w-100">
+									Сохранить
+								</button> <!-- /btn -->
+							</div>
+						</div>
+					</div> <!-- /modal-footer -->
+				</form>
+			</div> <!-- /modal-content -->
+		</div> <!-- /modal-dialog -->
+	</div> <!-- /modal -->
+
+
+	<script>
+		var url = document.location.href;
+		var a = document.cookie.split(';');
+		var token = ''
+
+		for (i = 0; i < a.length; i++) {
+			var b = a[i].split('=')
+			b[0] = b[0].replace(/\s+/g, '')
+			if (b[0] == 'csrftoken') {
+			token = b[1]
+			}
+		}
+
+		$('#type_payment').on('input change', function(){
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_type',
+					type_payment: $('#type_payment').val()
+				}
+			}).then(function(result){
+				if (result.message) {
+					$('#type_payment').removeClass('is-invalid');
+					$('#type_payment').addClass('is-valid');
+				} else {
+					$('#type_payment').removeClass('is-valid');
+					$('#type_payment').addClass('is-invalid');
+				}
+			}).catch(function(err){
+				var x = 0
+			})
+		})
+
+		$('#create_pay_btn').on('click', function(event){
+			var new_pay_type = $('#type_payment').val();
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'new_pay_type',
+					type_payment: new_pay_type
+				}
+			}).then(function(result){
+				console.log('ok');
+				location.reload();
+				var x = 1;
+			}).catch(function(err){
+				console.log('err')
+				var x = 0
+			})
+		})
+
+		$('#sub_type_payment').on('input change', function(){
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'check_sub_pay_type',
+					sub_type_payment: $('#sub_type_payment').val()
+				}
+			}).then(function(result){
+				if (result.message) {
+					$('#sub_type_payment').removeClass('is-invalid');
+					$('#sub_type_payment').addClass('is-valid');
+					$('#create_sub_pay').removeAttr('disabled');
+				} else {
+					$('#sub_type_payment').removeClass('is-valid');
+					$('#sub_type_payment').addClass('is-invalid');
+					$('#create_sub_pay').attr('disabled', 'true');
+				}
+			}).catch(function(err){
+				console.log('err')
+				var x = 0
+			})
+		})
+
+		function createSubPayType(){
+			var sub_pay_type = $('#sub_type_payment').val()
+			console.log(sub_pay_type)
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'new_sub_pay_type',
+					sub_type_payment: sub_pay_type
+				}
+			}).then(function(result){
+				$('.subPayTypeClose').click();
+				$('#sub_type_payment').removeClass('is-valid');
+				$('#sub_type_payment').val('')
+				var x = 1
+			}).catch(function(err){
+				console.log(sub_pay_type, 'err')
+				var x = 0
+			})
+		}
+
+		var buttons_add_sub_pay = $('.buttonSelectModal')
+		for(let i=0; buttons_add_sub_pay.length > i; i++){
+			buttons_add_sub_pay[i].addEventListener('click',function(event){
+				if (event.currentTarget == buttons_add_sub_pay[i]){
+					var pay_type = buttons_add_sub_pay[i].getAttribute('data-bs-whatever')
+					$('#newsubPayTypeAddModalLabel').text(`Добавить подтипы к типу платежа: ${pay_type}`)
+					$('.type_payment_modal').attr('value', `${pay_type}`)
+				}
+			})
+		}
+
+		$('#subPayTypeAddFunc').on('click', function(event){
+			var checkedArray = []
+			var myArray = $('.sup_pay_types_checked');
+
+			$.each(myArray, function(index, element){
+				console.log(index, element.checked);
+				if(element.checked){
+					checkedArray.push(index + 1)
+				}
+			});
+			
+			console.log(checkedArray)
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'add_sub_pay_type',
+					type_payment: $('.type_payment_modal').val(),
+					sub_type_payments: checkedArray
+				}
+			}).then(function(result){
+				console.log('ok');
+				var x = 1;
+			}).catch(function(err){
+				console.log('err');
+				var x = 0;
+			})
+		})
+
+</script>
 {% endblock content %}

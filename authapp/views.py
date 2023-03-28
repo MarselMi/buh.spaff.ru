@@ -177,7 +177,6 @@ def edit_user_view(request, pk):
         else:
             user_edit[0].available_holders.set(holders_id)
             user_edit[0].save()
-
         return redirect('users')
 
     data = {'title': 'Редактирование пользователя', 'inside': {'page_url': 'users', 'page_title': 'Пользователи'},
