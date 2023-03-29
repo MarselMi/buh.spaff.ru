@@ -48,13 +48,13 @@ def main_page_view(request):
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
             if PayType.objects.filter(pay_type=pay_type).exists():
-                return JsonResponse(
-                    {'message': True}
-                )
+                pay_type_element = PayType.objects.filter(pay_type=pay_type)[0].subtypes_of_the_type.all()
+                sub_type_pay = []
+                for i in pay_type_element:
+                    sub_type_pay.append(i.sub_type)
+                return JsonResponse({'message': sub_type_pay})
             else:
-                return JsonResponse(
-                    {'message': False}
-                )
+                return JsonResponse({'message': False})
 
         if request.POST.get('type') == 'create_transaction':
 
@@ -63,6 +63,9 @@ def main_page_view(request):
             transaction_name = request.POST.get('transaction_name_post')
             transaction_date = dt.strptime(request.POST.get('transaction_date_post'), '%d.%m.%Y').date()
             payment_type = PayType.objects.filter(pay_type=request.POST.get('payment_type_post'))[0]
+            sub_type = None
+            if request.POST.get('sub_type'):
+                sub_type = SubPayType.objects.filter(sub_type=request.POST.get('sub_type'))[0]
 
             commission = 0
             if request.POST.get('commission_post'):
@@ -80,6 +83,7 @@ def main_page_view(request):
             author_id = request.user.id
 
             create_transaction = {
+                'sub_type_pay': sub_type,
                 'type_transaction': transaction_type,
                 'transaction_date': transaction_date,
                 'name': transaction_name,
@@ -229,28 +233,26 @@ def create_transaction_view(request):
         if request.POST.get('type') == 'check_holder':
             organization_holder = request.POST.get('balance_holder')
             if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
-                return JsonResponse(
-                    {'message': True}
-                )
+                return JsonResponse({'message': True})
             else:
-                return JsonResponse(
-                    {'message': False}
-                )
+                return JsonResponse({'message': False})
 
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
             if PayType.objects.filter(pay_type=pay_type).exists():
-                return JsonResponse(
-                    {'message': True}
-                )
+                pay_type_element = PayType.objects.filter(pay_type=pay_type)[0].subtypes_of_the_type.all()
+                sub_type_pay = []
+                for i in pay_type_element:
+                    sub_type_pay.append(i.sub_type)
+                return JsonResponse({'message': sub_type_pay})
             else:
-                return JsonResponse(
-                    {'message': False}
-                )
+                return JsonResponse({'message': False})
 
         holder_response = request.POST.get('balance_holder')
         balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
-
+        sub_type = None
+        if request.POST.get('sub_type'):
+            sub_type = SubPayType.objects.filter(sub_type=request.POST.get('sub_type'))[0]
         name = request.POST.get('transaction_name')
 
         status = request.POST.get('transaction_status')
@@ -297,6 +299,7 @@ def create_transaction_view(request):
             'name': name, 'description': description, 'balance_holder': balance_holder_response[0],
             'amount': amount, 'type_payment': type_payment, 'status': status, 'tags': tags,
             'check_img': image, 'author_id': author_id, 'commission': commission, 'transaction_sum': transaction_sum,
+            'sub_type_pay': sub_type
         }
 
         transaction.objects.create(**new_data)
@@ -311,7 +314,6 @@ def create_transaction_view(request):
                 balance_holder_response.update(holder_balance=old_balance_balance_holder)
         else:
             pass
-
         return redirect('transactions')
 
     data = {'title': 'Создание транзакции', 'inside': {'page_url': 'transactions', 'page_title': 'Транзакции'},
@@ -332,13 +334,13 @@ def create_transaction_holder_view(request, pk):
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
             if PayType.objects.filter(pay_type=pay_type).exists():
-                return JsonResponse(
-                    {'message': True}
-                )
+                pay_type_element = PayType.objects.filter(pay_type=pay_type)[0].subtypes_of_the_type.all()
+                sub_type_pay = []
+                for i in pay_type_element:
+                    sub_type_pay.append(i.sub_type)
+                return JsonResponse({'message': sub_type_pay})
             else:
-                return JsonResponse(
-                    {'message': False}
-                )
+                return JsonResponse({'message': False})
 
         holder_response = request.POST.get('balance_holder')
 
@@ -357,6 +359,10 @@ def create_transaction_holder_view(request, pk):
         transaction_date = dt.strptime(request.POST.get('transaction_date'), '%d.%m.%Y').date()
 
         type_payment = PayType.objects.filter(pay_type=request.POST.get('type_payment'))[0]
+
+        sub_type = None
+        if request.POST.get('sub_type'):
+            sub_type = SubPayType.objects.filter(sub_type=request.POST.get('sub_type'))[0]
 
         commission = 0
         if request.POST.get('commission_post'):
@@ -390,6 +396,7 @@ def create_transaction_holder_view(request, pk):
             'name': name, 'description': description, 'balance_holder': balance_holder_response[0],
             'amount': amount, 'type_payment': type_payment, 'status': status, 'tags': tags,
             'check_img': image, 'author_id': author_id, 'commission': commission, 'transaction_sum': transaction_sum,
+            'sub_type_pay': sub_type
         }
 
         transaction.objects.create(**new_data)
@@ -418,22 +425,25 @@ def transaction_update_view(request, pk):
     transaction = Transaction.objects.filter(pk=pk)
     form_class = TransactionUpdateForm(request.POST, request.FILES)
     type_payments = PayType.objects.all()
+    sub_type_of_type = type_payments.filter(pay_type=transaction[0].type_payment)[0].subtypes_of_the_type.all()
+
+    # select_type = type_payments.filter(subtypes_of_the_type=)
 
     old_transaction = transaction.values(
-        'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img'
+        'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img', 'sub_type_pay'
     )
 
     if request.method == 'POST':
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
             if PayType.objects.filter(pay_type=pay_type).exists():
-                return JsonResponse(
-                    {'message': True}
-                )
+                pay_type_element = PayType.objects.filter(pay_type=pay_type)[0].subtypes_of_the_type.all()
+                sub_type_pay = []
+                for i in pay_type_element:
+                    sub_type_pay.append(i.sub_type)
+                return JsonResponse({'message': sub_type_pay})
             else:
-                return JsonResponse(
-                    {'message': False}
-                )
+                return JsonResponse({'message': False})
 
         status = request.POST.get('transaction_status')
 
@@ -441,6 +451,9 @@ def transaction_update_view(request, pk):
         transaction_date = dt.strptime(request.POST.get('transaction_date'), '%d.%m.%Y').date()
         amount = decimal.Decimal(request.POST.get('amount').replace(',', '.').replace(' ', ''))
         type_payment = PayType.objects.filter(pay_type=request.POST.get('type_payment'))[0].pk
+        sub_type = None
+        if request.POST.get('sub_type'):
+            sub_type = SubPayType.objects.filter(sub_type=request.POST.get('sub_type'))[0].pk
 
         '''Логика для загрузки ЧЕКов'''
         check_img = ''
@@ -465,7 +478,7 @@ def transaction_update_view(request, pk):
         '''Словарь новых данных по форме'''
         new_transaction_data = {'status': status, 'transaction_date': transaction_date,
                                 'amount': amount, 'type_payment': type_payment, 'check_img': check_img,
-                                'tags': tags, 'description': description}
+                                'tags': tags, 'description': description, 'sub_type_pay': sub_type}
 
         changes = {'transaction_id': pk, 'author_references': request.user}
 
@@ -540,7 +553,8 @@ def transaction_update_view(request, pk):
         return redirect('transactions')
 
     data = {'title': 'Изменение транзакции', 'inside': {'page_url': 'transactions', 'page_title': 'Транзакции'},
-            'form': form_class, 'transaction': transaction[0], 'type_payments': type_payments}
+            'form': form_class, 'transaction': transaction[0], 'type_payments': type_payments,
+            'sub_type_of_type': sub_type_of_type}
 
     return render(request, 'mainapp/transaction_edit.html', data)
 
@@ -658,7 +672,7 @@ def payment_type_view(request):
     sub_pay_types = SubPayType.objects.all()
 
     if request.method == 'POST':
-        '''Проверка наличия подтипа платежа'''
+        '''Проверка наличия подтипа платежа для избегания дублирования'''
         if request.POST.get('type') == 'check_sub_pay_type':
             sub_type = request.POST.get('sub_type_payment')
             if SubPayType.objects.filter(sub_type=sub_type).exists():
@@ -668,47 +682,51 @@ def payment_type_view(request):
         '''создание подтипа платежа'''
         if request.POST.get('type') == 'new_sub_pay_type':
             sub_type = request.POST.get('sub_type_payment')
-            print(sub_type)
             sub_pay = SubPayType
             sub_pay.objects.create(sub_type=sub_type)
             return JsonResponse({'status': 'ok'})
 
-        '''Проверка наличия идентичного типа платежа во избежания дублирования'''
+        '''Проверка наличия типа платежа во избежания дублирования'''
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
             if PayType.objects.filter(pay_type=pay_type).exists():
                 return JsonResponse({'message': False})
             else:
                 return JsonResponse({'message': True})
-        '''создание типа платежа, с привязкой доп параметров при наличии'''
+        '''Создание типа платежа, с привязкой доп параметров при наличии'''
         if request.POST.get('type') == 'new_pay_type':
             pay_type = request.POST.get('type_payment')
 
-            all_sub_pay_type = SubPayType.objects.all()
-            sub_pay_type = []
-            for sub in all_sub_pay_type:
-                if str(sub.id) in request.POST:
-                    sub_pay_type.append(sub.id)
             new_pay_type = PayType.objects.create(pay_type=pay_type)
-            if sub_pay_type:
-                new_pay_type.subtypes_of_the_type.set(sub_pay_type)
-            new_pay_type.save()
-            print(new_pay_type)
-            return JsonResponse({'status': 'ok'})
-        print(request.POST)
 
-        '''Добавление подтипов платежа к типу платежа'''
-        if request.POST.get('type') == 'add_sub_pay_type':
-            type_payment = request.POST.get('type_payment')
-            pay_type = PayType.objects.filter(pay_type=type_payment)
             if request.POST.getlist('sub_type_payments[]'):
                 sub_type_pay = request.POST.getlist('sub_type_payments[]')
-                print(sub_type_pay)
                 for i in sub_type_pay:
-                    print(int(i))
+                    new_pay_type.subtypes_of_the_type.add(int(i))
+
+            new_pay_type.save()
+            return JsonResponse({'status': 'ok'})
+
+        '''Редактирование типа платежа и добавление подтипов'''
+        if request.POST.get('type') == 'add_sub_pay_type':
+            pay_type = PayType.objects.filter(pay_type=request.POST.get('type_payment'))
+
+            if request.POST.getlist('sub_type_payments[]'):
+                sub_type_pay = request.POST.getlist('sub_type_payments[]')
+                for i in sub_type_pay:
                     pay_type[0].subtypes_of_the_type.add(int(i))
+
             pay_type[0].save()
-            return JsonResponse({})
+            return JsonResponse({'status': 'ok'})
+
+        '''Выдача конкретного типа платежа для его редактирования'''
+        if request.POST.get('type') == 'get_type_pay':
+            sub_type_pay_el = PayType.objects.filter(pay_type=request.POST.get('type_pay'))[0].subtypes_of_the_type.all()
+            sub_params = []
+            for i in sub_type_pay_el:
+                sub_params.append(i.id)
+
+            return JsonResponse({'sub_params': sub_params})
 
     data = {'title': 'Типы платежей', 'pay_type': pay_type, 'sub_pay_types': sub_pay_types}
 
@@ -743,7 +761,6 @@ def payment_create_view(request):
 
 
 def additional_data_transaction_view(request):
-
     additional = ''
     if request.user.is_superuser:
         additional = get_additional_transactions()

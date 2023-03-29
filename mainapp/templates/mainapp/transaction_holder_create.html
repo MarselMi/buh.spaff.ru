@@ -29,7 +29,7 @@
 									<input autocomplete="off" class="obligatory form-control is-invalid" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
 								</div>
 
-								<div class="col-12 col-sm-3 mb-3">
+								<div class="col-12 col-sm-3 mb-3 type_payment_input">
 									{{ form.type_payment.label }}
 									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="form-control is-invalid" name="type_payment" id="type_payment" placeholder="Тип платежа" "/>
 									<datalist id="list_pay">
@@ -164,9 +164,33 @@
 					type_payment: $('#type_payment').val()
 				}
 			}).then(function(result) {
+				$('.sub_type_payment_select').remove();
 				if (result.message) {
+					var options = result.message;
 					$('#type_payment').removeClass('is-invalid');
 					$('#type_payment').addClass('is-valid');
+
+					if (options.length){
+						var value = ''
+
+						for(let q = 0; options.length > q; q++){
+							if(q==0){
+								value += ` <option value="${options[q]}" selected>${options[q]}</option> `
+							}else{
+								value += ` <option value="${options[q]}">${options[q]}</option> `
+							}
+						}
+						
+						var sub_type_input = `
+							<div class="col-12 col-sm-3 mb-3 sub_type_payment_select">
+								<label for="sub_type" class="mb-1">Подтип платежа</label>
+								<select class="form-select" name="sub_type" id="sub_type">
+									${value}
+								</select>
+							</div>`
+
+						$('.type_payment_input').after(sub_type_input);
+					}
 				} else {
 					$('#type_payment').removeClass('is-valid');
 					$('#type_payment').addClass('is-invalid');

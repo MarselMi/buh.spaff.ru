@@ -98,6 +98,8 @@ class Transaction(models.Model):
 
     type_payment = models.ForeignKey(PayType, on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='transaction_paytype', verbose_name='Тип')
+    sub_type_pay = models.ForeignKey(SubPayType, on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='transaction_sub_paytype', verbose_name='Подтип')
     tags = models.TextField(blank=True, null=True, default=None, verbose_name='Теги')
     author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name='transaction_customuser', verbose_name='Автор')
@@ -146,7 +148,8 @@ class TransactionLog(models.Model):
     transaction_date = models.CharField(max_length=30, blank=True, null=True, verbose_name='Дата транз до/после')
     amount = models.CharField(max_length=30, blank=True, null=True, verbose_name='Сумма транз до/после')
     description = models.TextField(blank=True, null=True, verbose_name='Описание транз до/после')
-    type_payment = models.CharField(max_length=25, blank=True, null=True, verbose_name='Тип платежа до/после')
+    type_payment = models.CharField(max_length=50, blank=True, null=True, verbose_name='Тип платежа до/после')
+    sub_type_pay = models.CharField(max_length=50, blank=True, null=True, verbose_name='Подтип платежа до/после')
     check_img = models.TextField(blank=True, null=True, verbose_name='Чеки транз до/после')
 
     class Meta:

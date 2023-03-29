@@ -21,6 +21,7 @@
 											<th>Сумма транз до/после</th>
 											<th>Описание транз до/после</th>
 											<th>Тип платежа до/после</th>
+											<th>Подтип до/после</th>
 											<th>Чеки транз до/после</th>
 										</tr>
 									</thead>
@@ -35,6 +36,7 @@
 											<td>{{ object.amount|change_sum_trans|safe }}</td>
 											<td>{{ object.description|dash|safe }}</td>
 											<td>{{ object.type_payment|pay_type_decode|safe }}</td>
+											<td>{{ object.sub_type_pay|sub_pay_type_decode|safe }}</td>
 											<td>{% if object.check_img %}
 													{% for img in object.check_img|split_img %}
 														{% if img %}

@@ -37,27 +37,29 @@
 									<tbody>
 										<tr class="align-middle pay-type-container">
 											<td class="d-flex">
-												{{ object.subtypes_of_the_type }}  
-
-												{% if object.subtypes_of_the_type %}
-													{% for i in object.subtypes_of_the_type %} 
-														{{ i }}
-													{% endfor %}
+												{{ object.id }} &nbsp;
+												{% if object.subtypes_of_the_type.all %}
+													<div class="Box-sc-1gh2r6s-0 CXccO" 
+														data-bs-toggle="popover" 
+														data-bs-trigger="hover focus" 
+														data-bs-content=" 
+															{% for i in object.subtypes_of_the_type.all %}
+																{{ i }}
+															{% endfor %}">
+														<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
+															<path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+															<path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8zm0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+														</svg>
+													</div>
 												{% endif %}
-													<!-- &nbsp;
-												<div class="Box-sc-1gh2r6s-0 CXccO" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="{{ object.subtypes_of_the_type }}">
-													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
-														<path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
-														<path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8zm0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
-													</svg>
-												</div> -->
 											</td>
 											<td>
 												{{ object.pay_type }} &nbsp;
 												<button
 													type="button" 
-													class="btn btn-light btn-sm buttonSelectModal" 
+													class="btn btn-light btn-sm buttonSelectModal pay_edit_modal" 
 													data-bs-toggle="modal" 
+													data-bs-pay-id="{{ object.id }}"
 													data-bs-target="#subPayTypeAdd" 
 													data-bs-whatever="{{ object.pay_type }}">
 													<i class="fa-regular fa-pen-to-square"></i>
@@ -83,7 +85,7 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
-
+	<!-- Модальное окно для создания Нового типа платежа с выбором доп параметров -->
 	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content border-0">
@@ -97,13 +99,25 @@
 
 					<div class="modal-body" id="form_type_payment">
 						
-						<div class="form-floating mb-3">
+						<div class="form-floating mb-1">
 							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
 							<label for="type_payment">
 								Тип платежа
 							</label>
 						</div> <!-- /form-floating -->
 					</div> <!-- /modal-body -->
+
+					<div class="modal-body">
+						<h5 class="modal-title">
+							Добавить подтипы при необходимости:
+						</h5> <!-- /modal-title -->
+						{% for sub_type in sub_pay_types %}
+							<div class="col-12">
+								<input class="form-check-input sup_pay_types_checked" type="checkbox" name="{{ sub_type.pk }}" id="{{ sub_type.pk }}"/>
+								<label for="{{ sub_type.pk }}">{{ sub_type }}</label>
+							</div>
+						{% endfor %}
+					</div>
 
 					<div class="modal-footer">
 						<div class="row">
@@ -119,7 +133,7 @@
 		</div> <!-- /modal-dialog -->
 	</div> <!-- /modal -->
 
-
+	<!-- Модальное окно для создания Нового подтипа платежа -->
 	<div class="modal fade" id="subPayType" tabindex="-1" aria-labelledby="subPayTypeLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content border-0">
@@ -156,33 +170,29 @@
 		</div> <!-- /modal-dialog -->
 	</div> <!-- /modal -->
 
-
-
+	<!-- Модальное окно для редактирования типа платежа (добавления/удаления подтипа платежа) -->
 	<div class="modal fade" id="subPayTypeAdd" tabindex="-1" aria-labelledby="subPayTypeAddLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content border-0">
 				<form action="" name="newsubPayTypeAdd" id="newsubPayTypeAdd">
+
 					<div class="modal-header">
-
 						<h5 class="modal-title" id="newsubPayTypeAddModalLabel">
-							
 						</h5> <!-- /modal-title -->
-
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					
+						<button type="button" class="btn-close close_add_sub_params" data-bs-dismiss="modal" aria-label="Close">
+						</button>
 					</div> <!-- /modal-header -->
 					<input class="type_payment_modal" value="" hidden>
 					<div class="modal-body" id="form_subPayTypeAdd">
 						<div class="row">
 							{% for sub_type in sub_pay_types %}
 								<div class="col-12">
-									<input class="form-check-input sup_pay_types_checked" type="checkbox" name="{{ sub_type.pk }}" id="{{ sub_type.pk }}"/>
-									<label for="{{ sub_type.pk }}">{{ sub_type }}</label>
+									<input class="form-check-input sup_pay_types_checked_edit" type="checkbox" name="{{ sub_type.id }}" id="id-{{ sub_type.id }}"/>
+									<label for="id-{{ sub_type.id }}">{{ sub_type }}</label>
 								</div>
 							{% endfor %}
 						</div>
 					</div> <!-- /modal-body -->
-
 					<div class="modal-footer">
 						<div class="row">
 							<div class="col-12 mb-3">
@@ -192,13 +202,14 @@
 							</div>
 						</div>
 					</div> <!-- /modal-footer -->
+
 				</form>
 			</div> <!-- /modal-content -->
 		</div> <!-- /modal-dialog -->
 	</div> <!-- /modal -->
 
-
 	<script>
+
 		var url = document.location.href;
 		var a = document.cookie.split(';');
 		var token = ''
@@ -211,6 +222,7 @@
 			}
 		}
 
+		// Проверка типа платежа
 		$('#type_payment').on('input change', function(){
 			$.ajax({
 				url: url,
@@ -232,8 +244,15 @@
 				var x = 0
 			})
 		})
-
+		// Создание типа платежа с подтипами, если они имеются
 		$('#create_pay_btn').on('click', function(event){
+			var checkedArray = []
+			var myArray = $('.sup_pay_types_checked');
+			$.each(myArray, function(index, element){
+				if(element.checked){
+					checkedArray.push(myArray[index].id)
+				}
+			});
 			var new_pay_type = $('#type_payment').val();
 			$.ajax({
 				url: url,
@@ -241,7 +260,8 @@
 				data: {
 					csrfmiddlewaretoken: token,
 					type: 'new_pay_type',
-					type_payment: new_pay_type
+					type_payment: new_pay_type,
+					sub_type_payments: checkedArray
 				}
 			}).then(function(result){
 				console.log('ok');
@@ -253,6 +273,7 @@
 			})
 		})
 
+		// Проверка наличия подтипа платежа
 		$('#sub_type_payment').on('input change', function(){
 			$.ajax({
 				url: url,
@@ -277,7 +298,7 @@
 				var x = 0
 			})
 		})
-
+		// Создание нового подтипа платежа
 		function createSubPayType(){
 			var sub_pay_type = $('#sub_type_payment').val()
 			console.log(sub_pay_type)
@@ -294,35 +315,56 @@
 				$('#sub_type_payment').removeClass('is-valid');
 				$('#sub_type_payment').val('')
 				var x = 1
+				location.reload();
 			}).catch(function(err){
-				console.log(sub_pay_type, 'err')
 				var x = 0
 			})
 		}
 
-		var buttons_add_sub_pay = $('.buttonSelectModal')
+		// Кнопка вызова модального окна для редактирования типа платежа
+		var buttons_add_sub_pay = $('.pay_edit_modal');
+		// Открытие модального окна для редактирования
 		for(let i=0; buttons_add_sub_pay.length > i; i++){
 			buttons_add_sub_pay[i].addEventListener('click',function(event){
 				if (event.currentTarget == buttons_add_sub_pay[i]){
-					var pay_type = buttons_add_sub_pay[i].getAttribute('data-bs-whatever')
-					$('#newsubPayTypeAddModalLabel').text(`Добавить подтипы к типу платежа: ${pay_type}`)
-					$('.type_payment_modal').attr('value', `${pay_type}`)
+					var pay_type_element = ''
+					var pay_type_label = buttons_add_sub_pay[i].getAttribute('data-bs-whatever');
+					// запрос для получения подтипов платежа у конкретного типа платежа
+					$.ajax({
+						url: url,
+						method: 'POST',
+						data: {
+							csrfmiddlewaretoken: token,
+							type: 'get_type_pay',
+							type_pay: pay_type_label
+						}
+					}).then(function(result){
+						pay_type_element = result.sub_params;
+						console.log(pay_type_element)
+						$('#newsubPayTypeAddModalLabel').text(`Редактировать тип платежа: ${pay_type_label}`);
+						$('.type_payment_modal').attr('value', `${pay_type_label}`);
+						$('.sup_pay_types_checked_edit').prop('checked', false);
+						var myArray = $('.sup_pay_types_checked_edit');
+						for (let i=0; myArray.length > i; i++){
+							if(pay_type_element.includes(Number(myArray[i].name))){
+								myArray[i].checked = true;
+							}
+						}
+					}).catch(function(err){
+						var x = 0;
+					});
 				}
 			})
 		}
-
+		// Добавление/удаление подтипов у типа платежа
 		$('#subPayTypeAddFunc').on('click', function(event){
 			var checkedArray = []
 			var myArray = $('.sup_pay_types_checked');
-
 			$.each(myArray, function(index, element){
-				console.log(index, element.checked);
 				if(element.checked){
-					checkedArray.push(index + 1)
+					checkedArray.push(myArray[index].name)
 				}
 			});
-			
-			console.log(checkedArray)
 			$.ajax({
 				url: url,
 				method: 'POST',
@@ -333,7 +375,8 @@
 					sub_type_payments: checkedArray
 				}
 			}).then(function(result){
-				console.log('ok');
+				$('.close_add_sub_params').click();
+				location.reload();
 				var x = 1;
 			}).catch(function(err){
 				console.log('err');
@@ -342,4 +385,5 @@
 		})
 
 </script>
+
 {% endblock content %}

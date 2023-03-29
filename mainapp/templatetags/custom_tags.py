@@ -1,6 +1,6 @@
 from django.template.defaulttags import register
 from datetime import datetime as dt
-from mainapp.models import PayType
+from mainapp.models import *
 
 
 @register.filter
@@ -10,6 +10,16 @@ def pay_type_decode(obj):
         first_el = PayType.objects.filter(pk=slpit_object[0])[0]
         second_el = PayType.objects.filter(pk=slpit_object[1])[0]
         return f'{first_el.pay_type}/{second_el.pay_type}'
+    return f'&ndash;'
+
+
+@register.filter
+def sub_pay_type_decode(obj):
+    if obj:
+        slpit_object = obj.split('/')
+        first_el = SubPayType.objects.filter(pk=slpit_object[0])[0]
+        second_el = SubPayType.objects.filter(pk=slpit_object[1])[0]
+        return f'{first_el.sub_type}/{second_el.sub_type}'
     return f'&ndash;'
 
 

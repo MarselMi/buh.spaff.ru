@@ -150,12 +150,12 @@
 						<div class="form-floating mb-3">
 							<input type="text" name="balance_holder" id="balance_holder" hidden/>
 
-							<input class="form-control" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName" required/>
+							<input class="form-control" autocomplete="off" type="text" id="newTransactionName" placeholder="Имя" name="newTransactionName" required/>
 							<label for="newTransactionName">Имя транзакции</label>
 
 						</div> <!-- /form-floating -->
 
-						<div class="form-floating mb-3">
+						<div class="form-floating mb-3 type_payment_input">
 							<input class="form-control" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа" required/>
 							<datalist id="list_pay">
 								{% for type in type_payments %}
@@ -365,6 +365,7 @@
 					$('#liveToastBtn').removeAttr('aria-label')
 				}
 			})
+
 			$('#type_payment').on('input change', function(){
 				$.ajax(
 					{
@@ -376,9 +377,36 @@
 							type_payment: $('#type_payment').val()
 						}
 					}).then(function(result) {
+						$('.sub_type_payment_select').remove();
 						if (result.message) {
 							$('#type_payment').removeClass('is-invalid');
 							$('#type_payment').addClass('is-valid');
+
+							$('.sub_type_payment_select').remove();
+							var options = result.message;
+
+							if (options.length){
+								var value = ''
+
+								for(let q = 0; options.length > q; q++){
+									console.log(options[q])
+									if(q==0){
+										value += ` <option value="${options[q]}" selected>${options[q]}</option> `
+									}else{
+										value += ` <option value="${options[q]}">${options[q]}</option> `
+									}
+								}
+								
+								var sub_type_input = `
+									<div class="mb-3 sub_type_payment_select">
+										<label for="sub_type" class="mb-1">Подтип платежа</label>
+										<select class="form-select" name="sub_type" id="sub_type">
+											${value}
+										</select>
+									</div>`
+
+								$('.type_payment_input').after(sub_type_input);
+							}
 						} else {
 							$('#type_payment').removeClass('is-valid');
 							$('#type_payment').addClass('is-invalid');
@@ -390,6 +418,7 @@
 					}
 				)
 			})
+
 			// Зацикливайтесь на них и предотвращайте отправку
 			Array.prototype.slice.call(forms).forEach(function (form) {
 				form.addEventListener('submit', function (event) {
@@ -438,13 +467,17 @@
 		function createTransaction(){
 
 			var holder = exampleModal.querySelector('#balance_holder').value
+			var sub_type_pay = ''
+			if(exampleModal.querySelector('#sub_type')){
+				sub_type_pay = exampleModal.querySelector('#sub_type').value
+			}
 			var transaction_name = exampleModal.querySelector('#newTransactionName').value
 			var payment_type = exampleModal.querySelector('#type_payment').value
 			var transaction_type = exampleModal.querySelector('#type_transaction').value
 			var transaction_date = exampleModal.querySelector('#datepicker').value
 			var transaction_sum = exampleModal.querySelector('#transaction_sum_post').value
 			var commission = exampleModal.querySelector('#commission_post').value
-			
+
 			$.ajax(
 			{
 				url: url,
@@ -459,7 +492,8 @@
 					transaction_sum_post: transaction_sum,
 					commission_post: commission,
 					payment_type_post: payment_type,
-					transaction_type_post: transaction_type
+					transaction_type_post: transaction_type,
+					sub_type: sub_type_pay
 				}
 			}).then(function(result) {
 				console.log('OK');
