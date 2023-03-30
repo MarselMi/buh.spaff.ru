@@ -56,7 +56,7 @@
 							   data-bs-content="Для получения информации по отдельному балансодержателю нажмите на него">
 							</i>
 						</div>
-						
+
 						{% if all_coming|numb_format %}
 							<div class="col-12 col-md-6 mainInformation">
 								<div class="h3 text-center">Входящие транзакции - {{ all_coming|numb_format }}</div>
@@ -248,72 +248,73 @@
 
 		var profit_sum = {{ profit_coming|safe }};
 		var label_comming = {{ label_coming|safe }};
-		var option_comming = {
-			series: profit_sum,
-			labels: label_comming,
-			chart: {
-				type: 'donut',
-			},
-			legend: {
-				show: true,
-				position: 'top',
-			},
-			stroke: {
-				width: 4,
-				colors: ['#fff']
-			},
-			dataLabels: {
-				style: {
-					colors: ['#000000', '#000000', '#000000']
-				},
-				dropShadow: {
-					enabled: true,
-					top: 0,
-					left: 0,
-					blur: 1,
-					color: '#ffffff',
-					opacity: 70
-				}
-			}
-		};
 
-		if ($("#ChartStatsPartIncome")){
+		if (profit_sum){
+			var option_comming = {
+				series: profit_sum,
+				labels: label_comming,
+				chart: {
+					type: 'donut',
+				},
+				legend: {
+					show: true,
+					position: 'top',
+				},
+				stroke: {
+					width: 4,
+					colors: ['#fff']
+				},
+				dataLabels: {
+					style: {
+						colors: ['#000000', '#000000', '#000000']
+					},
+					dropShadow: {
+						enabled: true,
+						top: 0,
+						left: 0,
+						blur: 1,
+						color: '#ffffff',
+						opacity: 70
+					}
+				}
+			};
+
 			var chart_comming = new ApexCharts(document.querySelector("#ChartStatsPartIncome"), option_comming);
 			chart_comming.render();
 		}
 
 		var expenditure_sum = {{ profit_expenditure|safe }}
 		var expenditure_label = {{ label_expenditure|safe }}
-		var option_expenditure = {
-			series: expenditure_sum,
-			labels: expenditure_label,
-			chart: {
-				type: 'donut',
-			},
-			legend: {
-				show: true,
-				position: 'top',
-			},
-			stroke: {
-				width: 4,
-				colors: ['#fff']
-			},
-			dataLabels: {
-				style: {
-					colors: ['#000000', '#000000', '#000000']
+
+		if(expenditure_sum){
+			var option_expenditure = {
+				series: expenditure_sum,
+				labels: expenditure_label,
+				chart: {
+					type: 'donut',
 				},
-				dropShadow: {
-					enabled: true,
-					top: 0,
-					left: 0,
-					blur: 1,
-					color: '#ffffff',
-					opacity: 70
+				legend: {
+					show: true,
+					position: 'top',
+				},
+				stroke: {
+					width: 4,
+					colors: ['#fff']
+				},
+				dataLabels: {
+					style: {
+						colors: ['#000000', '#000000', '#000000']
+					},
+					dropShadow: {
+						enabled: true,
+						top: 0,
+						left: 0,
+						blur: 1,
+						color: '#ffffff',
+						opacity: 70
+					}
 				}
 			}
-		}
-		
-		if ($("#ChartStatsPartExpenditure")){
 			var chart_expenditure = new ApexCharts(document.querySelector("#ChartStatsPartExpenditure"), option_expenditure);
 			chart_expenditure.render();
 		}
