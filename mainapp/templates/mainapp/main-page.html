@@ -56,15 +56,20 @@
 							   data-bs-content="Для получения информации по отдельному балансодержателю нажмите на него">
 							</i>
 						</div>
-						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Входящие транзакции - {{ all_coming|numb_format }}</div>
-							<div id="ChartStatsPartIncome"></div>
-						</div>
+						
+						{% if all_coming|numb_format %}
+							<div class="col-12 col-md-6 mainInformation">
+								<div class="h3 text-center">Входящие транзакции - {{ all_coming|numb_format }}</div>
+								<div id="ChartStatsPartIncome"></div>
+							</div>
+						{% endif %}
 
-						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Исходящие транзакции - {{ all_expenditure|numb_format }}</div>
-							<div id="ChartStatsPartExpenditure"></div>
-						</div>
+						{% if all_expenditure|numb_format %}
+							<div class="col-12 col-md-6 mainInformation">
+								<div class="h3 text-center">Исходящие транзакции - {{ all_expenditure|numb_format }}</div>
+								<div id="ChartStatsPartExpenditure"></div>
+							</div>
+						{% endif %}
 
 					</div>
 
