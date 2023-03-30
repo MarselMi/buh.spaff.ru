@@ -11,14 +11,14 @@
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center mb-2">
-							<div id="{{ holder.id }}" class="container-fluid holders_id" data-holder-name="{{ holder.organization_holder }}" style="border-radius: 15px; background: lightblue">
+							<div class="container-fluid" style="border-radius: 15px; background: lightblue">
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h1>
 										{{ holder.holder_balance|numb_format }}
 									</h1>
+									{{ holder.organization_holder }}
 									<span data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="Нажмите для получения детальной информации">
-										{{ holder.organization_holder }}
-										<button type="button" class="btn btn-sm ms-1">
+										<button type="button" class="btn btn-sm ms-1 holders_id" id="{{ holder.id }}" data-holder-name="{{ holder.organization_holder }}">
 											<i class="fa-regular fa-info"></i>
 										</button>
 									</span>
@@ -173,19 +173,14 @@
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции" required/>
-							<datalist id="datalist_transaction_type">
+							<select class="form-select"  name="type_transaction" id="type_transaction">
 								<option value="Приход">Приход</option>
 								<option value="Расход">Расход</option>
-							</datalist>
+							</select>
 
 							<label for="type_transaction">
 								Тип транзакции
 							</label>
-
-							<div class="invalid-feedback">
-								Пожалуйста, выберите корректный тип транзакции
-							</div>
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
@@ -210,7 +205,7 @@
 							</div>
 						</div>  <!-- /form-floating -->
 
-						<div class="form-floating mb-3">
+						<div class="form-floating mb-3 comission_div_el" hidden>
 							<input class="form-control" autocomplete="off" name="commission_post" placeholder="Сумма транзакции" value="0" id="commission_post" required/>
 							<label for="commission_post">
 								Сумма комиссии
@@ -389,20 +384,22 @@
 								var value = ''
 
 								for(let q = 0; options.length > q; q++){
-									console.log(options[q])
 									if(q==0){
 										value += ` <option value="${options[q]}" selected>${options[q]}</option> `
 									}else{
 										value += ` <option value="${options[q]}">${options[q]}</option> `
 									}
 								}
-								
+
 								var sub_type_input = `
-									<div class="mb-3 sub_type_payment_select">
-										<label for="sub_type" class="mb-1">Подтип платежа</label>
+									<div class="form-floating mb-3 sub_type_payment_select">
 										<select class="form-select" name="sub_type" id="sub_type">
 											${value}
 										</select>
+
+										<label for="type_transaction">
+											Подтип платежа
+										</label>
 									</div>`
 
 								$('.type_payment_input').after(sub_type_input);
@@ -464,6 +461,14 @@
 			})
 		}
 
+		$('#type_transaction').on('change', function(){
+			if($('#type_transaction').val() == 'Расход'){
+				$('.comission_div_el').removeAttr('hidden');
+			}else{
+				$('.comission_div_el').attr('hidden', 'true');
+			}
+		})
+
 		function createTransaction(){
 
 			var holder = exampleModal.querySelector('#balance_holder').value
@@ -496,11 +501,9 @@
 					sub_type: sub_type_pay
 				}
 			}).then(function(result) {
-				console.log('OK');
 				location.reload();
 				var x = 1;
 			}).catch(function(err) {
-				console.log('ERR')
 				var x = 2;
 			})
 		}

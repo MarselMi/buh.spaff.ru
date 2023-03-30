@@ -22,12 +22,12 @@ def main_page_view(request):
     all_expenditure = 0
     if request.user.is_superuser:
         holders = BalanceHolder.objects.filter(deleted=False)
-        comming_sum = get_all_coming_sum(request.user.id, simpleuser=False)
-        expenditure_sum = get_all_expenditure_sum(request.user.id, simpleuser=False)
+        comming_sum = get_all_coming_transactions_sum(request.user.id, simpleuser=False)
+        expenditure_sum = get_all_expenditure_transactions_sum(request.user.id, simpleuser=False)
     else:
         holders = get_allow_balance_holders(request.user.id)
-        comming_sum = get_all_coming_sum(request.user.id, simpleuser=True)
-        expenditure_sum = get_all_expenditure_sum(request.user.id, simpleuser=True)
+        comming_sum = get_all_coming_transactions_sum(request.user.id, simpleuser=True)
+        expenditure_sum = get_all_expenditure_transactions_sum(request.user.id, simpleuser=True)
 
     type_payments = PayType.objects.all()
 
@@ -112,8 +112,8 @@ def main_page_view(request):
 
         if request.POST.get('type') == 'holder':
             holder_id = request.POST.get('id')
-            holder_transaction_coming = get_all_coming_sum(request.user.id, holder=holder_id)
-            holder_transaction_expenditure = get_all_expenditure_sum(request.user.id, holder=holder_id)
+            holder_transaction_coming = get_all_coming_transactions_sum(request.user.id, holder=holder_id)
+            holder_transaction_expenditure = get_all_expenditure_transactions_sum(request.user.id, holder=holder_id)
 
             holder_label_expenditure = []
             holder_profit_expenditure = []
@@ -137,10 +137,10 @@ def main_page_view(request):
 
             return HttpResponse(json.dumps(data))
 
-    color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
-                  'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
-                  'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
-                  'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
+    # color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
+    #               'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
+    #               'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
+    #               'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
 
     label_coming = []
     profit_coming = []
@@ -154,7 +154,7 @@ def main_page_view(request):
         label_expenditure.append(i['type'])
         profit_expenditure.append(float(i['expenditure']))
 
-    data = {'title': 'Главная страница', 'holders': holders, 'color_list': color_list,
+    data = {'title': 'Главная страница', 'holders': holders,
             'type_payments': type_payments, 'comming_sum': comming_sum, 'expenditure_sum': expenditure_sum,
             'label_coming': label_coming, 'profit_coming': profit_coming, 'profit_expenditure': profit_expenditure,
             'label_expenditure': label_expenditure, 'all_coming': all_coming, 'all_expenditure': all_expenditure
@@ -168,6 +168,7 @@ def transaction_view(request):
     transactions = []
     authors = CustomUser.objects.all()
     type_payments = PayType.objects.all()
+    sub_type = SubPayType.objects.all()
     dict_for_sql_filter = dict()
     get_param_filter = dict(request.GET)
 
@@ -183,24 +184,33 @@ def transaction_view(request):
     '''Заменяю данные для отработки SQL запроса '''
     if dict_for_sql_filter.get('type_payment_id'):
         dict_for_sql_filter['type_payment_id'] = type_payments.filter(pay_type=dict_for_sql_filter.get('type_payment_id')).values('id')[0].get('id')
+
+    if dict_for_sql_filter.get('sub_type_pay_id'):
+        dict_for_sql_filter['sub_type_pay_id'] = sub_type.filter(sub_type=dict_for_sql_filter.get('sub_type_pay_id')).values('id')[0].get('id')
+
     if dict_for_sql_filter.get('author_id'):
         dict_for_sql_filter['author_id'] = authors.filter(username=dict_for_sql_filter.get('author_id')).values('id')[0].get('id')
+
     if dict_for_sql_filter.get('balance_holder_id'):
         dict_for_sql_filter['balance_holder_id'] = BalanceHolder.objects.filter(organization_holder=dict_for_sql_filter.get('balance_holder_id')).values('id')[0].get('id')
+
     if dict_for_sql_filter.get('amount_start'):
         dict_for_sql_filter['amount_start'] = dict_for_sql_filter.get('amount_start').replace(' ', '').replace(',', '.')
+
     if dict_for_sql_filter.get('amount_end'):
         dict_for_sql_filter['amount_end'] = dict_for_sql_filter.get('amount_end').replace(' ', '').replace(',', '.')
+
     if dict_for_sql_filter.get('start'):
         dict_for_sql_filter['start'] = dt.strptime(dict_for_sql_filter.get('start'), '%d.%m.%Y').strftime('%Y-%m-%d')
+
     if dict_for_sql_filter.get('end'):
         dict_for_sql_filter['end'] = dt.strptime(dict_for_sql_filter.get('end'), '%d.%m.%Y').strftime('%Y-%m-%d')
 
     if request.user.is_superuser:
-        balance_holders = get_allow_balance_holders_transaction(request.user.id, superuser_role=True)
+        balance_holders = get_allow_balance_holder_transactions(request.user.id, superuser_role=True)
         transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter)
     else:
-        balance_holders = get_allow_balance_holders_transaction(request.user.id)
+        balance_holders = get_allow_balance_holder_transactions(request.user.id)
         transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True)
 
     if request.GET.get('collapse'):
@@ -212,7 +222,7 @@ def transaction_view(request):
 
     data = {'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
             'transactions': transactions, 'authors': authors, 'get_param_filter': get_param_filter,
-            'collapsed': collapsed}
+            'collapsed': collapsed, 'sub_type': sub_type}
 
     return render(request, 'mainapp/transactions.html', data)
 
@@ -226,7 +236,7 @@ def create_transaction_view(request):
     if request.user.is_superuser:
         balance_holders = BalanceHolder.objects.all()
     else:
-        for holder in get_allow_balance_holders_transaction(request.user.id):
+        for holder in get_allow_balance_holder_transactions(request.user.id):
             balance_holders.append(holder['organization_holder'])
 
     if request.method == 'POST':
@@ -426,8 +436,6 @@ def transaction_update_view(request, pk):
     form_class = TransactionUpdateForm(request.POST, request.FILES)
     type_payments = PayType.objects.all()
     sub_type_of_type = type_payments.filter(pay_type=transaction[0].type_payment)[0].subtypes_of_the_type.all()
-
-    # select_type = type_payments.filter(subtypes_of_the_type=)
 
     old_transaction = transaction.values(
         'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img', 'sub_type_pay'
@@ -707,6 +715,14 @@ def payment_type_view(request):
             new_pay_type.save()
             return JsonResponse({'status': 'ok'})
 
+        '''Выдача конкретного типа платежа для его редактирования'''
+        if request.POST.get('type') == 'get_type_pay':
+            sub_type_pay_el = PayType.objects.filter(pay_type=request.POST.get('type_pay'))[0].subtypes_of_the_type.all()
+            sub_params = []
+            for i in sub_type_pay_el:
+                sub_params.append(i.id)
+
+            return JsonResponse({'sub_params': sub_params})
         '''Редактирование типа платежа и добавление подтипов'''
         if request.POST.get('type') == 'add_sub_pay_type':
             pay_type = PayType.objects.filter(pay_type=request.POST.get('type_payment'))
@@ -719,20 +735,12 @@ def payment_type_view(request):
             pay_type[0].save()
             return JsonResponse({'status': 'ok'})
 
-        '''Выдача конкретного типа платежа для его редактирования'''
-        if request.POST.get('type') == 'get_type_pay':
-            sub_type_pay_el = PayType.objects.filter(pay_type=request.POST.get('type_pay'))[0].subtypes_of_the_type.all()
-            sub_params = []
-            for i in sub_type_pay_el:
-                sub_params.append(i.id)
-
-            return JsonResponse({'sub_params': sub_params})
-
     data = {'title': 'Типы платежей', 'pay_type': pay_type, 'sub_pay_types': sub_pay_types}
 
     return render(request, 'mainapp/payments_type.html', data)
 
 
+'''не применяется'''
 def payment_create_view(request):
 
     if request.method == 'POST':

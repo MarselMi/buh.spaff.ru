@@ -29,6 +29,14 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
+								  {{ form.type_transaction.label }}
+									<select class="form-select mb-2" name="type_transaction" id="type_transaction">
+										<option value="Приход">Приход</option>
+										<option value="Расход">Расход</option>
+									</select>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
 									{{ form.transaction_date.label }}
 									<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker"/>
 								</div>
@@ -48,21 +56,12 @@
 									<input class="obligatory form-control is-invalid" autocomplete="off" name="transaction_sum_post" placeholder="Сумма транзакции" id="transaction_sum_post"/>
 								</div>
 
-								<div class="col-12 col-sm-3 mb-3">
+								<div class="col-12 col-sm-3 mb-3 comission_div_el" hidden>
 									<label for="flexCheckDefault" class="mb-1"> 
 										<input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
 										Наличие комиссии
 									</label>
 									<input class="obligatory form-control" autocomplete="off" value="0" name="commission_post" placeholder="Сумма комиссии" id="commission_post" disabled/>
-								</div>
-
-								<div class="col-12 col-sm-3 mb-3">
-								  {{ form.type_transaction.label }}
-									<input class="form-control mb-2 is-invalid" autocomplete="off" onfocus="this.value=''" name="type_transaction" list="datalist_transaction_type" id="type_transaction" placeholder="Тип транзакции"/>
-								  	<datalist id="datalist_transaction_type">
-										<option value="Приход">Приход</option>
-										<option value="Расход">Расход</option>
-									</datalist>
 								</div>
 
 							</div>
@@ -152,6 +151,14 @@
 	}
 
 	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+	$('#type_transaction').on('change', function(){
+		if($('#type_transaction').val() == 'Расход'){
+			$('.comission_div_el').removeAttr('hidden');
+		}else{
+			$('.comission_div_el').attr('hidden', 'true');
+		}
+	})
 
 	$('#balance_holder').on('input', function(){
 		$('.error_holder').remove();

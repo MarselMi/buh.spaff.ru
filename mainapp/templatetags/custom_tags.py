@@ -41,7 +41,7 @@ def split_img(obj):
 
 
 @register.filter
-def replace_space(obj:str):
+def replace_space(obj: str):
     return obj.replace(' ', '_')
 
 

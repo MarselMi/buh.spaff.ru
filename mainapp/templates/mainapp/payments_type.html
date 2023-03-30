@@ -264,16 +264,14 @@
 					sub_type_payments: checkedArray
 				}
 			}).then(function(result){
-				console.log('ok');
 				location.reload();
 				var x = 1;
 			}).catch(function(err){
-				console.log('err')
 				var x = 0
 			})
 		})
 
-		// Проверка наличия подтипа платежа
+		// Проверка наличия подтипа платежа при создании нового
 		$('#sub_type_payment').on('input change', function(){
 			$.ajax({
 				url: url,
@@ -294,14 +292,12 @@
 					$('#create_sub_pay').attr('disabled', 'true');
 				}
 			}).catch(function(err){
-				console.log('err')
 				var x = 0
 			})
 		})
 		// Создание нового подтипа платежа
 		function createSubPayType(){
 			var sub_pay_type = $('#sub_type_payment').val()
-			console.log(sub_pay_type)
 			$.ajax({
 				url: url,
 				method: 'POST',
@@ -340,7 +336,6 @@
 						}
 					}).then(function(result){
 						pay_type_element = result.sub_params;
-						console.log(pay_type_element)
 						$('#newsubPayTypeAddModalLabel').text(`Редактировать тип платежа: ${pay_type_label}`);
 						$('.type_payment_modal').attr('value', `${pay_type_label}`);
 						$('.sup_pay_types_checked_edit').prop('checked', false);
@@ -359,12 +354,13 @@
 		// Добавление/удаление подтипов у типа платежа
 		$('#subPayTypeAddFunc').on('click', function(event){
 			var checkedArray = []
-			var myArray = $('.sup_pay_types_checked');
-			$.each(myArray, function(index, element){
-				if(element.checked){
-					checkedArray.push(myArray[index].name)
+			var myArray = $('.sup_pay_types_checked_edit');
+
+			for (let i=0; myArray.length > i; i++){
+				if(myArray[i].checked){
+					checkedArray.push(myArray[i].name)
 				}
-			});
+			}
 			$.ajax({
 				url: url,
 				method: 'POST',
@@ -376,10 +372,9 @@
 				}
 			}).then(function(result){
 				$('.close_add_sub_params').click();
-				location.reload();
 				var x = 1;
+				location.reload();
 			}).catch(function(err){
-				console.log('err');
 				var x = 0;
 			})
 		})

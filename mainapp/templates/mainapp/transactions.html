@@ -31,7 +31,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="filter_holder">Фильтр по балансодержателям</label>
-									<input class="form-control filter" list="balance_holder" autocomplete="off" name="balance_holder_id" id="filter_holder"
+									<input class="form-control filter" list="balance_holder" onfocus="this.value=''" autocomplete="off" name="balance_holder_id" id="filter_holder"
 										    {% if get_param_filter.balance_holder_id.0 %} value="{{ get_param_filter.balance_holder_id.0 }}" {% endif %} placeholder="Введите балансодержателя"/>
 									<datalist id="balance_holder">
 										{% for holder in balance_holders %}
@@ -42,7 +42,7 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="filter_payment">Фильтр по типу платежа</label>
-									<input class="form-control filter" list="pay_type" autocomplete="off" name="type_payment_id" id="filter_payment"
+									<input class="form-control filter" list="pay_type" autocomplete="off" onfocus="this.value=''" name="type_payment_id" id="filter_payment"
 										   {% if get_param_filter.type_payment_id.0 %} value="{{ get_param_filter.type_payment_id.0 }}" {% endif %} placeholder="Введите тип платежа"/>
 									<datalist id="pay_type">
 										{% for type in type_payments %}
@@ -52,9 +52,14 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_tags">Фильтр по тегам</label>
-									<input class="form-control filter" autocomplete="off" name="tags" id="filter_tags"
-									{% if get_param_filter.tags.0 %} value="{{ get_param_filter.tags.0 }}" {% endif %} placeholder="Введите теги"/>
+									<label for="filter_sub_payment">Фильтр подтипа платежа</label>
+									<input class="form-control filter" list="sub_type" autocomplete="off" onfocus="this.value=''" name="sub_type_pay_id" id="filter_sub_payment"
+										   {% if get_param_filter.sub_type_pay_id.0 %} value="{{ get_param_filter.sub_type_pay_id.0 }}" {% endif %} placeholder="Введите подтип платежа"/>
+									<datalist id="sub_type">
+										{% for type in sub_type %}
+											<option value="{{ type }}">{{ type }}</option>
+										{% endfor %}
+									</datalist>
 								</div>
 
 							</div>
@@ -108,6 +113,12 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_tags">Фильтр по тегам</label>
+											<input class="form-control filter" autocomplete="off" name="tags" id="filter_tags"
+											{% if get_param_filter.tags.0 %} value="{{ get_param_filter.tags.0 }}" {% endif %} placeholder="Введите теги"/>
+										</div>
+
+										<div class="col-12 col-sm-3 mb-3">
 											<label class="label" for="filter_status">Фильтр по статусу транзакии</label>
 											<select class="form-select filter" autocomplete="off" name="status" id="filter_status">
 												{% if get_param_filter.status.0 %}
@@ -125,7 +136,7 @@
 											</select>
 										</div> <!-- /col -->
 
-										<div class="row mb-3">
+										<div class="col-12 col-sm-3 mb-3">
 
 											<label for="input-amount-group">
 												Фильтр по сумме транзакции
@@ -139,7 +150,8 @@
 												<input class="form-control filter" autocomplete="off" name="amount_end" id="filter_amount_below"
 												{% if get_param_filter.amount_end.0 %} value="{{ get_param_filter.amount_end.0 }}" {% endif %} placeholder="Введите цену транзакции"/>
 											</div>
-										</div>
+										</div> <!-- /col -->
+
 									</div>
 								</div>
 							</div>
@@ -283,8 +295,6 @@
 			}
 			return check_val
 		}
-
-		console.log(check_filter())
 
 		if (check_filter()){
 			$('.clear').removeAttr('hidden')
