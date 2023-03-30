@@ -452,16 +452,18 @@
 		var modalTitle = exampleModal.querySelector('.modal-title')
 		var holder_link = exampleModal.querySelector('.holder_link')
 
-		for (let i=0;  buttonSelectModal.length > i; i++){
-			buttonSelectModal[i].addEventListener('click', function(event){
-				if (event.currentTarget == buttonSelectModal[i]){
-					var holder = exampleModal.querySelector('#balance_holder')
-					var id_holder = buttonSelectModal[i].getAttribute('data-holder-id')
-					holder.value = buttonSelectModal[i].getAttribute('data-bs-whatever')
-					modalTitle.textContent = 'Создать транзакцию для ' + buttonSelectModal[i].getAttribute('data-bs-whatever')
-					holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`)
-				}
-			})
+		if(buttonSelectModal){
+			for (let i=0;  buttonSelectModal.length > i; i++){
+				buttonSelectModal[i].addEventListener('click', function(event){
+					if (event.currentTarget == buttonSelectModal[i]){
+						var holder = exampleModal.querySelector('#balance_holder')
+						var id_holder = buttonSelectModal[i].getAttribute('data-holder-id')
+						holder.value = buttonSelectModal[i].getAttribute('data-bs-whatever')
+						modalTitle.textContent = 'Создать транзакцию для ' + buttonSelectModal[i].getAttribute('data-bs-whatever')
+						holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`)
+					}
+				})
+			}
 		}
 
 		$('#type_transaction').on('change', function(){
@@ -513,138 +515,141 @@
 
 		var holders_id = document.querySelectorAll('.holders_id');
 
-		for (let i=0; i < holders_id.length; i++){
-			holders_id[i].addEventListener('click', function(event) {
-				if (event.currentTarget == holders_id[i]){
-				$.ajax({
-					url: url,
-					method: 'POST',
-					data: {
-						csrfmiddlewaretoken: token,
-						type: 'holder',
-						id: holders_id[i].getAttribute("id")
-					}
-				}).then(function(result){
-
-					function add(accumulator, a) {
-						return accumulator + a;
-					}
-
-					var graphElement = $('.holderGraph');
-					var result_el = JSON.parse(result);
-
-					var holder_label_coming = result_el.holder_label_coming;
-					var holder_profit_coming = result_el.holder_profit_coming;
-					var holder_label_expenditure = result_el.holder_label_expenditure;
-					var holder_profit_expenditure = result_el.holder_profit_expenditure;
-
-					var option__holder_comming = {
-						series: holder_profit_coming,
-						labels: holder_label_coming,
-						chart: {
-							type: 'donut',
-						},
-						legend: {
-							show: true,
-							position: 'top',
-						},
-						stroke: {
-							width: 4,
-							colors: ['#fff']
-						},
-						dataLabels: {
-							style: {
-								colors: ['#000000', '#000000', '#000000']
-							},
-							dropShadow: {
-								enabled: true,
-								top: 0,
-								left: 0,
-								blur: 1,
-								color: '#ffffff',
-								opacity: 70
-							}
+		if(holders_id){
+			for (let i=0; i < holders_id.length; i++){
+				holders_id[i].addEventListener('click', function(event) {
+					if (event.currentTarget == holders_id[i]){
+					$.ajax({
+						url: url,
+						method: 'POST',
+						data: {
+							csrfmiddlewaretoken: token,
+							type: 'holder',
+							id: holders_id[i].getAttribute("id")
 						}
-					};
+					}).then(function(result){
 
-					var option__holder_expend = {
-						series: holder_profit_expenditure,
-						labels: holder_label_expenditure,
-						chart: {
-							type: 'donut',
-						},
-						legend: {
-							show: true,
-							position: 'top',
-						},
-						stroke: {
-							width: 4,
-							colors: ['#fff']
-						},
-						dataLabels: {
-							style: {
-								colors: ['#000000', '#000000', '#000000']
-							},
-							dropShadow: {
-								enabled: true,
-								top: 0,
-								left: 0,
-								blur: 1,
-								color: '#ffffff',
-								opacity: 70
-							}
+						function add(accumulator, a) {
+							return accumulator + a;
 						}
-					};
 
-					graphElement.empty();
+						var graphElement = $('.holderGraph');
+						var result_el = JSON.parse(result);
 
-					var informationTable = `
-						<div class="h2 text-center">
-							Общая информация по балансодержателю - ${holders_id[i].getAttribute('data-holder-name')}
-						</div>`;
-					
-					var incom = `
-						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Нет данных</div>
-						</div>`
-					if (holder_profit_coming.length){
-						let sumComming = holder_profit_coming.reduce(add, 0);
+						var holder_label_coming = result_el.holder_label_coming;
+						var holder_profit_coming = result_el.holder_profit_coming;
+						var holder_label_expenditure = result_el.holder_label_expenditure;
+						var holder_profit_expenditure = result_el.holder_profit_expenditure;
 
+						var option__holder_comming = {
+							series: holder_profit_coming,
+							labels: holder_label_coming,
+							chart: {
+								type: 'donut',
+							},
+							legend: {
+								show: true,
+								position: 'top',
+							},
+							stroke: {
+								width: 4,
+								colors: ['#fff']
+							},
+							dataLabels: {
+								style: {
+									colors: ['#000000', '#000000', '#000000']
+								},
+								dropShadow: {
+									enabled: true,
+									top: 0,
+									left: 0,
+									blur: 1,
+									color: '#ffffff',
+									opacity: 70
+								}
+							}
+						};
+
+						var option__holder_expend = {
+							series: holder_profit_expenditure,
+							labels: holder_label_expenditure,
+							chart: {
+								type: 'donut',
+							},
+							legend: {
+								show: true,
+								position: 'top',
+							},
+							stroke: {
+								width: 4,
+								colors: ['#fff']
+							},
+							dataLabels: {
+								style: {
+									colors: ['#000000', '#000000', '#000000']
+								},
+								dropShadow: {
+									enabled: true,
+									top: 0,
+									left: 0,
+									blur: 1,
+									color: '#ffffff',
+									opacity: 70
+								}
+							}
+						};
+
+						graphElement.empty();
+
+						var informationTable = `
+							<div class="h2 text-center">
+								Общая информация по балансодержателю - ${holders_id[i].getAttribute('data-holder-name')}
+							</div>`;
+						
 						var incom = `
 							<div class="col-12 col-md-6 mainInformation">
-								<div class="h3 text-center">Входящие транзакции - ${sumComming}</div>
-								<div id="ChartStatsPartIncomeHolder"></div>
+								<div class="h3 text-center">Нет данных</div>
 							</div>`
-					}
+						if (holder_profit_coming.length){
+							let sumComming = holder_profit_coming.reduce(add, 0);
 
-					var expend = `
-						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Нет данных</div>
-						</div>`
-					if (holder_profit_expenditure.length){
-						let sumEpend = holder_profit_expenditure.reduce(add, 0);
+							var incom = `
+								<div class="col-12 col-md-6 mainInformation">
+									<div class="h3 text-center">Входящие транзакции - ${sumComming}</div>
+									<div id="ChartStatsPartIncomeHolder"></div>
+								</div>`
+						}
+
 						var expend = `
 							<div class="col-12 col-md-6 mainInformation">
-								<div class="h3 text-center">Исходящие транзакции - ${sumEpend}</div>
-								<div id="ChartStatsPartExpenditureHolder"></div>
+								<div class="h3 text-center">Нет данных</div>
 							</div>`
+						if (holder_profit_expenditure.length){
+							let sumEpend = holder_profit_expenditure.reduce(add, 0);
+							var expend = `
+								<div class="col-12 col-md-6 mainInformation">
+									<div class="h3 text-center">Исходящие транзакции - ${sumEpend}</div>
+									<div id="ChartStatsPartExpenditureHolder"></div>
+								</div>`
+						}
+						
+						graphElement.prepend(informationTable, incom, expend);
+
+						var chart_comming_holder = new ApexCharts(document.querySelector("#ChartStatsPartIncomeHolder"), option__holder_comming);						
+						chart_comming_holder.render();
+
+						var chart_exp_holder = new ApexCharts(document.querySelector("#ChartStatsPartExpenditureHolder"), option__holder_expend);
+						chart_exp_holder.render();
+
+					}).catch(function(err){
+						var x = 1
+					})}
 					}
-					
-					graphElement.prepend(informationTable, incom, expend);
+				)
+			}
 
-					var chart_comming_holder = new ApexCharts(document.querySelector("#ChartStatsPartIncomeHolder"), option__holder_comming);						
-					chart_comming_holder.render();
-
-					var chart_exp_holder = new ApexCharts(document.querySelector("#ChartStatsPartExpenditureHolder"), option__holder_expend);
-					chart_exp_holder.render();
-
-				}).catch(function(err){
-					var x = 1
-				})}
-				}
-			)
 		}
-
+		
 		// for (let i = 0; i < holders_id.length; i++){
 			
 		// 	holders_id[i].addEventListener('click', function(event) {
