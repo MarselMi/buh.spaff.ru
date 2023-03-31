@@ -1,5 +1,7 @@
 import json
 import decimal
+from hashlib import md5
+
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -592,13 +594,10 @@ def balance_holder_create_view(request):
         if request.POST.get('type') == 'check_holder':
             organization_holder = request.POST.get('organization_holder')
             if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
-                return JsonResponse(
-                    {'message': False}
-                )
+                return JsonResponse({'message': False})
             else:
-                return JsonResponse(
-                    {'message': True}
-                )
+                return JsonResponse({'message': True})
+
         holder_type = request.POST.get('holder_type')
         organization_holder = request.POST.get('organization_holder')
         payment_account = request.POST.get('payment_account')
@@ -815,6 +814,17 @@ def additional_transaction_data_create_view(request):
             }
 
     return render(request, 'mainapp/additional_data_transaction_create.html', data)
+
+
+def lock_page(request):
+
+    '''Для подтверждения Telegram_id'''
+    md5_hash = md5(f'{request.user.id}_fv3353rv23v3ve_vsfvdfvdfvdf53f3_e1fj43d'.encode()).hexdigest()
+
+    data = {'title': 'Привязка Telegram аккаунта',  'md5_hash': md5_hash,
+            'page_name': 'Доступ ограничен', 'lock_page': 'lock_page'}
+
+    return render(request, 'mainapp/lock-page.html', data)
 
 
 def handler404(request, exception):

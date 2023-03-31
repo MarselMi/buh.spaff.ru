@@ -346,14 +346,12 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None):
 
     author_req = ''
     if author_res:
-        author_req = \
-            f'''
-            WHERE `mt`.`balance_holder_id` IN 
-            (SELECT `mah`.`balanceholder_id` 
-                FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk}
-            )
-            '''
-
+        author_req = f'''
+                        WHERE `mt`.`balance_holder_id` IN 
+                        (SELECT `mah`.`balanceholder_id` 
+                            FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk}
+                        )
+                    '''
     if filter_data:
         for key, val in filter_data.items():
             if len(filters) == 5:
@@ -396,8 +394,11 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None):
                             `mt`.`name`,
                             (SELECT `mb`.`organization_holder` FROM `mainapp_balanceholder` mb WHERE `mt`.`balance_holder_id`=`mb`.`id`) as 'balance_holder',
                             `mt`.`amount`,
+                            `mt`.`commission`,
+                            `mt`.`transaction_sum`,
                             (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
                             (SELECT `mu`.`username` FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
+                            `mt`.`sub_type_pay_id`,
                             `mt`.`status`,
                             `mt`.`check_img`                
                         FROM `mainapp_transaction` mt

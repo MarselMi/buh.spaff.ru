@@ -22,6 +22,7 @@ class CustomUserSerializer(ModelSerializer):
 
 
 class TransactionSerializer(ModelSerializer):
+
     class Meta:
         model = Transaction
         fields = '__all__'

@@ -7,7 +7,6 @@
 			<div class="card">
 				<div class="card-body">
 				{% if holders %}
-
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center mb-2">
@@ -614,7 +613,7 @@
 							</div>`
 						if (holder_profit_coming.length){
 							let sumComming = holder_profit_coming.reduce(add, 0);
-
+							sumComming = parseFloat(sumComming).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1 ").replace('.', ',');
 							var incom = `
 								<div class="col-12 col-md-6 mainInformation">
 									<div class="h3 text-center">Входящие транзакции - ${sumComming}</div>
@@ -628,6 +627,7 @@
 							</div>`
 						if (holder_profit_expenditure.length){
 							let sumEpend = holder_profit_expenditure.reduce(add, 0);
+							sumEpend = parseFloat(sumEpend).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1 ").replace('.', ',');
 							var expend = `
 								<div class="col-12 col-md-6 mainInformation">
 									<div class="h3 text-center">Исходящие транзакции - ${sumEpend}</div>

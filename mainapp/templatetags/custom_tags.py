@@ -24,6 +24,14 @@ def sub_pay_type_decode(obj):
 
 
 @register.filter
+def sub_pay_type_decode_for_tr(obj):
+    if obj:
+        first_el = SubPayType.objects.filter(pk=obj)[0]
+        return f'{first_el}'
+    return f'&ndash;'
+
+
+@register.filter
 def dash(obj):
     if obj:
         return obj

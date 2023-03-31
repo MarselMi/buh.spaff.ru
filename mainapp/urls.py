@@ -4,13 +4,17 @@ from django.contrib.auth.decorators import login_required
 from mainapp.views import (
     main_page_view, transactions_log_view, additional_transaction_data_create_view,
     payment_type_view, additional_data_transaction_view, balance_holder_create_view,
-    transaction_view, transaction_update_view, create_transaction_view,
+    transaction_view, transaction_update_view, create_transaction_view, lock_page,
     create_transaction_holder_view, balance_holders_views, payment_create_view, balance_holder_update_view,
 )
 
 urlpatterns = [
     path('', login_required(main_page_view, login_url='login'),
          name='main_page'),
+
+    # Закрепление telegram_id партнера
+    path('lock-page/', login_required(lock_page, login_url='login'),
+         name='lock_page'),
 
     # Авторизация, пользователи и Выход
     path('login/', CustomLoginView.as_view(),

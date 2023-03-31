@@ -3,7 +3,6 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
 from authapp.forms import LoginUserForm
 from django.contrib import messages
-
 from mainapp.data_library import get_balance_holders, get_holders_user
 from mainapp.models import CustomUser, BalanceHolder
 from django.contrib.auth.hashers import make_password
@@ -108,28 +107,18 @@ def edit_user_view(request, pk):
             username = request.POST.get('username')
             if CustomUser.objects.filter(username=username).exists():
                 if username == user_edit[0].username:
-                    return JsonResponse(
-                        {'message': True}
-                    )
+                    return JsonResponse({'message': True})
                 else:
-                    return JsonResponse(
-                        {'message': False}
-                    )
+                    return JsonResponse({'message': False})
             else:
-                return JsonResponse(
-                    {'message': True}
-                )
+                return JsonResponse({'message': True})
 
         if request.POST.get('type') == 'check_password':
             password = request.POST.get('password')
             if user_edit[0].check_password(password):
-                return JsonResponse(
-                    {'message': True}
-                )
+                return JsonResponse({'message': True})
             else:
-                return JsonResponse(
-                    {'message': False}
-                )
+                return JsonResponse({'message': False})
 
         username = request.POST.get('username')
         first_name = request.POST.get('first_name')

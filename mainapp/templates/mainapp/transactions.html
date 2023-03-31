@@ -19,7 +19,7 @@
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label class="label" for="filter_name">Фильтр по имени транзакии</label>
+									<label class="label" for="filter_name">Наименование транзакии</label>
 									<input class="form-control filter" autocomplete="off" list="transaction_name" name="name" id="filter_name"
 										   {% if get_param_filter.name.0 %} value="{{ get_param_filter.name.0 }}" {% endif %} placeholder="Введите имя транзакции"/>
 									<datalist id="transaction_name">
@@ -30,7 +30,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_holder">Фильтр по балансодержателям</label>
+									<label for="filter_holder">Балансодержатели</label>
 									<input class="form-control filter" list="balance_holder" onfocus="this.value=''" autocomplete="off" name="balance_holder_id" id="filter_holder"
 										    {% if get_param_filter.balance_holder_id.0 %} value="{{ get_param_filter.balance_holder_id.0 }}" {% endif %} placeholder="Введите балансодержателя"/>
 									<datalist id="balance_holder">
@@ -41,7 +41,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_payment">Фильтр по типу платежа</label>
+									<label for="filter_payment">По типу платежа</label>
 									<input class="form-control filter" list="pay_type" autocomplete="off" onfocus="this.value=''" name="type_payment_id" id="filter_payment"
 										   {% if get_param_filter.type_payment_id.0 %} value="{{ get_param_filter.type_payment_id.0 }}" {% endif %} placeholder="Введите тип платежа"/>
 									<datalist id="pay_type">
@@ -52,7 +52,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_sub_payment">Фильтр подтипа платежа</label>
+									<label for="filter_sub_payment">По подтипу платежа</label>
 									<input class="form-control filter" list="sub_type" autocomplete="off" onfocus="this.value=''" name="sub_type_pay_id" id="filter_sub_payment"
 										   {% if get_param_filter.sub_type_pay_id.0 %} value="{{ get_param_filter.sub_type_pay_id.0 }}" {% endif %} placeholder="Введите подтип платежа"/>
 									<datalist id="sub_type">
@@ -86,7 +86,7 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_autor">Фильтр по автору создателя</label>
+											<label for="filter_autor">По автору создателя</label>
 											<input class="form-control filter" list="user_filter" autocomplete="off" name="author_id" id="filter_autor"
 												   {% if get_param_filter.author_id.0 %} value="{{ get_param_filter.author_id.0 }}" {% endif %} placeholder="Введите автора транзакции"/>
 											<datalist id="user_filter">
@@ -97,7 +97,7 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_type">Фильтр по типу транзакии</label>
+											<label for="filter_type">По типу транзакции</label>
 											<select class="form-select filter" autocomplete="off" name="type_transaction" id="filter_type">
 												{% if get_param_filter.type_transaction.0 %}
 													<option selected value="{{ get_param_filter.type_transaction.0 }}">{{ get_param_filter.type_transaction.0|trans_type }}</option>
@@ -113,13 +113,13 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_tags">Фильтр по тегам</label>
+											<label for="filter_tags">По тегам</label>
 											<input class="form-control filter" autocomplete="off" name="tags" id="filter_tags"
 											{% if get_param_filter.tags.0 %} value="{{ get_param_filter.tags.0 }}" {% endif %} placeholder="Введите теги"/>
 										</div>
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="filter_status">Фильтр по статусу транзакии</label>
+											<label class="label" for="filter_status">По статусу транзакции</label>
 											<select class="form-select filter" autocomplete="off" name="status" id="filter_status">
 												{% if get_param_filter.status.0 %}
 													<option selected value="{{ get_param_filter.status.0 }}">{{ get_param_filter.status.0|trans_status }}</option>
@@ -139,7 +139,7 @@
 										<div class="col-12 col-sm-3 mb-3">
 
 											<label for="input-amount-group">
-												Фильтр по сумме транзакции
+												По сумме транзакции
 											</label>
 
 											<div class="input-group" id="input-amount-group">
@@ -182,10 +182,10 @@
 					<div class="table-responsive">
 						{% if transactions %}
 						<div class="card-body">
-							<div class="table-responsive table-maxh-stats">
+							<div class="table-responsive">
 								<table class="table table-bordered text-nowrap mb-0">
-									<thead>
-										<tr class="text-center">
+									<thead class="text-center">
+										<tr>
 											<th>Название</th>
 											<th>Создан</th>
 											<th>Изменён</th>
@@ -193,15 +193,16 @@
 											<th>Дата Транзакции</th>
 											<th>Балансодержатель</th>
 											<th>Сумма</th>
+											<th>Комиссия</th>
 											<th>Тип платежа</th>
 											<th>Автор</th>
 											<th>Статус</th>
-											<th>Файл с чеком</th>
+											<th>Чек</th>
 										</tr>
 									</thead>
 									{% for object in transactions %}
-									<tbody>
-										<tr class="align-middle text-center">
+									<tbody class="text-center">
+										<tr class="align-middle">
 											<td>{{ object.name }}
 												{% if user.is_superuser %}
 													<a href="{% url 'transaction_edit' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
@@ -223,8 +224,31 @@
 											</td>
 											<td>{{ object.transaction_date|date_format }}</td>
 											<td>{{ object.balance_holder }}</td>
-											<td>{{ object.amount|numb_format }}</td>
-											<td>{{ object.type_payment }}</td>
+											<td>
+												{% if object.commission %}
+												<span data-bs-toggle="tooltip" data-bs-title="{{ object.amount|numb_format }}">
+													{{ object.transaction_sum|numb_format }}
+												</span>
+												{% else %}
+													{{ object.transaction_sum|numb_format }}
+												{% endif %}
+											</td>
+											<td>
+												{% if object.commission %}
+													{{ object.commission|numb_format }}
+												{% else %}
+													&ndash;
+												{% endif %}
+											</td>
+											<td>
+												{% if object.sub_type_pay_id %}
+													<span data-bs-toggle="tooltip" data-bs-title="Подтип: {{ object.sub_type_pay_id|sub_pay_type_decode_for_tr }}">
+														{{ object.type_payment }}
+													</span>
+												{% else %}
+													{{ object.type_payment }}
+												{% endif %}
+											</td>
 											<td>{{ object.author }}</td>
 											<td>
 												{% if object.status == 'INPROCESS' %}
