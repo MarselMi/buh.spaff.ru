@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 ACTION_CREATE = 'create'
 ACTION_UPDATE = 'update'
@@ -68,7 +68,8 @@ class BalanceHolder(models.Model):
 class CustomUser(AbstractUser, models.Model):
 
     available_holders = models.ManyToManyField(BalanceHolder)
-    telegram_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='Телеграмм')
+    telegram_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='Telegram ID')
+    telegram = models.CharField(max_length=40, blank=True, null=True, verbose_name='Ник Telegram')
 
     def __str__(self):
         return f'{self.username}'

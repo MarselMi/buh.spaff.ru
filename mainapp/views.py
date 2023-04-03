@@ -1,7 +1,6 @@
 import json
 import decimal
 from hashlib import md5
-
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -820,9 +819,9 @@ def lock_page(request):
 
     '''Для подтверждения Telegram_id'''
     md5_hash = md5(f'{request.user.id}_fv3353rv23v3ve_vsfvdfvdfvdf53f3_e1fj43d'.encode()).hexdigest()
-
+    user_info = CustomUser.objects.filter(pk=request.user.id)
     data = {'title': 'Привязка Telegram аккаунта',  'md5_hash': md5_hash,
-            'page_name': 'Доступ ограничен', 'lock_page': 'lock_page'}
+            'page_name': 'Доступ ограничен', 'lock_page': 'lock_page', 'user_info': user_info}
 
     return render(request, 'mainapp/lock-page.html', data)
 

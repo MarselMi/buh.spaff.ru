@@ -8,6 +8,12 @@ class PayTypeSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class SubPayTypeSerializer(ModelSerializer):
+    class Meta:
+        model = SubPayType
+        fields = '__all__'
+
+
 class BalanceHolderSerializer(ModelSerializer):
     class Meta:
         model = BalanceHolder

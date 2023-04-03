@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'mainapp',
     'authapp',
     'apiapp',
-    'telebot_buh',
 ]
 
 MIDDLEWARE = [

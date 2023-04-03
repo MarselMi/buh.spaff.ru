@@ -118,11 +118,13 @@
 <div class="container-fluid">
 	<div class="row">
 		<nav id="sidebarMenu" class="col-12 col-xl-2 d-xl-block sidebar collapse">
+
 			<a class="navbar-brand d-none d-xl-flex" href="{% url 'main_page' %}">
 				<img src="{% static 'img/brand/logo.svg' %}" alt="">
 			</a> <!--/navbar-brand-->
 
 			<div class="position-sticky sidebar-sticky">
+
 				<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-3 text-muted text-uppercase">
 					<span>
 						Действия
@@ -130,6 +132,7 @@
 				</h6>
 
 				<ul class="nav nav-fill flex-column">
+
 					<li class="nav-item">
 						<a class="{% if request.resolver_match.url_name == 'main_page' %}
 						active
@@ -139,6 +142,7 @@
 							Главная
 						</a>
 					</li> <!-- /nav-item -->
+
 					<li class="nav-item">
 						<a class="{% if request.resolver_match.url_name == 'transactions' or request.resolver_match.url_name == 'transaction_create' or request.resolver_match.url_name == 'transaction_edit' %}
 						active
@@ -148,6 +152,7 @@
 							Транзакции
 						</a>
 					</li> <!-- /nav-item -->
+
 					<li class="nav-item">
 						<a class="{% if request.resolver_match.url_name == 'balance_holders' or request.resolver_match.url_name == 'holder_create' or request.resolver_match.url_name == 'holder_update' %}
 						active
@@ -157,10 +162,12 @@
 							Балансодержатели
 						</a>
 					</li> <!-- /nav-item -->
+
 				</ul> <!-- /nav -->
 
 
 				<ul class="nav nav-fill flex-column">
+
 					<li class="nav-item">
 						<a class="{% if request.resolver_match.url_name == 'pay_types' or request.resolver_match.url_name == 'pay_create' %}
 						active
@@ -170,10 +177,12 @@
 							Типы платежей
 						</a>
 					</li> <!-- /nav-item -->
+
 				</ul> <!-- /nav -->
 
 
 				<ul class="nav nav-fill flex-column">
+
 					<li class="nav-item">
 						<a class="{% if request.resolver_match.url_name == 'additional_data' or request.resolver_match.url_name == 'addition_create' %}
 						active
@@ -183,33 +192,51 @@
 							Доп данные по транзакции
 						</a>
 					</li>
+
 				</ul> <!-- /nav -->
+
 				{% if user.is_superuser %}
-				<ul class="nav nav-fill flex-column">
-					<li class="nav-item">
-						<a class="{% if request.resolver_match.url_name == 'transactions_log' %}
-						active
-						{% endif %}
-						nav-link d-inline-flex align-items-center" href="{% url 'transactions_log' %}">
-							<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
-							Данные по изменениям транз.
-						</a>
-					</li>
-				</ul> <!-- /nav -->
+					<ul class="nav nav-fill flex-column">
+						<li class="nav-item">
+							<a class="{% if request.resolver_match.url_name == 'transactions_log' %}
+							active
+							{% endif %}
+							nav-link d-inline-flex align-items-center" href="{% url 'transactions_log' %}">
+								<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
+								Данные по изменениям транз.
+							</a>
+						</li>
+					</ul> <!-- /nav -->
 				{% endif %}
+
 				{% if user.is_superuser %}
-				<ul class="nav nav-fill flex-column">
-					<li class="nav-item">
-						<a class="{% if request.resolver_match.url_name == 'users' or request.resolver_match.url_name == 'edit_user' or request.resolver_match.url_name == 'create_user' %}
-						active
-						{% endif %}
-						nav-link d-inline-flex align-items-center" href="{% url 'users' %}">
-							<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
-							Пользователи
-						</a>
-					</li>
-				</ul> <!-- /nav -->
+					<ul class="nav nav-fill flex-column">
+						<li class="nav-item">
+							<a class="{% if request.resolver_match.url_name == 'users' or request.resolver_match.url_name == 'edit_user' or request.resolver_match.url_name == 'create_user' %}
+							active
+							{% endif %}
+							nav-link d-inline-flex align-items-center" href="{% url 'users' %}">
+								<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
+								Пользователи
+							</a>
+						</li>
+					</ul> <!-- /nav -->
 				{% endif %}
+
+				{% if user.telegram_id %}
+				{% else %}
+					<ul class="nav nav-fill flex-column">
+						<li class="nav-item">
+							<a class="{% if request.resolver_match.url_name == 'lock_page' %}
+							active
+							{% endif %}
+							nav-link d-inline-flex align-items-center" href="{% url 'lock_page' %}">
+								Привязать Telegram
+							</a>
+						</li>
+					</ul> <!-- /nav -->
+				{% endif %}
+
 			</div> <!--/sidebar-sticky-->
 		</nav> <!--/sidebar-->
 
@@ -224,27 +251,29 @@
 
 				<nav aria-label="breadcrumb">
 					<ol class="breadcrumb mb-1">
+
 						{% if request.resolver_match.url_name == 'main_page' %}
-						<li class="breadcrumb-item active" aria-current="page">
-							{{ title }}
-						</li>
+							<li class="breadcrumb-item active" aria-current="page">
+								{{ title }}
+							</li>
 						{% else %}
-						<li class="breadcrumb-item">
-							<a href="{% url 'main_page' %}">
-								Главная
-							</a>
-						</li>
+							<li class="breadcrumb-item">
+								<a href="{% url 'main_page' %}">
+									Главная
+								</a>
+							</li>
 						{% if inside %}
-						<li class="breadcrumb-item">
-							<a href="/{{ inside.page_url }}">
-								{{ inside.page_title }}
-							</a>
-						</li>
+							<li class="breadcrumb-item">
+								<a href="/{{ inside.page_url }}">
+									{{ inside.page_title }}
+								</a>
+							</li>
 						{% endif %}
-						<li class="breadcrumb-item active" aria-current="page">
-							{{ title }}
-						</li>
+							<li class="breadcrumb-item active" aria-current="page">
+								{{ title }}
+							</li>
 						{% endif %}
+
 					</ol> <!-- /breadcrumb -->
 				</nav> <!-- /breadcrumb-container -->
 			</div> <!-- /page-title -->

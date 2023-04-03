@@ -1,4 +1,5 @@
 import decimal
+import json
 from datetime import datetime as dt
 from rest_framework.views import APIView
 from rest_framework import viewsets, status
@@ -10,30 +11,31 @@ from mainapp.models import *
 
 
 class UserModelView(viewsets.ModelViewSet):
-
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
 
 
-class PayTypeModelView(APIView):
-
-    renderer_classes = [JSONRenderer]
-
-    def get(self, request):
-        pay_type = PayType.objects.all()
-        serializer = PayTypeSerializer(pay_type, many=True)
-        return Response(serializer.data)
+class SubPayTypeApiView(viewsets.ModelViewSet):
+    queryset = SubPayType.objects.all()
+    serializer_class = SubPayTypeSerializer
 
 
-class BalanceHolderModelView(APIView):
+class PayTypeModelView(viewsets.ModelViewSet):
 
-    def get(self, request):
-        if request.user.is_superuser:
-            holders = get_allow_balance_holders(request.user.id, simple_user=False)
-        else:
-            holders = get_allow_balance_holders(request.user.id, simple_user=True)
+    queryset = PayType.objects.all()
+    serializer_class = PayTypeSerializer
 
-        serializer = BalanceHolderSerializer(holders, many=True)
+
+class BalanceHolderModelView(viewsets.ModelViewSet):
+
+    queryset = BalanceHolder.objects.all()
+    serializer_class = BalanceHolderSerializer
+    users = CustomUser.objects.all()
+    user_serializer = CustomUserSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.filter_queryset()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
@@ -72,13 +74,15 @@ class TransactionCreateApi(viewsets.ModelViewSet):
         if self.request.data.get('commission_post'):
             commission = decimal.Decimal(self.request.data.get('commission_post').replace(',', '.').replace(' ', ''))
         transaction_sum = decimal.Decimal(self.request.data.get('transaction_sum_post').replace(',', '.').replace(' ', ''))
-        amount = transaction_sum + commission
 
         type_transaction = self.request.data.get('type_transaction')
         if type_transaction == 'Приход':
             type_transaction = 'COMING'
+            amount = transaction_sum
+            commission = 0
         else:
             type_transaction = 'EXPENDITURE'
+            amount = transaction_sum + commission
 
         '''Логика для загрузки ЧЕКов'''
         image = self.request.FILES.get('check_img')
@@ -129,20 +133,6 @@ class TransactionModelView(viewsets.ModelViewSet):
             queryset = Transaction.objects.all()
         serializer = TransactionSerializer(queryset, many=True)
         return Response(serializer.data)
-
-
-# class TransactionViewSet(viewsets.ModelViewSet):
-#
-#     serializer_class = TransactionSerializer
-#     queryset = Transaction.objects.all()
-#
-#     def list(self, request, *args, **kwargs):
-#         if request.user.is_superuser:
-#             queryset = get_allow_transaction_filter(request.user.id)
-#         else:
-#             queryset = get_allow_transaction_filter(request.user.id, author_res=True)
-#         serializer = self.serializer_class(queryset, many=True)
-#         return Response(serializer.data)
 
 
 class AdditionalDataTransactionModelView(APIView):
