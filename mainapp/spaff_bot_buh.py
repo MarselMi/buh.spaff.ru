@@ -143,9 +143,13 @@ def listen_messages(message):
 
 @bot.message_handler(content_types=['photo'])
 def load_check(message):
-    data['img'] = message.photo
+    document_id = message.photo[-1].file_id
+    file_info = bot.get_file(document_id)
+    print(file_info, 'file_info')
+    data['img'] = file_info.file_path
+    print(data['img'])
     bot.send_message(message.chat.id, text="Имя транзакции: ")
-    bot.register_next_step_handler(message, transaction_type)
+    bot.register_next_step_handler(message, listen_messages)
 
 
 def transaction_type(message):
@@ -173,7 +177,6 @@ def transaction_type(message):
 
 def transaction_balance_holder(message):
     '''После типа транзакции выбор на балансодержателя'''
-
     data['type_transaction'] = message.text
     try:
         b_holders = json.loads(requests.get('http://127.0.0.1:8000/api-v1/bal-holders/').content)
@@ -202,8 +205,8 @@ def transaction_balance_holder(message):
         bot.send_message(message.chat.id, "Балансодержателя")
         bot.register_next_step_handler(message, transaction_balance_holder)
 
-def pay_type(message):
 
+def pay_type(message):
     data['balance_holder'] = message.text
     pay_types = json.loads(requests.get('http://127.0.0.1:8000/api-v1/pays-type/').content)
 
@@ -218,25 +221,20 @@ def pay_type(message):
 
 
 def transaction_date_or_sub_pay(message):
-
     data['type_payment'] = message.text
     pay_types = json.loads(requests.get('http://127.0.0.1:8000/api-v1/pays-type/').content)
     pay_type_id = ''
     for type_pay in pay_types:
         if type_pay.get('pay_type') == message.text:
             pay_type_id = type_pay.get('id')
-
     additional_pay = json.loads(requests.get(f'http://127.0.0.1:8000/api-v1/pays-type/{pay_type_id}/').content)
-
     if len(additional_pay.get('subtypes_of_the_type')):
         buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-
         sub_pay_type = json.loads(requests.get('http://127.0.0.1:8000/api-v1/sub-pay-type/').content)
         for sub in sub_pay_type:
             if sub.get('id') in additional_pay.get('subtypes_of_the_type'):
                 button = types.KeyboardButton(text=sub.get('sub_type'))
                 buttons.add(button)
-
         bot.send_message(message.chat.id, "Выберите подтип платежа: ", reply_markup=buttons)
         bot.register_next_step_handler(message, sub_type)
     else:
@@ -244,7 +242,6 @@ def transaction_date_or_sub_pay(message):
 
 
 def sub_type(message):
-
     data['sub_type'] = message.text
     bot.send_message(message.chat.id, "Дата транзакции: ")
     bot.register_next_step_handler(message, transaction_sum)
@@ -252,7 +249,6 @@ def sub_type(message):
 
 def transaction_date(message):
     '''Добавление Балансодержателя и отправка даты'''
-
     data['type_payment'] = message.text
     bot.send_message(message.chat.id, "Дата транзакции: ")
     bot.register_next_step_handler(message, transaction_sum)
