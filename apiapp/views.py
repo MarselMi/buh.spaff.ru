@@ -47,13 +47,8 @@ class TransactionCreateApi(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         user_info = CustomUser.objects.get(pk=self.request.data.get('author_id'))
 
-        if user_info.is_superuser:
-            balance_holders = BalanceHolder.objects.all()
-        else:
-            balance_holders = user_info.available_holders.all()
-
         holder_response = self.request.data.get('balance_holder')
-        balance_holder_response = balance_holders.get(organization_holder=holder_response)
+        balance_holder_response = BalanceHolder.objects.filter(organization_holder=holder_response)
         sub_type = None
         if self.request.data.get('sub_type'):
             sub_type = SubPayType.objects.filter(sub_type=self.request.data.get('sub_type'))[0].pk
@@ -79,20 +74,14 @@ class TransactionCreateApi(viewsets.ModelViewSet):
         if type_transaction == 'Приход':
             type_transaction = 'COMING'
             amount = transaction_sum
-            commission = 0
         else:
             type_transaction = 'EXPENDITURE'
             amount = transaction_sum + commission
 
         '''Логика для загрузки ЧЕКов'''
-        image = self.request.FILES.get('check_img')
+        image = self.request.data.get('check_img')
         if image:
-            check_img = f"img/{str(image).replace(' ', '_')}"
-            root = f'{settings.MEDIA_ROOT}/{str(check_img)}'
-            with open(root, 'wb+') as f:
-                for chunk in image.chunks():
-                    f.write(chunk)
-            image = check_img
+            image = image
 
         description = self.request.data.get('description')
         tags = self.request.data.get('tags')
@@ -100,14 +89,13 @@ class TransactionCreateApi(viewsets.ModelViewSet):
 
         new_data = {
             'transaction_date': transaction_date, 'type_transaction': type_transaction,
-            'name': name, 'description': description, 'balance_holder': balance_holder_response.pk,
+            'name': name, 'description': description, 'balance_holder': balance_holder_response[0].pk,
             'amount': amount, 'type_payment': type_payment, 'status': status_tr, 'tags': tags,
             'check_img': image, 'author': author_id, 'commission': commission, 'transaction_sum': transaction_sum,
             'sub_type_pay': sub_type
         }
-
-        old_balance_balance_holder = balance_holder_response.holder_balance
-        if status == 'SUCCESSFULLY':
+        old_balance_balance_holder = balance_holder_response[0].holder_balance
+        if status_tr == 'SUCCESSFULLY':
             if type_transaction == 'COMING':
                 old_balance_balance_holder += amount
                 balance_holder_response.update(holder_balance=old_balance_balance_holder)

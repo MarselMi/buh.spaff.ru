@@ -1,0 +1,380 @@
+import decimal
+import json
+from hashlib import md5
+import telebot
+from telebot import types
+import requests
+import datetime
+from pathlib import Path
+from django.core.files.storage import FileSystemStorage
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_ROOT = BASE_DIR / 'media'
+
+LOCAL_DOMAIN = 'http://127.0.0.1:8000'
+PROD_DOMAIN = 'https://buh.spaff.ru'
+
+API_TOKEN = '5655161091:AAGPrpG314RXFKJe2XJ7bCGqgrh4tn9mP54'
+bot = telebot.TeleBot(API_TOKEN)
+url = f"https://api.telegram.org/bot{API_TOKEN}/getUpdates"
+
+
+@bot.message_handler(commands=['start'])
+def incoming_message(message):
+
+    global data
+    data = {
+        message.chat.id:
+            {
+                "transaction_name": "",
+                "type_transaction": "",
+                "type_payment": "",
+                "sub_type": "",
+                "balance_holder": "",
+                "transaction_date": "",
+                "transaction_sum_post": "",
+                "commission_post": "",
+                "transaction_status": "",
+                "tags": "",
+                "author_id": "",
+                "check_img": ""
+            }
+        }
+
+    print('start', data)
+    bot.reply_to(message, 'Привязка Telegram')
+    telegram_id = message.from_user.id
+    response_user = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/users/').content)
+    user_id = ''
+    for user in response_user:
+        if user.get('telegram_id'):
+            if int(user.get('telegram_id')) == int(telegram_id):
+                user_id = user.get('id')
+    if user_id:
+        buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        button1 = types.KeyboardButton('Создать транзакцию')
+        button2 = types.KeyboardButton(text='Помощь')
+        buttons.add(button1, button2)
+        bot.send_message(message.chat.id, text="Выберите действие: ", reply_markup=buttons)
+    else:
+        user_id = message.text[-1]
+
+        md5_hash = md5(f'{user_id}_fv3353rv23v3ve_vsfvdfvdfvdf53f3_e1fj43d'.encode()).hexdigest()+f'-{user_id}'
+        if md5_hash == message.text.replace('/start st-', ''):
+            try:
+                request_get_user = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/users/{user_id}/').content)
+
+                requests.patch(f'{LOCAL_DOMAIN}/api-v1/users/{user_id}/',
+                               data={'telegram_id': telegram_id, 'telegram': message.from_user.username})
+                buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+                button1 = types.KeyboardButton('Создать транзакцию')
+                button2 = types.KeyboardButton(text='Помощь')
+                buttons.add(button1, button2)
+                bot.send_message(message.chat.id, text="Выберите действие: ", reply_markup=buttons)
+            except:
+                bot.send_message(message.chat.id, text="Некорректная ссылка перехода, привязка невозможна")
+        else:
+            bot.send_message(message.chat.id, text="Некорректная ссылка перехода, привязка невозможна")
+
+
+@bot.message_handler(commands=['h', 'help'])
+def send_welcome(message):
+    buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    button1 = types.KeyboardButton('Создать транзакцию')
+    buttons.add(button1)
+    bot.send_message(
+        message.chat.id,
+        text='''
+            Данный бот выполняет одну функцию - добавляет транзакции.
+            После нажатия кнопки 'START' выполняетя привязка Telegram_id к Вашему аккаунту в бухгалтерии
+            Для старта создания транзакции введите команду /crt /create
+            Либо нажмите кнопку 'Создать транзакцию', и следуя инструкции вводите данные.
+            Для отмены создания на любом этапе введите команду /break, /crt, /create, /h, /help
+            Данные команды прервут создание транзакции
+            Дата вводится в формате: "dd/mm/yyyy" либо "dd-mm-yyyy" либо "dd.mm.yyyy"
+        ''',
+        reply_markup=buttons, parse_mode='html'
+    )
+
+
+@bot.message_handler(commands=['crt', 'create', 'break', 'br'])
+def send_break_create(message):
+    buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    button1 = types.KeyboardButton('Создать транзакцию')
+    buttons.add(button1)
+    bot.send_message(message.chat.id, text="Нажмите 'Создать транзакцию'", reply_markup=buttons)
+    bot.register_next_step_handler(message, listen_messages)
+
+
+@bot.message_handler(content_types=["text"])
+def listen_messages(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        if message.text.lower() == 'создать транзакцию':
+            '''Перед заполнением стираю все данные которые были прежде'''
+            global data
+            data = {
+                message.chat.id:
+                    {
+                        "transaction_name": "",
+                        "type_transaction": "",
+                        "type_payment": "",
+                        "sub_type": "",
+                        "balance_holder": "",
+                        "transaction_date": "",
+                        "transaction_sum_post": "",
+                        "commission_post": "",
+                        "transaction_status": "",
+                        "tags": "",
+                        "author_id": "",
+                        "check_img": ""
+                    }
+                }
+            button = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            miss_b = types.KeyboardButton('Пропустить')
+            button.add(miss_b)
+            '''Отсылаю следующее сообщение в окно чата'''
+            bot.send_message(message.chat.id, text="Загрузите чек, либо нажмите кнопку 'Пропустить'", reply_markup=button)
+            '''Перенаправление в следующую функцию для получения имени транзакции'''
+            bot.register_next_step_handler(message, load_check)
+        else:
+            message_send = "Неизвестная команда, введите команду /h либо /help, для ознакомления"
+            bot.send_message(message.chat.id, text=message_send)
+
+
+@bot.message_handler(content_types=['photo'])
+def load_check(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        try:
+            fileID = message.photo[-1].file_id
+            file_info = bot.get_file(fileID)
+            file_format = str(file_info.file_path).split('.')[-1]
+            downloaded_file = bot.download_file(file_info.file_path)
+            with open(f"{MEDIA_ROOT}/img/{fileID}.{file_format}", 'wb') as new_file:
+                new_file.write(downloaded_file)
+
+            data[message.chat.id]['check_img'] = f'img/{fileID}.{file_format}'
+
+            print('img_load', data)
+            bot.send_message(message.chat.id, text="Имя транзакции: ")
+            bot.register_next_step_handler(message, transaction_type)
+        except:
+            data[message.chat.id]['check_img'] = ''
+            bot.send_message(message.chat.id, text="Имя транзакции: ")
+            bot.register_next_step_handler(message, transaction_type)
+
+
+def transaction_type(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        '''получаю имя транзакции и автора, перенаправляю на выбор типа транзакции с выводом соотв сообщ
+        Начало записи данных в словарь имя и пользователь'''
+        data[message.chat.id]['transaction_name'] = message.text
+
+        telegram_id = message.from_user.id
+        user_request = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/users/').content)
+        for user_req in user_request:
+            if user_req.get('telegram_id'):
+                if int(user_req.get('telegram_id')) == int(telegram_id):
+                    data[message.chat.id]['author_id'] = user_req.get('id')
+
+        '''обозначение и определение кнопок'''
+        buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        button1 = types.KeyboardButton(text='Приход')
+        button2 = types.KeyboardButton(text='Отход')
+        buttons.add(button1, button2)
+
+        print('type_tr', data)
+        '''вывод кнопок с возможностью выбора типа транзакции'''
+        bot.send_message(message.chat.id, "Тип транзакции: ", reply_markup=buttons)
+        bot.register_next_step_handler(message, transaction_balance_holder)
+
+
+def transaction_balance_holder(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        '''После типа транзакции выбор на балансодержателя'''
+        data[message.chat.id]['type_transaction'] = message.text
+        try:
+            b_holders = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/bal-holders/').content)
+
+            user_information = json.loads(
+                requests.get(f'{LOCAL_DOMAIN}/api-v1/users/{data[message.chat.id].get("author_id")}/').content
+            )
+
+            '''обозначение и определение кнопок в зависимости от доступных'''
+            buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            if user_information.get('is_superuser'):
+                for holder in b_holders:
+                    button = types.KeyboardButton(text=holder.get('organization_holder'))
+                    buttons.add(button)
+            else:
+                for holder in b_holders:
+                    if holder.get('id') in user_information.get('available_holders'):
+                        button = types.KeyboardButton(text=holder.get('organization_holder'))
+                        buttons.add(button)
+            print(data, 'bal_hol')
+            '''вывод кнопок с возможностью выбора типа транзакции'''
+            bot.send_message(message.chat.id, "Выберите балансодержателя: ", reply_markup=buttons)
+            bot.register_next_step_handler(message, pay_type)
+        except:
+            '''вывод кнопок с возможностью выбора типа транзакции'''
+            bot.send_message(message.chat.id, "Балансодержателя")
+            bot.register_next_step_handler(message, transaction_balance_holder)
+
+
+def pay_type(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        data[message.chat.id]['balance_holder'] = message.text
+        pay_types = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/pays-type/').content)
+
+        buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+
+        for type_pay in pay_types:
+            button = types.KeyboardButton(text=type_pay.get('pay_type'))
+            buttons.add(button)
+
+        bot.send_message(message.chat.id, "Выберите тип платежа: ", reply_markup=buttons)
+        bot.register_next_step_handler(message, transaction_date_or_sub_pay)
+
+
+def transaction_date_or_sub_pay(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        data[message.chat.id]['type_payment'] = message.text
+        pay_types = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/pays-type/').content)
+        pay_type_id = ''
+        for type_pay in pay_types:
+            if type_pay.get('pay_type') == message.text:
+                pay_type_id = type_pay.get('id')
+        additional_pay = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/pays-type/{pay_type_id}/').content)
+        if len(additional_pay.get('subtypes_of_the_type')):
+            buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            sub_pay_type = json.loads(requests.get(f'{LOCAL_DOMAIN}/api-v1/sub-pay-type/').content)
+            for sub in sub_pay_type:
+                if sub.get('id') in additional_pay.get('subtypes_of_the_type'):
+                    button = types.KeyboardButton(text=sub.get('sub_type'))
+                    buttons.add(button)
+            bot.send_message(message.chat.id, "Выберите подтип платежа: ", reply_markup=buttons)
+            bot.register_next_step_handler(message, sub_type)
+        else:
+            transaction_date(message)
+
+
+def sub_type(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        data[message.chat.id]['sub_type'] = message.text
+        bot.send_message(message.chat.id, "Дата транзакции: ")
+        bot.register_next_step_handler(message, transaction_sum)
+
+
+def transaction_date(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        '''Добавление Балансодержателя и отправка даты'''
+        data[message.chat.id]['type_payment'] = message.text
+        bot.send_message(message.chat.id, "Дата транзакции: ")
+        bot.register_next_step_handler(message, transaction_sum)
+
+
+def transaction_sum(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        try:
+            date_com = message.text.replace('-', '.').replace('/', '.')
+            datetime.datetime.strptime(date_com, '%d.%m.%Y').date()
+            data[message.chat.id]['transaction_date'] = date_com
+            bot.send_message(message.chat.id, text="Сумма транзакции: ")
+            if data[message.chat.id]['type_transaction'] == 'Отход':
+                bot.register_next_step_handler(message, transaction_commission_sum)
+            else:
+                bot.register_next_step_handler(message, finally_transaction_create_step)
+        except ValueError:
+            bot.send_message(message.chat.id, "Дата транзакции: ")
+            bot.register_next_step_handler(message, transaction_sum)
+
+
+def transaction_commission_sum(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        try:
+            decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
+            data[message.chat.id]['transaction_sum_post'] = message.text
+            bot.send_message(message.chat.id, text="Комиссия, введите 0, если комиссии нет: ")
+            bot.register_next_step_handler(message, finally_transaction_create_step)
+        except:
+            bot.send_message(message.chat.id, text="Сумма транзакции: ")
+            bot.register_next_step_handler(message, transaction_commission_sum)
+
+
+def finally_transaction_create_step(message):
+    if message.text == '/h' or message.text == '/help':
+        send_welcome(message)
+    elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        send_break_create(message)
+    else:
+        try:
+            if data[message.chat.id]['type_transaction'] == 'Отход':
+                decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
+                data[message.chat.id]['commission_post'] = message.text
+            else:
+                decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
+                data[message.chat.id]['transaction_sum_post'] = message.text
+
+            data[message.chat.id]['transaction_status'] = 'Успешно'
+            buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            button1 = types.KeyboardButton('Создать транзакцию')
+            buttons.add(button1)
+            print(data.get(message.chat.id))
+            requests.post(f'{LOCAL_DOMAIN}/api-v1/transactions_view/', data.get(message.chat.id))
+            bot.send_message(
+                message.chat.id,
+                text="Транзакция успешно создана! Нажмите 'Создать транзакцию' для добавления новой",
+                reply_markup=buttons
+            )
+            bot.register_next_step_handler(message, listen_messages)
+        except:
+            if data[message.chat.id]['type_transaction'] == 'Отход':
+                bot.send_message(message.chat.id, text="Комиссия, введите 0, если комиссии нет: ")
+                bot.register_next_step_handler(message, finally_transaction_create_step)
+            else:
+                bot.send_message(message.chat.id, text="Сумма транзакции: ")
+                bot.register_next_step_handler(message, transaction_commission_sum)
+
+
+bot.polling(none_stop=True)
+
