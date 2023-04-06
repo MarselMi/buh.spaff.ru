@@ -1,3 +1,5 @@
+#!/usr/bin/python3.10
+
 import decimal
 import json
 from hashlib import md5
@@ -431,4 +433,5 @@ def finally_transaction_create_step(message):
                 bot.register_next_step_handler(message, transaction_commission_sum)
 
 
-bot.infinity_polling()
+if __name__ == '__main__':
+    bot.infinity_polling()
