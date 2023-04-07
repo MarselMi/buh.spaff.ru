@@ -598,8 +598,9 @@ def balance_holder_create_view(request):
                 return JsonResponse({'message': True})
 
         holder_type = request.POST.get('holder_type')
+        account_type = request.POST.get('account_type')
         organization_holder = request.POST.get('organization_holder')
-        payment_account = request.POST.get('payment_account')
+        payment_account = request.POST.get('payment_account').replace(' ', '')
 
         alias_holder = None
         if request.POST.get('alias_holder'):
@@ -611,6 +612,7 @@ def balance_holder_create_view(request):
 
         new_balance_holder = BalanceHolder.objects.create(
             holder_type=holder_type,
+            account_type=account_type,
             organization_holder=organization_holder,
             payment_account=payment_account,
             alias_holder=alias_holder,
@@ -651,8 +653,9 @@ def balance_holder_update_view(request, pk):
                     {'message': True}
                 )
         holder_type = request.POST.get('holder_type')
+        account_type = request.POST.get('account_type')
         organization_holder = request.POST.get('organization_holder')
-        payment_account = request.POST.get('payment_account')
+        payment_account = request.POST.get('payment_account').replace(' ', '')
 
         alias_holder = None
         if request.POST.get('alias_holder'):
@@ -660,6 +663,7 @@ def balance_holder_update_view(request, pk):
 
         update_balance_holder.update(
             holder_type=holder_type,
+            account_type=account_type,
             organization_holder=organization_holder,
             payment_account=payment_account,
             alias_holder=alias_holder,

@@ -36,8 +36,26 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="payment_account">Расчетный счет</label>
-									<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" value="{{ holder.payment_account }}"/>
+									<label for="account_type">Привязка номера карты/счета к балансодержателю</label>
+									<select autocomplete="off" class="obligatory form-select" name="account_type" id="account_type">
+										<option selected value="{{ holder.account_type }}">{{ holder.account_type|translate_account_type }}</option>
+										{% if holder.account_type == "CARD" %}
+											<option value="SCORE">Расчетный счет</option>
+										{% else %}
+											<option value="CARD">Номер карты</option>
+										{% endif %}
+									</select>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label id="label_payment_account" for="payment_account">
+										{% if holder.account_type == 'SCORE' %}
+											Расчетный счет
+										{% else %} 
+											Номер карты
+										{% endif %}
+									</label>
+									<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" value="{{ holder.payment_account|for_card_step }}"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -90,8 +108,9 @@
 	})
 
 	$('#payment_account').on('input change', function(){
-		if ($('#payment_account').val()){
-			if (regEx.test($('#payment_account').val()) || (($('#payment_account').val().length != 20))){
+		var paccount = $('#payment_account').val().replace(/\s+/g, '')
+		if (paccount){
+			if (regEx.test(paccount) || ((paccount.length > 20)) || ((paccount.length < 16))){
 				$('#payment_account').addClass('is-invalid');
 				$('#payment_account').removeClass('is-valid');
 			}else{
@@ -146,6 +165,21 @@
 		}
 	})
 
+	$('#account_type').on('change', function(){
+		if($('#account_type').val()){
+			$('#account_type').removeClass('is-invalid')
+			if ($('#account_type').val() == "CARD"){
+				$('#label_payment_account').text('Номер карты')
+				$('#payment_account').attr('placeholder', '**** **** **** ****')
+			}else if ($('#account_type').val() == "SCORE"){
+				$('#label_payment_account').text('Номер расчетного счета')
+				$('#payment_account').attr('placeholder', '**** **** **** **** ****')
+			}
+		}else{
+			$('#holder_type').addClass('is-invalid')
+		}
+	})
+
 	$('form').on('change keyup input click focusot live', function(){
 
 		if ($('#organization_holder').hasClass('is-invalid')){
@@ -166,13 +200,13 @@
 			e.preventDefault();
 			var valid = true;
 
-			var payment_account = $('#payment_account').val();
+			var payment_account = $('#payment_account').val().replace(/\s+/g, '');
 			var holder_balance = $('#holder_balance').val();
 			var validPayment_account = regEx.test(payment_account);
 
 			$(".error").remove();
 
-			if (validPayment_account || (payment_account.length != 20)){
+			if (validPayment_account || ((payment_account.length > 20)) || ((payment_account.length < 16))){
 				$('#payment_account').addClass('is-invalid');
 				$('#payment_account').after('<span class="error">Введите корректные данные</span>');
 				valid = false;

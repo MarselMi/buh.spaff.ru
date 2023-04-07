@@ -21,6 +21,11 @@ HOLDER_ROLE = [
     ('ORGANISATION', ' Организация')
 ]
 
+ACCAUNTING_ROLE = [
+    ('CARD', 'Номер Карты'),
+    ('SCORE', 'Номер Счета')
+]
+
 
 class SubPayType(models.Model):
     sub_type = models.CharField(unique=True, max_length=60, verbose_name='Подтип платежа')
@@ -46,10 +51,16 @@ class PayType(models.Model):
 
 
 class BalanceHolder(models.Model):
-    holder_type = models.CharField(blank=True, null=True, max_length=20, choices=HOLDER_ROLE, verbose_name='Тип балансодержателя')
-    organization_holder = models.CharField(blank=True, null=True, max_length=65, verbose_name='Наименование организации')
-    alias_holder = models.CharField(blank=True, null=True, default=None, max_length=35, verbose_name='Псевдоним')
-    holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Баланс Держателя')
+    holder_type = models.CharField(blank=True, null=True, max_length=20,
+                                   choices=HOLDER_ROLE, verbose_name='Тип балансодержателя')
+    account_type = models.CharField(blank=True, null=True, max_length=20,
+                                    choices=ACCAUNTING_ROLE, verbose_name='Тип счета')
+    organization_holder = models.CharField(blank=True, null=True, max_length=65,
+                                           verbose_name='Наименование организации')
+    alias_holder = models.CharField(blank=True, null=True, default=None, max_length=35,
+                                    verbose_name='Псевдоним')
+    holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0,
+                                         verbose_name='Баланс Держателя')
     payment_account = models.CharField(max_length=20, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
 

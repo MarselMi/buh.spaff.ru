@@ -22,7 +22,7 @@
 										</button>
 									</span>
 									<p>
-										Расчетный счет
+										{{ holder.account_type|translate_account_type }}
 										<span onclick="copyTextToClipboard( {{ holder.payment_account }} ); return false;" type="button" class="small ms-1" data-bs-toggle="tooltip" data-bs-title="Скопировать {{ holder.payment_account }}">
 											<i class="fa-regular fa-clipboard"></i>
 										</span>
@@ -123,9 +123,9 @@
 						<div class="alert alert-warning" role="alert">
 							<h5 class="alert-heading text-center">
 								<i class="fa-regular fa-octagon-exclamation me-2"></i>
-									Для начала работы необходимо создать: <br> 
-										<a href="{% url 'pay_types' %}">1. "Тип платежа"</a>, <br>
-										<a href="{% url 'holder_create' %}">2. "Балансодержателя"</a>, <br>
+									Для начала работы необходимо создать: <br>
+										<a href="{% url 'holder_create' %}">1. "Балансодержателя"</a>, <br>
+										<a href="{% url 'pay_types' %}">2. "Тип платежа / Подтип платежа"</a>, <br>
 										<a href="{% url 'transaction_create' %}">3. "Транзакцию"</a>
 							</h5>
 						</div>

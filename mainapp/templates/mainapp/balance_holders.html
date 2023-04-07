@@ -23,7 +23,7 @@
 											<th>Наименование организации/ <br>ФИО лица</th>
 											<th>Псевдоним держателя</th>
 											<th>Баланс Держателя</th>
-											<th>Расчетный счет</th>
+											<th>Расчетный счет/ <br>Номер Карты</th>
 										</tr>
 									</thead>
 									{% for object in holders %}
@@ -38,7 +38,7 @@
 											</td>
 											<td>{{ object.alias_holder }}</td>
 											<td>{{ object.holder_balance|numb_format }}</td>
-											<td>{{ object.payment_account }}</td>
+											<td>{{ object.payment_account|for_card_step }}</td>
 										</tr>
 									</tbody>
 									{% endfor %}

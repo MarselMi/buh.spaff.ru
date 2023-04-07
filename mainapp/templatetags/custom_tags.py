@@ -4,6 +4,11 @@ from mainapp.models import *
 
 
 @register.filter
+def for_card_step(obj):
+    return ' '.join([obj[i:i+4] for i in range(0, len(obj), 4)]) if ' ' not in obj[:4] and len(obj) > 4 else obj
+
+
+@register.filter
 def pay_type_decode(obj):
     if obj:
         slpit_object = obj.split('/')
@@ -11,6 +16,14 @@ def pay_type_decode(obj):
         second_el = PayType.objects.filter(pk=slpit_object[1])[0]
         return f'{first_el.pay_type}/{second_el.pay_type}'
     return f'&ndash;'
+
+
+@register.filter
+def translate_account_type(obj):
+    if obj == 'CARD':
+        return 'Номер карты'
+    else:
+        return 'Расчетный счет'
 
 
 @register.filter
