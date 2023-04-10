@@ -163,6 +163,7 @@ def get_allow_balance_holders(pk, simple_user=True):
                         `mb`.`payment_account`
                     FROM `mainapp_balanceholder` mb
                     {add_request}
+                    ORDER BY `mb`.`id` DESC
                     '''
             cursor.execute(response)
             response = cursor.fetchall()

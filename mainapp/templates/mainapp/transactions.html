@@ -186,44 +186,55 @@
 								<table class="table table-bordered text-nowrap mb-0">
 									<thead class="text-center">
 										<tr>
+											<th>Балансодержатель</th>
 											<th>Название</th>
+											<th>Категория</th>
 											<th>Создан</th>
 											<th>Изменён</th>
-											<th>Тип транзакции</th>
-											<th>Дата Транзакции</th>
-											<th>Балансодержатель</th>
+											<th>Проведен</th>
 											<th>Сумма</th>
 											<th>Комиссия</th>
-											<th>Тип платежа</th>
-											<th>Автор</th>
+											<th>Транзакция</th>
 											<th>Статус</th>
 											<th>Чек</th>
+											<th>Автор</th>
 										</tr>
 									</thead>
 									<tbody class="text-center">
 									{% for object in transactions %}
 										<tr class="align-middle">
+											<td>{{ object.balance_holder }}</td>
 											<td>{{ object.name }}
 												{% if user.is_superuser %}
 													<a href="{% url 'transaction_edit' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
 														<i class="fa-regular fa-pen-to-square"></i>
 													</a>
-												{% endif %}</td>
-											<td>{{ object.create_date|datetime_format }}</td>
-											<td>{{ object.update_date|datetime_format|safe }}</td>
+												{% endif %}
+											</td>
 											<td>
-												{% if object.type_transaction == 'COMING' %}
-													<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
-														Приход
+												{% if object.sub_type_pay_id %}
+													<span data-bs-toggle="tooltip" data-bs-title="Подкатегория: {{ object.sub_type_pay_id|sub_pay_type_decode_for_tr }}">
+														{{ object.type_payment }}
 													</span>
 												{% else %}
-													<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
-														Расход
+													{{ object.type_payment }}
+												{% endif %}
+											</td>
+											<td>
+												<span data-bs-toggle="tooltip" data-bs-title="{{ object.create_date|datetime_format }}">
+														{{ object.create_date|datetime_without_sec }}
+												</span>
+											</td>
+											<td>
+												{% if object.update_date %}
+													<span data-bs-toggle="tooltip" data-bs-title="{{ object.update_date|datetime_format|safe }}">
+														{{ object.update_date|datetime_without_sec|safe }}
 													</span>
+												{% else %}
+													&ndash;
 												{% endif %}
 											</td>
 											<td>{{ object.transaction_date|date_format }}</td>
-											<td>{{ object.balance_holder }}</td>
 											<td>
 												{% if object.commission %}
 												<span data-bs-toggle="tooltip" data-bs-title="{{ object.amount|numb_format }}">
@@ -241,15 +252,16 @@
 												{% endif %}
 											</td>
 											<td>
-												{% if object.sub_type_pay_id %}
-													<span data-bs-toggle="tooltip" data-bs-title="Подтип: {{ object.sub_type_pay_id|sub_pay_type_decode_for_tr }}">
-														{{ object.type_payment }}
+												{% if object.type_transaction == 'COMING' %}
+													<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+														Приход
 													</span>
 												{% else %}
-													{{ object.type_payment }}
+													<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+														Расход
+													</span>
 												{% endif %}
 											</td>
-											<td>{{ object.author }}</td>
 											<td>
 												{% if object.status == 'INPROCESS' %}
 													<span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
@@ -282,6 +294,7 @@
 												&ndash;
 												{% endif %}
 											</td>
+											<td>{{ object.author }}</td>
 										</tr>
 									{% endfor %}
 									</tbody>

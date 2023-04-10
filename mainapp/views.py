@@ -45,6 +45,7 @@ def main_page_view(request):
         pass
 
     if request.method == 'POST':
+        print(request.FILES)
 
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
@@ -83,6 +84,16 @@ def main_page_view(request):
 
             author_id = request.user.id
 
+            '''Логика для загрузки ЧЕКов'''
+            image = request.FILES.get('check_img_post')
+            if image:
+                check_img = f"img/{str(image).replace(' ', '_')}"
+                root = f'{settings.MEDIA_ROOT}/{str(check_img)}'
+                with open(root, 'wb+') as f:
+                    for chunk in image.chunks():
+                        f.write(chunk)
+                image = check_img
+
             create_transaction = {
                 'sub_type_pay': sub_type,
                 'type_transaction': transaction_type,
@@ -93,6 +104,7 @@ def main_page_view(request):
                 'transaction_sum': transaction_sum,
                 'amount': amount,
                 'type_payment': payment_type,
+                'check_img': image,
                 'author_id': author_id
             }
 

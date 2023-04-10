@@ -67,6 +67,14 @@ def replace_space(obj: str):
 
 
 @register.filter
+def datetime_without_sec(date_time):
+    if date_time:
+        return date_time.strftime('%d.%m.%Y в %H:%M')
+    else:
+        return f'&ndash;'
+
+
+@register.filter
 def datetime_format(date_time):
     if date_time:
         return date_time.strftime('%d.%m.%Y в %H:%M:%S')

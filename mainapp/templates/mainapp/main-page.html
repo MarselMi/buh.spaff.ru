@@ -140,7 +140,8 @@
 	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content border-0">
-				<form class="needs-validation" action="" name="createNewTransaction" id="formSendTransaction" novalidate>
+				<form class="needs-validation" action="" method="POST" enctype="multipart/form-data" name="createNewTransaction" id="formSendTransaction" novalidate>
+					{% csrf_token %}
 					<div class="modal-header">
 						<h5 class="modal-title" id="newTransactionModalLabel">
 							Новая транзакция для:
@@ -159,7 +160,7 @@
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3 type_payment_input">
-							<input class="form-control" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Тип платежа" required/>
+							<input class="form-control" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Категория" required/>
 							<datalist id="list_pay">
 								{% for type in type_payments %}
 								<option value="{{ type }}">{{ type }}</option>
@@ -167,18 +168,18 @@
 							</datalist>
 
 							<label for="type_payment">
-								Тип платежа
+								Категория
 							</label>
 
 							<div class="invalid-feedback">
-								Пожалуйста, выберите корректный тип платежа
+								Пожалуйста, выберите корректную категорию
 							</div>
 						</div> <!-- /form-floating -->
 
 						<div class="form-floating mb-3">
-							<select class="form-select"  name="type_transaction" id="type_transaction">
-								<option value="Приход">Приход</option>
+							<select class="form-select" name="type_transaction" id="type_transaction">
 								<option value="Расход">Расход</option>
+								<option value="Приход">Приход</option>
 							</select>
 
 							<label for="type_transaction">
@@ -208,8 +209,8 @@
 							</div>
 						</div>  <!-- /form-floating -->
 
-						<div class="form-floating mb-3 comission_div_el" hidden>
-							<input class="form-control" autocomplete="off" name="commission_post" placeholder="Сумма транзакции" value="0" id="commission_post" required/>
+						<div class="form-floating mb-3 comission_div_el">
+							<input class="form-control" autocomplete="off" name="commission_post" placeholder="Сумма комиссии" id="commission_post"/>
 							<label for="commission_post">
 								Сумма комиссии
 							</label>
@@ -218,6 +219,14 @@
 								Пожалуйста, введите правильную сумму транзакции
 							</div>
 						</div>  <!-- /form-floating -->
+
+						<div class="mb-3">
+							<label for="id_check_img">
+								Чек
+							</label>
+							<input class="form-control mb-2 fileinput fileUpload form-control-file" name="check_img" type="file" id="id_check_img">
+						</div>
+
 					</div> <!-- /modal-body -->
 
 					<div class="modal-footer">
@@ -238,6 +247,18 @@
 			</div> <!-- /modal-content -->
 		</div> <!-- /modal-dialog -->
 	</div> <!-- /modal -->
+
+	<script>
+		document.querySelector('#transaction_sum_post').addEventListener('input', function(){
+			// const num = this.value.replace(/\s/g, '');
+			this.value=(parseInt(num)).toLocaleString('ru-Ru')
+		})
+
+		document.querySelector('#commission_post').addEventListener('input', function(){
+			// const num = this.value.replace(/\s/g, '');
+			this.value=(parseInt(num)).toLocaleString('ru-Ru')
+		})
+	</script>
 
 	<script>
 
@@ -477,42 +498,50 @@
 
 		function createTransaction(){
 
-			var holder = exampleModal.querySelector('#balance_holder').value
-			var sub_type_pay = ''
+			var holder = exampleModal.querySelector('#balance_holder').value;
+			var sub_type_pay = '';
 			if(exampleModal.querySelector('#sub_type')){
-				sub_type_pay = exampleModal.querySelector('#sub_type').value
-			}
-			var transaction_name = exampleModal.querySelector('#newTransactionName').value
-			var payment_type = exampleModal.querySelector('#type_payment').value
-			var transaction_type = exampleModal.querySelector('#type_transaction').value
-			var transaction_date = exampleModal.querySelector('#datepicker').value
-			var transaction_sum = exampleModal.querySelector('#transaction_sum_post').value
-			var commission = exampleModal.querySelector('#commission_post').value
+				sub_type_pay = exampleModal.querySelector('#sub_type').value;
+			};
+			var transaction_name = exampleModal.querySelector('#newTransactionName').value;
+			var payment_type = exampleModal.querySelector('#type_payment').value;
+			var transaction_type = exampleModal.querySelector('#type_transaction').value;
+			var transaction_date = exampleModal.querySelector('#datepicker').value;
+			var transaction_sum = exampleModal.querySelector('#transaction_sum_post').value;
+			var commission = exampleModal.querySelector('#commission_post').value;
+			
+			var check_img = $('#id_check_img');
+
+			var fd = new FormData();
+			
+			fd.append('check_img_post', check_img.prop('files')[0]);
+			fd.append('sub_type', sub_type_pay);
+			fd.append('transaction_type_post', transaction_type);
+			fd.append('payment_type_post', payment_type);
+			fd.append('commission_post', commission);
+			fd.append('transaction_sum_post', transaction_sum);
+			fd.append('transaction_date_post', transaction_date);
+			fd.append('transaction_name_post', transaction_name);
+			fd.append('holder_post', holder);
+
+			fd.append('type', 'create_transaction');
+			fd.append('csrfmiddlewaretoken', token);
 
 			$.ajax(
 			{
 				url: url,
-				method: 'POST',
-				data: {
-					csrfmiddlewaretoken: token,
-					type: 'create_transaction',
-
-					holder_post: holder,
-					transaction_name_post: transaction_name,
-					transaction_date_post: transaction_date,
-					transaction_sum_post: transaction_sum,
-					commission_post: commission,
-					payment_type_post: payment_type,
-					transaction_type_post: transaction_type,
-					sub_type: sub_type_pay
-				}
+				method: 'POST',			
+				contentType: false,
+				processData: false,
+				mimeType: 'multipart/form-data',
+				data: fd
 			}).then(function(result) {
 				location.reload();
 				var x = 1;
 			}).catch(function(err) {
 				var x = 2;
-			})
-		}
+			});
+		};
 
 		var holders_id = document.querySelectorAll('.holders_id');
 
