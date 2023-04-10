@@ -200,8 +200,8 @@
 											<th>Чек</th>
 										</tr>
 									</thead>
-									{% for object in transactions %}
 									<tbody class="text-center">
+									{% for object in transactions %}
 										<tr class="align-middle">
 											<td>{{ object.name }}
 												{% if user.is_superuser %}
@@ -267,16 +267,21 @@
 											</td>
 											<td>
 												{% if object.check_img %}
-												<a href="/media/{{ object.check_img }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
+												<button data-bs-whatever="/media/{{ object.check_img }}"
+														type="button" 
+														class="btn CheckPhotoModal"
+														data-bs-transaction-name="{{ object.name }}"
+														data-bs-toggle="modal"
+														data-bs-target="#exampleModal">
 													<i class="fa-regular fa-clipboard"></i>
-												</a>
+												</button>
 												{% else %}
 												&ndash;
 												{% endif %}
 											</td>
 										</tr>
-									</tbody>
 									{% endfor %}
+									</tbody>
 								</table> <!-- /table -->
 							</div> <!-- /table-responsive -->
 						</div>
@@ -293,6 +298,25 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+
+	<!-- Modal -->
+	<div class="modal fade" id="exampleModal" tabindex="-1"
+		 role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"> </h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				...
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Закрыть</button>
+			</div>
+			</div>
+		</div>
+	</div>
 
 	<script>
 
@@ -386,6 +410,27 @@
 		var new_url = new URL(new_params, location);
 
 		history.pushState(null, null, new_url);
+
+	</script>
+
+	<script>
+		// Модалка для просмотра чеков
+		var exampleModal = document.getElementById('exampleModal')
+		var modalTitle = exampleModal.querySelector('.modal-header')
+		var modalBody = exampleModal.querySelector('.modal-body')
+
+		var exampleModalsBtn = document.getElementsByClassName('CheckPhotoModal')
+		
+		for(let i=0; i<exampleModalsBtn.length; i++){
+			exampleModalsBtn[i].addEventListener('click', function(event){
+				if(event.currentTarget == exampleModalsBtn[i]){
+					var linkData = exampleModalsBtn[i].getAttribute('data-bs-whatever')
+					var transactionName = exampleModalsBtn[i].getAttribute('data-bs-transaction-name')
+					modalTitle.textContent = `Чек транзакции - ${transactionName}`
+					modalBody.innerHTML = `<div class="row"><img src=${linkData}></div>`
+				}
+			})
+		}
 
 	</script>
 
