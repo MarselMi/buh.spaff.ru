@@ -692,9 +692,8 @@ def balance_holder_update_view(request, pk):
 
 
 def payment_type_view(request):
-    pay_type = PayType.objects.all()
+    pay_type = PayType.objects.all().order_by('-id')
     sub_pay_types = SubPayType.objects.all()
-
     if request.method == 'POST':
         '''Проверка наличия подтипа платежа для избегания дублирования'''
         if request.POST.get('type') == 'check_sub_pay_type':
