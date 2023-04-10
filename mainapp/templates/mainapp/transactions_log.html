@@ -25,9 +25,9 @@
 											<th>Чеки транз до/после</th>
 										</tr>
 									</thead>
+									<tbody class="align-middle text-center">
 									{% for object in transactions_log %}
-									<tbody>
-										<tr class="align-middle text-center">
+										<tr>
 											<td>{{ object.transaction_id|dash }}</td>
 											<td>{{ object.changed|dash }}</td>
 											<td>{{ object.author_references|dash }}</td>
@@ -39,10 +39,21 @@
 											<td>{{ object.sub_type_pay|sub_pay_type_decode|safe }}</td>
 											<td>{% if object.check_img %}
 													{% for img in object.check_img|split_img %}
-														{% if img %}
-														<a href="/media/img/{{ img|replace_space }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">
-															<i class="fa-regular fa-clipboard"></i>
-														</a>
+														{% if img != '/' %}
+															<button data-bs-whatever="/media/img/{{ img|replace_space }}"
+																	type="button"
+																	class="btn CheckPhotoModal"
+																	data-bs-transaction-name="{{ object.name }}"
+																	data-bs-toggle="modal"
+																	data-bs-target="#exampleModal">
+																<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-image" viewBox="0 0 16 16">
+																  <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+																  <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+																</svg>
+															</button>
+<!--														<a href="/media/img/{{ img|replace_space }}" data-bs-toggle="tooltip" data-bs-title="Посмотреть">-->
+<!--															<i class="fa-regular fa-clipboard"></i>-->
+<!--														</a>-->
 														{% else %}
 														-
 														{% endif %}
@@ -52,8 +63,8 @@
 												{% endif %}
 											</td>
 										</tr>
-									</tbody>
 									{% endfor %}
+									</tbody>
 								</table> <!-- /table -->
 							</div> <!-- /table-responsive -->
 						</div>
@@ -71,6 +82,46 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+
+	<!-- Modal -->
+	<div class="modal fade" id="exampleModal" tabindex="-1"
+		 role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"> </h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				...
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Закрыть</button>
+			</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Модалка для просмотра чеков
+		var exampleModal = document.getElementById('exampleModal')
+		var modalTitle = exampleModal.querySelector('.modal-header')
+		var modalBody = exampleModal.querySelector('.modal-body')
+
+		var exampleModalsBtn = document.getElementsByClassName('CheckPhotoModal')
+
+		for(let i=0; i<exampleModalsBtn.length; i++){
+			exampleModalsBtn[i].addEventListener('click', function(event){
+				if(event.currentTarget == exampleModalsBtn[i]){
+					var linkData = exampleModalsBtn[i].getAttribute('data-bs-whatever')
+					var transactionName = exampleModalsBtn[i].getAttribute('data-bs-transaction-name')
+					// modalTitle.textContent = `Чек транзакции - ${transactionName}`
+					modalBody.innerHTML = `<div class="row"><img src=${linkData}></div>`
+				}
+			})
+		}
+
+	</script>
 
 {% endblock content %}
 

@@ -54,8 +54,8 @@ def dash(obj):
 @register.filter
 def split_img(obj):
     if obj:
-        res = obj.split('/img/')
-        if len(res) > 2:
+        res = obj.split('img/')
+        if len(res) >= 2 and res[0] != '/':
             return res[1:]
         else:
             return res
