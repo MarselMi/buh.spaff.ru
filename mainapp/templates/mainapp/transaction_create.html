@@ -10,11 +10,10 @@
 					<div class="card-body">
 						<form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
 							{% csrf_token %}
-
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.balance_holder.label }}
+									<label for="balance_holder">Балансодержатель</label>
 									<input class="form-control" name="balance_holder" id="balance_holder" autocomplete="off" onfocus="this.value=''" list="balance_holder_list" placeholder="Выберите балансодержателя" required/>
 									<datalist id="balance_holder_list">
 										{% for holder in balance_holders %}
@@ -28,7 +27,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-								  {{ form.name.label }}
+								  <label for="transaction_name">Наименование</label>
 								  	<input class="obligatory form-control mb-2" autocomplete="off" onfocus="this.value=''" name="transaction_name" id="transaction_name" placeholder="Имя транзакции" required/>
 									
 									<div class="invalid-feedback">
@@ -37,7 +36,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-								  {{ form.type_transaction.label }}
+								  <label for="type_transaction">Тип</label>
 									<select class="form-select mb-2" name="type_transaction" id="type_transaction">
 										<option value="Расход">Расход</option>
 										<option value="Приход">Приход</option>
@@ -45,7 +44,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.transaction_date.label }}
+									<label for="datepicker">Дата</label>
 									<input class="obligatory form-control" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker" required/>
 									
 									<div class="invalid-feedback">
@@ -85,7 +84,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.check_img.label }}
+									<label for="id_check_img">Чек</label>
 									<input class="form-control mb-2 fileinput fileUpload form-control-file" name="check_img" type="file" id="id_check_img">
 								</div>
 
@@ -96,7 +95,7 @@
 									<div class="row">
 
 										<div class="col-12 col-sm-3 mb-3">
-										  {{ form.status.label }}
+										  <label for="transaction_status">Статус</label>
 											<select class="obligatory form-select mb-2" name="transaction_status" id="transaction_status">
 												<option value="В процессе">В процессе</option>
 												<option value="Отклонен">Отклонен</option>

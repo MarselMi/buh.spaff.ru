@@ -9,7 +9,7 @@
 					<div class="card-header d-flex align-items-center card-header-no-bg border-bottom-0">
 						{% if user.is_superuser or user.is_staff %}
 						<div class="card-options ms-auto">
-							<a href="{% url 'addition_create' %}" class="btn btn-primary btn-sm">Создать дополнительные данные по транзакции</a>
+							<a href="{% url 'addition_create' %}" class="btn btn-primary btn-sm">Добавить</a>
 						</div>
 						{% endif %}
 					</div>

@@ -233,6 +233,10 @@ def transaction_view(request):
         else:
             request.session['transaction_collapse'] = 2
 
+    for transa in transactions:
+        if transa.get('commission'):
+            transa['percent'] = round(float(transa.get('commission')) / float(transa.get('transaction_sum')) * 100)
+
     data = {'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
             'transactions': transactions, 'authors': authors, 'get_param_filter': get_param_filter,
             'collapsed': collapsed, 'sub_type': sub_type}
@@ -750,7 +754,7 @@ def payment_type_view(request):
             pay_type[0].save()
             return JsonResponse({'status': 'ok'})
 
-    data = {'title': 'Типы платежей', 'pay_type': pay_type, 'sub_pay_types': sub_pay_types}
+    data = {'title': 'Категории платежей', 'pay_type': pay_type, 'sub_pay_types': sub_pay_types}
 
     return render(request, 'mainapp/payments_type.html', data)
 

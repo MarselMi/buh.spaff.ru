@@ -17,14 +17,14 @@
 									<label for="holder_type">Тип балансодержателя</label>
 									<select autocomplete="off" class="obligatory form-select" name="holder_type" id="holder_type">
 										<option selected value="">Выберите тип балансодержателя</option>
-										<option value="PRIVATE_PERSONE">Частное лицо</option>
-										<option value="ORGANISATION">Организация</option>
+										<option value="PRIVATE_PERSONE">Физ. лицо</option>
+										<option value="ORGANISATION">Юр. лицо</option>
 									</select>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
 									<label id="label_organisation" for="organization_holder">Наименование организации</label>
-									<input autocomplete="off" class="obligatory form-control" name="organization_holder" id="organization_holder" placeholder="ООО 'it'"/>
+									<input autocomplete="off" class="obligatory form-control" name="organization_holder" id="organization_holder" placeholder="ООО &quot;Наименование&quot;"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -36,13 +36,13 @@
 									</select>
 								</div>
 
-								<div class="col-12 col-sm-3 mb-3">
+								<div class="col-12 col-sm-3 mb-3 payment_account_div" hidden>
 									<label id="label_payment_account" for="payment_account">Расчетный счет</label>
 									<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" placeholder="********************"/>
 								</div>
 
-								<div class="col-12 col-sm-3 mb-3">
-									<label for="alias_holder">Псевдоним</label>
+								<div class="col-12 col-sm-3 mb-3 alias_holder_div" hidden>
+									<label for="alias_holder">Псевдоним реквезита</label>
 									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" placeholder="Tinkoff"/>
 								</div>
 
@@ -175,7 +175,7 @@
 				$('#organization_holder').attr('placeholder', 'Иванов Иван Иванович')
 			}else if ($('#holder_type').val() == "ORGANISATION"){
 				$('#label_organisation').text('Наименование организации')
-				$('#organization_holder').attr('placeholder', 'OOO "IT"')
+				$('#organization_holder').attr('placeholder', 'OOO "Наименование"')
 			}
 		}else{
 			$('#holder_type').addClass('is-invalid')
@@ -184,6 +184,8 @@
 
 	$('#account_type').on('change', function(){
 		if($('#account_type').val()){
+			$('.payment_account_div').removeAttr('hidden')
+			$('.alias_holder_div').removeAttr('hidden')
 			$('#account_type').removeClass('is-invalid')
 			if ($('#account_type').val() == "CARD"){
 				$('#label_payment_account').text('Номер карты')

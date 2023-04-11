@@ -9,7 +9,7 @@
 					<div class="card-header d-flex align-items-center card-header-no-bg border-bottom-0">
 						{% if user.is_superuser or user.is_staff %}
 						<div class="card-options ms-auto">
-							<a href="{% url 'holder_create' %}" class="btn btn-primary btn-sm">Создать Нового балансодержателя</a>
+							<a href="{% url 'holder_create' %}" class="btn btn-primary btn-sm">Добавить</a>
 						</div>
 						{% endif %}
 					</div>
@@ -20,28 +20,35 @@
 								<table class="table table-bordered text-nowrap mb-0">
 									<thead class="text-center">
 										<tr>
-											<th>Наименование организации/ <br>ФИО лица</th>
-											<th>Псевдоним держателя</th>
+											<th>Наименование</th>
 											<th>Баланс Держателя</th>
 											<th>Реквезиты</th>
+											<th>Псевдоним реквезита</th>
 										</tr>
 									</thead>
-									{% for object in holders %}
 									<tbody class="text-center">
-										<tr class="align-middle">
-											<td>{{ object.organization_holder }}
-												{% if user.is_superuser %}
-													<a href="{% url 'holder_update' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
-														<i class="fa-regular fa-pen-to-square"></i>
-													</a>
-												{% endif %}
-											</td>
-											<td>{{ object.alias_holder }}</td>
-											<td>{{ object.holder_balance|numb_format }}</td>
-											<td>{{ object.payment_account|for_card_step }}</td>
-										</tr>
+										{% for object in holders %}
+											<tr class="align-middle">
+												<td>
+													<div class="d-flex justify-content-between">
+														<div class="d-flex justify-content-start">
+														{{ object.organization_holder }}
+														</div>
+													{% if user.is_superuser %}
+														<div class="d-flex justify-content-end">
+															<a href="{% url 'holder_update' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+																<i class="fa-regular fa-pen-to-square"></i>
+															</a>
+														</div>
+													{% endif %}
+													</div>
+												</td>
+												<td>{{ object.holder_balance|numb_format }}</td>
+												<td>{{ object.payment_account|for_card_step }}</td>
+												<td>{{ object.alias_holder }}</td>
+											</tr>
+										{% endfor %}
 									</tbody>
-									{% endfor %}
 								</table> <!-- /table -->
 							</div> <!-- /table-responsive -->
 						</div>

@@ -6,7 +6,10 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
-					<div class="card-header d-flex align-items-center card-header-no-bg border-bottom-0">
+					<div class="card-header d-flex align-items-center card-header-no-bg">
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+							Фильтр
+						</div>
 						{% if user.is_superuser or user.is_staff %}
 						<div class="card-options ms-auto">
 							<a href="{% url 'transaction_create' %}" class="btn btn-primary btn-sm">Создать транзакцию</a>
@@ -21,7 +24,7 @@
 								<div class="col-12 col-sm-3 mb-3">
 									<label class="label" for="filter_name">Наименование транзакии</label>
 									<input class="form-control filter" autocomplete="off" list="transaction_name" name="name" id="filter_name"
-										   {% if get_param_filter.name.0 %} value="{{ get_param_filter.name.0 }}" {% endif %} placeholder="Введите имя транзакции"/>
+										   {% if get_param_filter.name.0 %} value="{{ get_param_filter.name.0 }}" {% endif %} placeholder="Имя транзакции"/>
 									<datalist id="transaction_name">
 										{% for transaction in transactions %}
 										<option value="{{ transaction.name }}">{{ transaction.name }}</option>
@@ -30,9 +33,9 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_holder">Балансодержатели</label>
+									<label for="filter_holder">Балансодержатель</label>
 									<input class="form-control filter" list="balance_holder" onfocus="this.value=''" autocomplete="off" name="balance_holder_id" id="filter_holder"
-										    {% if get_param_filter.balance_holder_id.0 %} value="{{ get_param_filter.balance_holder_id.0 }}" {% endif %} placeholder="Введите балансодержателя"/>
+										    {% if get_param_filter.balance_holder_id.0 %} value="{{ get_param_filter.balance_holder_id.0 }}" {% endif %} placeholder="Балансодержатель"/>
 									<datalist id="balance_holder">
 										{% for holder in balance_holders %}
 										<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
@@ -41,9 +44,9 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_payment">По типу платежа</label>
+									<label for="filter_payment">Категория</label>
 									<input class="form-control filter" list="pay_type" autocomplete="off" onfocus="this.value=''" name="type_payment_id" id="filter_payment"
-										   {% if get_param_filter.type_payment_id.0 %} value="{{ get_param_filter.type_payment_id.0 }}" {% endif %} placeholder="Введите тип платежа"/>
+										   {% if get_param_filter.type_payment_id.0 %} value="{{ get_param_filter.type_payment_id.0 }}" {% endif %} placeholder="Офис"/>
 									<datalist id="pay_type">
 										{% for type in type_payments %}
 										<option value="{{ type }}">{{ type }}</option>
@@ -52,9 +55,9 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_sub_payment">По подтипу платежа</label>
+									<label for="filter_sub_payment">Подкатегория</label>
 									<input class="form-control filter" list="sub_type" autocomplete="off" onfocus="this.value=''" name="sub_type_pay_id" id="filter_sub_payment"
-										   {% if get_param_filter.sub_type_pay_id.0 %} value="{{ get_param_filter.sub_type_pay_id.0 }}" {% endif %} placeholder="Введите подтип платежа"/>
+										   {% if get_param_filter.sub_type_pay_id.0 %} value="{{ get_param_filter.sub_type_pay_id.0 }}" {% endif %} placeholder="Аренда"/>
 									<datalist id="sub_type">
 										{% for type in sub_type %}
 											<option value="{{ type }}">{{ type }}</option>
@@ -76,19 +79,19 @@
 
 											<div class="input-group" id="input-date-group">
 												<span class="input-group-text">С</span>
-												<input class="form-control filter" type="text" name="start"
+												<input class="form-control filter" type="text" placeholder="01.01.2023" name="start"
 													   {% if get_param_filter.start.0 %} value="{{ get_param_filter.start.0 }}" {% endif %} id="datepicker"/>
 												<span class="input-group-text">По</span>
-												<input class="form-control filter" type="text" name="end"
+												<input class="form-control filter" type="text" placeholder="01.01.2023" name="end"
 													   {% if get_param_filter.end.0 %} value="{{ get_param_filter.end.0 }}" {% endif %} id="datepicker1"/>
 											</div> <!-- /input-group -->
 
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_autor">По автору создателя</label>
+											<label for="filter_autor">Автор создания</label>
 											<input class="form-control filter" list="user_filter" autocomplete="off" name="author_id" id="filter_autor"
-												   {% if get_param_filter.author_id.0 %} value="{{ get_param_filter.author_id.0 }}" {% endif %} placeholder="Введите автора транзакции"/>
+												   {% if get_param_filter.author_id.0 %} value="{{ get_param_filter.author_id.0 }}" {% endif %} placeholder="admin"/>
 											<datalist id="user_filter">
 												{% for author in authors %}
 													<option value="{{ author }}">{{ author }}</option>
@@ -97,7 +100,7 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_type">По типу транзакции</label>
+											<label for="filter_type">Тип транзакции</label>
 											<select class="form-select filter" autocomplete="off" name="type_transaction" id="filter_type">
 												{% if get_param_filter.type_transaction.0 %}
 													<option selected value="{{ get_param_filter.type_transaction.0 }}">{{ get_param_filter.type_transaction.0|trans_type }}</option>
@@ -113,13 +116,13 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_tags">По тегам</label>
+											<label for="filter_tags">По тегу</label>
 											<input class="form-control filter" autocomplete="off" name="tags" id="filter_tags"
 											{% if get_param_filter.tags.0 %} value="{{ get_param_filter.tags.0 }}" {% endif %} placeholder="Введите теги"/>
 										</div>
 
 										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="filter_status">По статусу транзакции</label>
+											<label class="label" for="filter_status">По статусу</label>
 											<select class="form-select filter" autocomplete="off" name="status" id="filter_status">
 												{% if get_param_filter.status.0 %}
 													<option selected value="{{ get_param_filter.status.0 }}">{{ get_param_filter.status.0|trans_status }}</option>
@@ -139,16 +142,16 @@
 										<div class="col-12 col-sm-3 mb-3">
 
 											<label for="input-amount-group">
-												По сумме транзакции
+												По сумме
 											</label>
 
 											<div class="input-group" id="input-amount-group">
 												<span class="input-group-text">Мин: </span>
 												<input class="form-control filter" autocomplete="off" name="amount_start" id="filter_amount_higher"
-												{% if get_param_filter.amount_start.0 %} value="{{ get_param_filter.amount_start.0 }}" {% endif %} placeholder="Введите цену транзакции"/>
+												{% if get_param_filter.amount_start.0 %} value="{{ get_param_filter.amount_start.0 }}" {% endif %} placeholder="500"/>
 												<span class="input-group-text">Макс: </span>
 												<input class="form-control filter" autocomplete="off" name="amount_end" id="filter_amount_below"
-												{% if get_param_filter.amount_end.0 %} value="{{ get_param_filter.amount_end.0 }}" {% endif %} placeholder="Введите цену транзакции"/>
+												{% if get_param_filter.amount_end.0 %} value="{{ get_param_filter.amount_end.0 }}" {% endif %} placeholder="2000"/>
 											</div>
 										</div> <!-- /col -->
 
@@ -246,7 +249,10 @@
 											</td>
 											<td>
 												{% if object.commission %}
+												<span data-bs-toggle="tooltip" data-bs-title="{{ object.percent }}%">
 													{{ object.commission|numb_format }}
+												</span>
+
 												{% else %}
 													&ndash;
 												{% endif %}

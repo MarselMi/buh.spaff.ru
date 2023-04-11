@@ -83,6 +83,14 @@ def datetime_format(date_time):
 
 
 @register.filter
+def percent(lst):
+    if lst:
+        return f'&ndash;'
+    else:
+        return f'{float(lst[1])/float(lst[0])*100}'
+
+
+@register.filter
 def date_format(date_object):
     if date_object:
         return date_object.strftime('%d.%m.%Y')

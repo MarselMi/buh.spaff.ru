@@ -10,13 +10,13 @@
 						{% if user.is_superuser or user.is_staff %}
 						<div class="card-options ms-auto">
 							<button type="button" class="btn btn-primary btn-sm buttonSelectModal" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="{{ holder.organization_holder }}">
-								Создание нового типа платежа
+								Новая категория
 							</button>
 						</div>
 
 						<div class="card-options ms-auto">
 							<button type="button" class="btn btn-secondary btn-sm buttonSelectModal" data-bs-toggle="modal" data-bs-target="#subPayType">
-								Создание подтипа платежа
+								Создать подкатегорию
 							</button>
 						</div>
 
@@ -26,48 +26,51 @@
 						{% if pay_type %}
 						<div class="card-body">
 							<div class="table-responsive">
-								<table class="table table-bordered text-nowrap mb-0">
+								<table class="table table-bordered text-nowrap mb-0 text-center">
 									<thead>
 										<tr>
 											<th>ID</th>
-											<th>Тип платежа</th>
+											<th>Название</th>
+											<th>Привязанные подкатегории</th>
 										</tr>
 									</thead>
+									<tbody class="align-middle pay-type-container">
 									{% for object in pay_type %}
-									<tbody>
-										<tr class="align-middle pay-type-container">
-											<td class="d-flex">
-												{{ object.id }} &nbsp;
-												{% if object.subtypes_of_the_type.all %}
-													<div class="Box-sc-1gh2r6s-0 CXccO" 
-														data-bs-toggle="popover" 
-														data-bs-trigger="hover focus" 
-														data-bs-content=" 
-															{% for i in object.subtypes_of_the_type.all %}
-																{{ i }}
-															{% endfor %}">
-														<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
-															<path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
-															<path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8zm0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
-														</svg>
-													</div>
-												{% endif %}
+										<tr>
+											<td>
+												{{ object.id }}
 											</td>
 											<td>
-												{{ object.pay_type }} &nbsp;
-												<button
-													type="button" 
-													class="btn btn-light btn-sm buttonSelectModal pay_edit_modal" 
-													data-bs-toggle="modal" 
-													data-bs-pay-id="{{ object.id }}"
-													data-bs-target="#subPayTypeAdd" 
-													data-bs-whatever="{{ object.pay_type }}">
-													<i class="fa-regular fa-pen-to-square"></i>
-												</button>
+												<div class="d-flex justify-content-between bd-highlight">
+													<div class="d-flex justify-content-start">
+														{{ object.pay_type }}
+													</div>
+
+													<div class="d-flex justify-content-end">
+														<button
+															type="button"
+															class="btn btn-light btn-sm buttonSelectModal pay_edit_modal"
+															data-bs-toggle="modal"
+															data-bs-pay-id="{{ object.id }}"
+															data-bs-target="#subPayTypeAdd"
+															data-bs-whatever="{{ object.pay_type }}">
+															<i class="fa-regular fa-pen-to-square"></i>
+														</button>
+													</div>
+												</div>
+											</td>
+											<td>
+												{% if object.subtypes_of_the_type.all %}
+													{% for i in object.subtypes_of_the_type.all %}
+														<option>{{ i }}</option>
+													{% endfor %}
+												{% else %}
+													&ndash;
+												{% endif %}
 											</td>
 										</tr>
-									</tbody>
 									{% endfor %}
+									</tbody>
 								</table> <!-- /table -->
 							</div> <!-- /table-responsive -->
 						</div>
@@ -92,7 +95,7 @@
 				<div action="" name="newTypePay" id="newTypePay">
 					<div class="modal-header">
 						<h5 class="modal-title" id="newPayTypeModalLabel">
-							Новый тип платежа:
+							Новая категория:
 						</h5> <!-- /modal-title -->
 						<button type="button" class="btn-close close_type_payment" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div> <!-- /modal-header -->
@@ -100,24 +103,27 @@
 					<div class="modal-body" id="form_type_payment">
 						
 						<div class="form-floating mb-1">
-							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="type_payment" id="type_payment" placeholder="Тип платежа"/>
+							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="type_payment" id="type_payment"/>
 							<label for="type_payment">
-								Тип платежа
+								Название категории
 							</label>
 						</div> <!-- /form-floating -->
 					</div> <!-- /modal-body -->
 
-					<div class="modal-body">
-						<h5 class="modal-title">
-							Добавить подтипы при необходимости:
-						</h5> <!-- /modal-title -->
-						{% for sub_type in sub_pay_types %}
-							<div class="col-12">
-								<input class="form-check-input sup_pay_types_checked" type="checkbox" name="{{ sub_type.pk }}" id="{{ sub_type.pk }}"/>
-								<label for="{{ sub_type.pk }}">{{ sub_type }}</label>
-							</div>
-						{% endfor %}
-					</div>
+					{% if sub_pay_types %}
+						<div class="modal-body">
+							<h5 class="modal-title">
+								Привязать подкатегорию:
+							</h5> <!-- /modal-title -->
+							{% for sub_type in sub_pay_types %}
+								<div class="col-12">
+									<input class="form-check-input sup_pay_types_checked" type="checkbox" name="{{ sub_type.pk }}" id="{{ sub_type.pk }}"/>
+									<label for="{{ sub_type.pk }}">{{ sub_type }}</label>
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+					{% endif %}
 
 					<div class="modal-footer">
 						<div class="row">
@@ -140,7 +146,7 @@
 				<div action="" name="newSubTypePay" id="newSubTypePay">
 					<div class="modal-header">
 						<h5 class="modal-title" id="newSubTypePayModalLabel">
-							Новый подтип платежа:
+							Создание подкатегории:
 						</h5> <!-- /modal-title -->
 
 						<button type="button" class="btn-close subPayTypeClose" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -149,9 +155,9 @@
 					<div class="modal-body" id="form_sub_type_payment">
 						
 						<div class="form-floating mb-3">
-							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="sub_type_payment" id="sub_type_payment" placeholder="Подтип платежа"/>
+							<input class="form-control" autocomplete="off" onfocus="this.value=''" name="sub_type_payment" id="sub_type_payment"/>
 							<label for="sub_type_payment">
-								Подтип платежа
+								Введите подкатегорию
 							</label>
 						</div> <!-- /form-floating -->
 					</div> <!-- /modal-body -->
