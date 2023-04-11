@@ -25,25 +25,6 @@ url = f"https://api.telegram.org/bot{API_TOKEN}/getUpdates"
 @bot.message_handler(commands=['start'])
 def incoming_message(message):
 
-    global data
-    data = dict()
-    data.setdefault(message.chat.id,
-        {
-            "transaction_name": "",
-            "type_transaction": "",
-            "type_payment": "",
-            "sub_type": "",
-            "balance_holder": "",
-            "transaction_date": "",
-            "transaction_sum_post": "",
-            "commission_post": "",
-            "transaction_status": "",
-            "tags": "",
-            "author_id": "",
-            "check_img": ""
-        }
-    )
-
     bot.reply_to(message, 'Привязка Telegram')
     telegram_id = message.from_user.id
     response_user = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/').content)
@@ -53,6 +34,24 @@ def incoming_message(message):
             if int(user.get('telegram_id')) == int(telegram_id):
                 user_id = user.get('id')
     if user_id:
+        global data
+        data = dict()
+        data.setdefault(message.chat.id,
+            {
+                "transaction_name": "",
+                "type_transaction": "",
+                "type_payment": "",
+                "sub_type": "",
+                "balance_holder": "",
+                "transaction_date": "",
+                "transaction_sum_post": "",
+                "commission_post": "",
+                "transaction_status": "",
+                "tags": "",
+                "author_id": "",
+                "check_img": ""
+            }
+        )
         buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         button1 = types.KeyboardButton('Создать транзакцию')
         button2 = types.KeyboardButton(text='Помощь')
@@ -68,6 +67,24 @@ def incoming_message(message):
 
                 requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
                                data={'telegram_id': telegram_id, 'telegram': message.from_user.username})
+                global data
+                data = dict()
+                data.setdefault(message.chat.id,
+                    {
+                        "transaction_name": "",
+                        "type_transaction": "",
+                        "type_payment": "",
+                        "sub_type": "",
+                        "balance_holder": "",
+                        "transaction_date": "",
+                        "transaction_sum_post": "",
+                        "commission_post": "",
+                        "transaction_status": "",
+                        "tags": "",
+                        "author_id": "",
+                        "check_img": ""
+                    }
+                )
                 buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
                 button1 = types.KeyboardButton('Создать транзакцию')
                 button2 = types.KeyboardButton(text='Помощь')
@@ -81,6 +98,10 @@ def incoming_message(message):
 
 @bot.message_handler(commands=['h', 'help'])
 def send_welcome(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button1 = types.KeyboardButton('Создать транзакцию')
     buttons.add(button1)
@@ -101,6 +122,10 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['crt', 'create', 'break', 'br'])
 def send_break_create(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button1 = types.KeyboardButton('Создать транзакцию')
     buttons.add(button1)
@@ -110,6 +135,10 @@ def send_break_create(message):
 
 @bot.message_handler(content_types=["text"])
 def listen_messages(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -149,6 +178,10 @@ def listen_messages(message):
 
 @bot.message_handler(content_types=['photo'])
 def load_check(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -173,6 +206,10 @@ def load_check(message):
 
 
 def transaction_type(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -192,7 +229,7 @@ def transaction_type(message):
         '''обозначение и определение кнопок'''
         buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         button1 = types.KeyboardButton(text='Приход')
-        button2 = types.KeyboardButton(text='Отход')
+        button2 = types.KeyboardButton(text='Расход')
         buttons.add(button1, button2)
 
         '''вывод кнопок с возможностью выбора типа транзакции'''
@@ -201,11 +238,15 @@ def transaction_type(message):
 
 
 def transaction_balance_holder(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
         send_break_create(message)
-    elif message.text == 'Приход' or message.text == "Отход":
+    elif message.text == 'Приход' or message.text == "Расход":
         '''После типа транзакции выбор на балансодержателя'''
         data[message.chat.id]['type_transaction'] = message.text
         try:
@@ -237,7 +278,7 @@ def transaction_balance_holder(message):
         '''обозначение и определение кнопок'''
         buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         button1 = types.KeyboardButton(text='Приход')
-        button2 = types.KeyboardButton(text='Отход')
+        button2 = types.KeyboardButton(text='Расход')
         buttons.add(button1, button2)
         '''вывод кнопок с возможностью выбора типа транзакции'''
         bot.send_message(message.chat.id, "Тип транзакции: ", reply_markup=buttons)
@@ -245,6 +286,10 @@ def transaction_balance_holder(message):
 
 
 def pay_type(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -287,6 +332,10 @@ def pay_type(message):
 
 
 def transaction_date_or_sub_pay(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -329,6 +378,10 @@ def transaction_date_or_sub_pay(message):
 
 
 def sub_type(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -352,6 +405,10 @@ def sub_type(message):
 
 
 def transaction_date(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -364,6 +421,10 @@ def transaction_date(message):
 
 
 def transaction_sum(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -374,7 +435,7 @@ def transaction_sum(message):
             datetime.datetime.strptime(date_com, '%d.%m.%Y').date()
             data[message.chat.id]['transaction_date'] = date_com
             bot.send_message(message.chat.id, text="Сумма транзакции: ")
-            if data[message.chat.id]['type_transaction'] == 'Отход':
+            if data[message.chat.id]['type_transaction'] == 'Расход':
                 bot.register_next_step_handler(message, transaction_commission_sum)
             else:
                 bot.register_next_step_handler(message, finally_transaction_create_step)
@@ -384,6 +445,10 @@ def transaction_sum(message):
 
 
 def transaction_commission_sum(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -400,13 +465,17 @@ def transaction_commission_sum(message):
 
 
 def finally_transaction_create_step(message):
+    try:
+        data.get(message.chat.id)
+    except:
+        incoming_message(message)
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
         send_break_create(message)
     else:
         try:
-            if data[message.chat.id]['type_transaction'] == 'Отход':
+            if data[message.chat.id]['type_transaction'] == 'Расход':
                 decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
                 data[message.chat.id]['commission_post'] = message.text
             else:
@@ -425,7 +494,7 @@ def finally_transaction_create_step(message):
             )
             bot.register_next_step_handler(message, listen_messages)
         except:
-            if data[message.chat.id]['type_transaction'] == 'Отход':
+            if data[message.chat.id]['type_transaction'] == 'Расход':
                 bot.send_message(message.chat.id, text="Комиссия, введите 0, если комиссии нет: ")
                 bot.register_next_step_handler(message, finally_transaction_create_step)
             else:
