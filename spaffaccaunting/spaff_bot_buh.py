@@ -98,10 +98,6 @@ def incoming_message(message):
 
 @bot.message_handler(commands=['h', 'help'])
 def send_welcome(message):
-    try:
-        data.get(message.chat.id)
-    except:
-        incoming_message(message)
     buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button1 = types.KeyboardButton('Создать транзакцию')
     buttons.add(button1)
@@ -136,7 +132,13 @@ def send_break_create(message):
 @bot.message_handler(content_types=["text"])
 def listen_messages(message):
     try:
-        data.get(message.chat.id)
+        req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/').content)
+        user_id = ''
+        for user in req:
+            if user.get('telegram_id'):
+                if int(user.get('telegram_id')) == int(message.chat.id):
+                    user_id = user.get('id')
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/{user_id}').content)
     except:
         incoming_message(message)
     if message.text == '/h' or message.text == '/help':
