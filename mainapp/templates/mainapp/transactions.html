@@ -207,12 +207,19 @@
 									{% for object in transactions %}
 										<tr class="align-middle">
 											<td>{{ object.balance_holder }}</td>
-											<td>{{ object.name }}
-												{% if user.is_superuser %}
-													<a href="{% url 'transaction_edit' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
-														<i class="fa-regular fa-pen-to-square"></i>
-													</a>
-												{% endif %}
+											<td>
+												<div class="d-flex justify-content-between bd-highlight">
+													<div class="d-flex justify-content-start">
+														{{ object.name }}
+													</div>
+													<div class="d-flex justify-content-end">
+														{% if user.is_superuser %}
+															<a href="{% url 'transaction_edit' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+																<i class="fa-regular fa-pen-to-square"></i>
+															</a>
+														{% endif %}
+													</div>
+												</div>
 											</td>
 											<td>
 												{% if object.sub_type_pay_id %}

@@ -45,7 +45,6 @@ def main_page_view(request):
         pass
 
     if request.method == 'POST':
-        print(request.FILES)
 
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
@@ -586,8 +585,6 @@ def transaction_update_view(request, pk):
 
 def transactions_log_view(request):
     transactions_log = TransactionLog.objects.all()[::-1]
-    for tr in transactions_log:
-        print(tr.check_img)
     data = {'title': 'Логи транзакций', 'transactions_log': transactions_log}
     return render(request, 'mainapp/transactions_log.html', data)
 
