@@ -81,6 +81,7 @@ class CustomUser(AbstractUser, models.Model):
     available_holders = models.ManyToManyField(BalanceHolder)
     telegram_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='Telegram ID')
     telegram = models.CharField(max_length=40, blank=True, null=True, verbose_name='Ник Telegram')
+    json_create_transaction = models.JSONField(blank=True, null=True, verbose_name='JSON-данные для создания транзакции')
 
     def __str__(self):
         return f'{self.username}'

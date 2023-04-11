@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'crispy_forms',
     'debug_toolbar',
+    'django_filters',
     'mainapp',
     'authapp',
     'apiapp',
@@ -70,6 +71,10 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
 
 WSGI_APPLICATION = 'spaffaccaunting.wsgi.application'
 

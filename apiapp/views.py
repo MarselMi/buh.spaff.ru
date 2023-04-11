@@ -8,11 +8,15 @@ from rest_framework.response import Response
 from mainapp.data_library import *
 from apiapp.serializers import *
 from mainapp.models import *
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class UserModelView(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['telegram_id']
 
 
 class SubPayTypeApiView(viewsets.ModelViewSet):
@@ -71,7 +75,7 @@ class TransactionCreateApi(viewsets.ModelViewSet):
         transaction_sum = decimal.Decimal(self.request.data.get('transaction_sum_post').replace(',', '.').replace(' ', ''))
 
         type_transaction = self.request.data.get('type_transaction')
-        if type_transaction == 'Приход':
+        if type_transaction.lower() == 'приход':
             type_transaction = 'COMING'
             amount = transaction_sum
         else:

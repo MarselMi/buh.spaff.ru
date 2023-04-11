@@ -14,8 +14,10 @@ from django.core.files.storage import FileSystemStorage
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = BASE_DIR / 'media'
 
-LOCAL_DOMAIN = 'http://127.0.0.1:8000'
-PROD_DOMAIN = 'https://buh.spaff.ru'
+local = 'http://127.0.0.1:8000'
+prod = 'https://buh.spaff.ru'
+
+PROD_DOMAIN = prod
 
 API_TOKEN = '5655161091:AAGPrpG314RXFKJe2XJ7bCGqgrh4tn9mP54'
 bot = telebot.TeleBot(API_TOKEN)
@@ -34,10 +36,7 @@ def incoming_message(message):
             if int(user.get('telegram_id')) == int(telegram_id):
                 user_id = user.get('id')
     if user_id:
-        global data
-        data = dict()
-        data.setdefault(message.chat.id,
-            {
+        data_dict = {
                 "transaction_name": "",
                 "type_transaction": "",
                 "type_payment": "",
@@ -50,8 +49,11 @@ def incoming_message(message):
                 "tags": "",
                 "author_id": "",
                 "check_img": ""
-            }
-        )
+                }
+
+        requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                       data={"json_create_transaction": json.dumps(data_dict)})
+
         buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         button1 = types.KeyboardButton('Создать транзакцию')
         button2 = types.KeyboardButton(text='Помощь')
@@ -63,28 +65,27 @@ def incoming_message(message):
         md5_hash = md5(f'{user_id}_fv3353rv23v3ve_vsfvdfvdfvdf53f3_e1fj43d'.encode()).hexdigest()+f'-{user_id}'
         if md5_hash == message.text.replace('/start st-', ''):
             try:
-                request_get_user = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/{user_id}/').content)
+                json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/{user_id}/').content)
+
+                data_dict = {
+                    "transaction_name": "",
+                    "type_transaction": "",
+                    "type_payment": "",
+                    "sub_type": "",
+                    "balance_holder": "",
+                    "transaction_date": "",
+                    "transaction_sum_post": "",
+                    "commission_post": "",
+                    "transaction_status": "",
+                    "tags": "",
+                    "author_id": "",
+                    "check_img": ""
+                }
 
                 requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
-                               data={'telegram_id': telegram_id, 'telegram': message.from_user.username})
-                global data
-                data = dict()
-                data.setdefault(message.chat.id,
-                    {
-                        "transaction_name": "",
-                        "type_transaction": "",
-                        "type_payment": "",
-                        "sub_type": "",
-                        "balance_holder": "",
-                        "transaction_date": "",
-                        "transaction_sum_post": "",
-                        "commission_post": "",
-                        "transaction_status": "",
-                        "tags": "",
-                        "author_id": "",
-                        "check_img": ""
-                    }
-                )
+                               data={'telegram_id': telegram_id, 'telegram': message.from_user.username,
+                                     "json_create_transaction": json.dumps(data_dict)})
+
                 buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
                 button1 = types.KeyboardButton('Создать транзакцию')
                 button2 = types.KeyboardButton(text='Помощь')
@@ -98,6 +99,11 @@ def incoming_message(message):
 
 @bot.message_handler(commands=['h', 'help'])
 def send_welcome(message):
+    try:
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
+    except:
+        incoming_message(message)
+
     buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button1 = types.KeyboardButton('Создать транзакцию')
     buttons.add(button1)
@@ -119,9 +125,10 @@ def send_welcome(message):
 @bot.message_handler(commands=['crt', 'create', 'break', 'br'])
 def send_break_create(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button1 = types.KeyboardButton('Создать транзакцию')
     buttons.add(button1)
@@ -132,45 +139,23 @@ def send_break_create(message):
 @bot.message_handler(content_types=["text"])
 def listen_messages(message):
     try:
-        req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/').content)
-        user_id = ''
-        for user in req:
-            if user.get('telegram_id'):
-                if int(user.get('telegram_id')) == int(message.chat.id):
-                    user_id = user.get('id')
-        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/{user_id}').content)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
         send_break_create(message)
     else:
         if message.text.lower() == 'создать транзакцию':
-            '''Перед заполнением стираю все данные которые были прежде'''
-            global data
-            data = dict()
-            data.setdefault(message.chat.id,
-                {
-                    "transaction_name": "",
-                    "type_transaction": "",
-                    "type_payment": "",
-                    "sub_type": "",
-                    "balance_holder": "",
-                    "transaction_date": "",
-                    "transaction_sum_post": "",
-                    "commission_post": "",
-                    "transaction_status": "",
-                    "tags": "",
-                    "author_id": "",
-                    "check_img": ""
-                }
-            )
             button = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
             miss_b = types.KeyboardButton('Пропустить')
             button.add(miss_b)
             '''Отсылаю следующее сообщение в окно чата'''
-            bot.send_message(message.chat.id, text="Загрузите чек, либо нажмите кнопку 'Пропустить'", reply_markup=button)
+            bot.send_message(message.chat.id, text="Загрузите чек, либо нажмите кнопку \"Пропустить\"",
+                             reply_markup=button)
+
             '''Перенаправление в следующую функцию для получения имени транзакции'''
             bot.register_next_step_handler(message, load_check)
         else:
@@ -181,9 +166,10 @@ def listen_messages(message):
 @bot.message_handler(content_types=['photo'])
 def load_check(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -197,21 +183,26 @@ def load_check(message):
             with open(f"{MEDIA_ROOT}/img/{fileID}.{file_format}", 'wb') as new_file:
                 new_file.write(downloaded_file)
 
-            data[message.chat.id]['check_img'] = f'img/{fileID}.{file_format}'
+            req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+            user_id = req.get('id')
+            data_dict = req.get('json_create_transaction')
+            data_dict['check_img'] = f'img/{fileID}.{file_format}'
+            requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                           data={'json_create_transaction': json.dumps(data_dict)})
 
             bot.send_message(message.chat.id, text="Имя транзакции: ")
             bot.register_next_step_handler(message, transaction_type)
         except:
-            data[message.chat.id]['check_img'] = ''
             bot.send_message(message.chat.id, text="Имя транзакции: ")
             bot.register_next_step_handler(message, transaction_type)
 
 
 def transaction_type(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -219,14 +210,14 @@ def transaction_type(message):
     else:
         '''получаю имя транзакции и автора, перенаправляю на выбор типа транзакции с выводом соотв сообщ
         Начало записи данных в словарь имя и пользователь'''
-        data[message.chat.id]['transaction_name'] = message.text
+        req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+        data_dict = req.get('json_create_transaction')
+        user_id = req.get('id')
+        data_dict['transaction_name'] = message.text
+        data_dict['author_id'] = user_id
 
-        telegram_id = message.from_user.id
-        user_request = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/').content)
-        for user_req in user_request:
-            if user_req.get('telegram_id'):
-                if int(user_req.get('telegram_id')) == int(telegram_id):
-                    data[message.chat.id]['author_id'] = user_req.get('id')
+        requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                       data={'json_create_transaction': json.dumps(data_dict)})
 
         '''обозначение и определение кнопок'''
         buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -241,32 +232,35 @@ def transaction_type(message):
 
 def transaction_balance_holder(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
         send_break_create(message)
     elif message.text == 'Приход' or message.text == "Расход":
         '''После типа транзакции выбор на балансодержателя'''
-        data[message.chat.id]['type_transaction'] = message.text
+        req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+        data_dict = req.get('json_create_transaction')
+        user_id = req.get('id')
+        data_dict['type_transaction'] = message.text
+        requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                       data={'json_create_transaction': json.dumps(data_dict)})
+
         try:
             b_holders = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/bal-holders/').content)
 
-            user_information = json.loads(
-                requests.get(f'{PROD_DOMAIN}/api-v1/users/{data[message.chat.id].get("author_id")}/').content
-            )
-
             '''обозначение и определение кнопок в зависимости от доступных'''
             buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-            if user_information.get('is_superuser'):
+            if req.get('is_superuser'):
                 for holder in b_holders:
                     button = types.KeyboardButton(text=holder.get('organization_holder'))
                     buttons.add(button)
             else:
                 for holder in b_holders:
-                    if holder.get('id') in user_information.get('available_holders'):
+                    if holder.get('id') in req.get('available_holders'):
                         button = types.KeyboardButton(text=holder.get('organization_holder'))
                         buttons.add(button)
             '''вывод кнопок с возможностью выбора типа транзакции'''
@@ -289,9 +283,10 @@ def transaction_balance_holder(message):
 
 def pay_type(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -302,7 +297,13 @@ def pay_type(message):
         for hol in b_holders:
             holders.append(hol.get('organization_holder'))
         if message.text in holders:
-            data[message.chat.id]['balance_holder'] = message.text
+            req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+            data_dict = req.get('json_create_transaction')
+            user_id = req.get('id')
+            data_dict['balance_holder'] = message.text
+            requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                           data={'json_create_transaction': json.dumps(data_dict)})
+
             pay_types = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/pays-type/').content)
 
             buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -314,18 +315,16 @@ def pay_type(message):
             bot.send_message(message.chat.id, "Выберите тип платежа: ", reply_markup=buttons)
             bot.register_next_step_handler(message, transaction_date_or_sub_pay)
         else:
-            user_information = json.loads(
-                requests.get(f'{PROD_DOMAIN}/api-v1/users/{data[message.chat.id].get("author_id")}/').content
-            )
+            req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
             '''обозначение и определение кнопок в зависимости от доступных'''
             buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-            if user_information.get('is_superuser'):
+            if req.get('is_superuser'):
                 for holder in b_holders:
                     button = types.KeyboardButton(text=holder.get('organization_holder'))
                     buttons.add(button)
             else:
                 for holder in b_holders:
-                    if holder.get('id') in user_information.get('available_holders'):
+                    if holder.get('id') in req.get('available_holders'):
                         button = types.KeyboardButton(text=holder.get('organization_holder'))
                         buttons.add(button)
             '''вывод кнопок с возможностью выбора типа транзакции'''
@@ -335,9 +334,10 @@ def pay_type(message):
 
 def transaction_date_or_sub_pay(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -348,7 +348,13 @@ def transaction_date_or_sub_pay(message):
         for p in pay_types:
             pay_type_list.append(p.get('pay_type'))
         if message.text in pay_type_list:
-            data[message.chat.id]['type_payment'] = message.text
+            req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+            data_dict = req.get('json_create_transaction')
+            user_id = req.get('id')
+            data_dict['type_payment'] = message.text
+            requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                           data={'json_create_transaction': json.dumps(data_dict)})
+
             pay_types = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/pays-type/').content)
             pay_type_id = ''
             for type_pay in pay_types:
@@ -381,7 +387,7 @@ def transaction_date_or_sub_pay(message):
 
 def sub_type(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
     if message.text == '/h' or message.text == '/help':
@@ -394,7 +400,13 @@ def sub_type(message):
         for i in sub_pay_type:
             sub_type_list.append(i.get('sub_type'))
         if message.text in sub_type_list:
-            data[message.chat.id]['sub_type'] = message.text
+            req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+            data_dict = req.get('json_create_transaction')
+            user_id = req.get('id')
+            data_dict['sub_type'] = message.text
+            requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                           data={'json_create_transaction': json.dumps(data_dict)})
+
             bot.send_message(message.chat.id, "Дата транзакции: ")
             bot.register_next_step_handler(message, transaction_sum)
         else:
@@ -408,25 +420,33 @@ def sub_type(message):
 
 def transaction_date(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
         send_break_create(message)
     else:
         '''Добавление Балансодержателя и отправка даты'''
-        data[message.chat.id]['type_payment'] = message.text
+        req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+        data_dict = req.get('json_create_transaction')
+        user_id = req.get('id')
+        data_dict['type_payment'] = message.text
+        requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                       data={'json_create_transaction': json.dumps(data_dict)})
+
         bot.send_message(message.chat.id, "Дата транзакции: ")
         bot.register_next_step_handler(message, transaction_sum)
 
 
 def transaction_sum(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -435,9 +455,15 @@ def transaction_sum(message):
         try:
             date_com = message.text.replace('-', '.').replace('/', '.')
             datetime.datetime.strptime(date_com, '%d.%m.%Y').date()
-            data[message.chat.id]['transaction_date'] = date_com
+            req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+            data_dict = req.get('json_create_transaction')
+            user_id = req.get('id')
+            data_dict['transaction_date'] = date_com
+            requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                           data={'json_create_transaction': json.dumps(data_dict)})
+
             bot.send_message(message.chat.id, text="Сумма транзакции: ")
-            if data[message.chat.id]['type_transaction'] == 'Расход':
+            if data_dict['type_transaction'] == 'Расход':
                 bot.register_next_step_handler(message, transaction_commission_sum)
             else:
                 bot.register_next_step_handler(message, finally_transaction_create_step)
@@ -448,9 +474,10 @@ def transaction_sum(message):
 
 def transaction_commission_sum(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
@@ -458,7 +485,13 @@ def transaction_commission_sum(message):
     else:
         try:
             decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
-            data[message.chat.id]['transaction_sum_post'] = message.text
+            req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+            data_dict = req.get('json_create_transaction')
+            user_id = req.get('id')
+            data_dict['transaction_sum_post'] = message.text
+            requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                           data={'json_create_transaction': json.dumps(data_dict)})
+
             bot.send_message(message.chat.id, text="Комиссия, введите 0, если комиссии нет: ")
             bot.register_next_step_handler(message, finally_transaction_create_step)
         except:
@@ -468,27 +501,50 @@ def transaction_commission_sum(message):
 
 def finally_transaction_create_step(message):
     try:
-        data.get(message.chat.id)
+        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
     except:
         incoming_message(message)
+
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
         send_break_create(message)
     else:
+        req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+        data_dict = req.get('json_create_transaction')
+        user_id = req.get('id')
         try:
-            if data[message.chat.id]['type_transaction'] == 'Расход':
+            if data_dict['type_transaction'] == 'Расход':
                 decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
-                data[message.chat.id]['commission_post'] = message.text
+                data_dict['commission_post'] = message.text
             else:
                 decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
-                data[message.chat.id]['transaction_sum_post'] = message.text
+                data_dict['transaction_sum_post'] = message.text
 
-            data[message.chat.id]['transaction_status'] = 'Успешно'
+            data_dict['transaction_status'] = 'Успешно'
             buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
             button1 = types.KeyboardButton('Создать транзакцию')
             buttons.add(button1)
-            requests.post(f'{PROD_DOMAIN}/api-v1/transactions_view/', data.get(message.chat.id))
+            w = requests.post('http://127.0.0.1:8000/api-v1/transactions_view/', data=data_dict)
+
+            data_dict = {
+                "transaction_name": "",
+                "type_transaction": "",
+                "type_payment": "",
+                "sub_type": "",
+                "balance_holder": "",
+                "transaction_date": "",
+                "transaction_sum_post": "",
+                "commission_post": "",
+                "transaction_status": "",
+                "tags": "",
+                "author_id": "",
+                "check_img": ""
+            }
+
+            requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                           data={'json_create_transaction': json.dumps(data_dict)})
+
             bot.send_message(
                 message.chat.id,
                 text="Транзакция успешно создана! Нажмите 'Создать транзакцию' для добавления новой",
@@ -496,7 +552,7 @@ def finally_transaction_create_step(message):
             )
             bot.register_next_step_handler(message, listen_messages)
         except:
-            if data[message.chat.id]['type_transaction'] == 'Расход':
+            if data_dict['type_transaction'] == 'Расход':
                 bot.send_message(message.chat.id, text="Комиссия, введите 0, если комиссии нет: ")
                 bot.register_next_step_handler(message, finally_transaction_create_step)
             else:
