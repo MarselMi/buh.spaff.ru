@@ -138,17 +138,17 @@ def send_break_create(message):
 
 @bot.message_handler(content_types=["text"])
 def listen_messages(message):
-    try:
-        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
-    except:
-        incoming_message(message)
-
     if message.text == '/h' or message.text == '/help':
         send_welcome(message)
     elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
         send_break_create(message)
     else:
         if message.text.lower() == 'создать транзакцию':
+            try:
+                json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
+            except:
+                incoming_message(message)
+
             button = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
             miss_b = types.KeyboardButton('Пропустить')
             button.add(miss_b)
