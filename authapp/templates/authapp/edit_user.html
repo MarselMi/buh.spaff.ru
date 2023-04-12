@@ -34,32 +34,6 @@
 
 							<div class="row">
 
-								<label>Доступные балансодержатели</label>
-
-								{% if user_edit.is_superuser %}
-									{% for holder in balance_holders %}
-									<div class="col-12 col-sm-3 mb-3">
-										<label for="{{ holder.pk }}">{{ holder }}</label>
-										<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}" checked/>
-									</div>
-									{% endfor %}
-								{% else %}
-									{% for holder in balance_holders %}
-									<div class="col-12 col-sm-3 mb-3">
-										<label for="{{ holder.pk }}">{{ holder }}</label>
-
-										{% if holder.pk in bal_hol %}
-											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}" checked/>
-										{% else %}
-											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}"/>
-										{% endif %}
-									</div>
-									{% endfor %}
-								{% endif %}
-							</div>
-
-							<div class="row">
-
 								<div class="col-12 col-sm-3 mb-3">
 									{% if user_edit.is_staff %}
 										<input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" checked/>
@@ -81,7 +55,27 @@
 									{% endif %}
 									<label for="is_superuser">Суперпользователь</label>
 								</div>
+							</div>
 
+							<div class="row">
+
+								<label class="mb-3 mt-3">Доступные балансодержатели: </label>
+
+								{% if user_edit.is_superuser %}
+									<strong class="mb-2 mt-2">Доступны все</strong>
+								{% else %}
+									{% for holder in balance_holders %}
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="{{ holder.pk }}">{{ holder }}</label>
+
+										{% if holder.pk in bal_hol %}
+											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}" checked/>
+										{% else %}
+											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}"/>
+										{% endif %}
+									</div>
+									{% endfor %}
+								{% endif %}
 							</div>
 
 							<div class="row">

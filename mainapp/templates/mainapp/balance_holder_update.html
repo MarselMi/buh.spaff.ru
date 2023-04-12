@@ -59,15 +59,44 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="alias_holder">Псевдоним</label>
+									<label for="alias_holder">Псевдоним реквезита</label>
 									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" value="{{ holder.alias_holder }}"/>
 								</div>
+								{% if user.is_superuser %}
+									{% if holder.hidden_status %}
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="hide_holder">Скрыть балансодержателя</label><br>
+											<input class="form-check-input" type="checkbox" name="hide_holder" id="hide_holder" checked/>
+										</div>
+									{% else %}
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="hide_holder">Скрыть балансодержателя</label><br>
+											<input class="form-check-input" type="checkbox" name="hide_holder" id="hide_holder"/>
+										</div>
+									{% endif %}
 
+									<div class="superusers_list col-12 col-sm-3 mb-3" {% if holder.hidden_status %}{% else %} hidden {% endif %}>
+										<span data-bs-toggle="tooltip" data-bs-title="Для выбора нескольких зажмите Ctrl">
+											<label for="superuser_available">Открыть доступ для:</label>
+										</span>
+										<select class="form-select" aria-label="multiple select example" name="superuser_available" id="superuser_available" multiple>
+											{% for user_select in users %}
+												{% if user_select.id != request.user.id %}
+													{% if user_select in holder.available_superuser.all %}
+														<option selected value="{{ user_select.id }}">{{ user_select.username }}</option>
+													{% else %}
+														<option value="{{ user_select.id }}">{{ user_select.username }}</option>
+													{% endif %}
+												{% endif %}
+											{% endfor %}
+										</select>
+									</div>
+								{% endif %}
 							</div>
 
 							<div class="row">
 
-								<button class="btn btn-primary create_holder" type="submit" disabled>
+								<button class="btn btn-primary create_holder" type="submit">
 									Сохранить
 								</button> <!-- /btn -->
 
@@ -94,6 +123,15 @@
 	}
 
 	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+	$('#hide_holder').on('change', function(){
+		if($('#hide_holder').is(':checked')){
+			$('.superusers_list').removeAttr('hidden');
+		}else{
+			$('.superusers_list').attr('hidden', 'true');
+			$('#superuser_available').val('');
+		}
+	})
 
 	$('#holder_balance').on('input change', function(){
 		if($('#holder_balance').val()){

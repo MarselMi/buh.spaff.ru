@@ -45,7 +45,29 @@
 									<label for="alias_holder">Псевдоним реквезита</label>
 									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" placeholder="Tinkoff"/>
 								</div>
+								{% if user.is_superuser %}
+									<div class="hide_holder_div col-12 col-sm-3 mb-3" hidden>
+										<label for="hide_holder">Скрыть балансодержателя</label><br>
+										<input class="form-check-input" type="checkbox" name="hide_holder" id="hide_holder"/>
+									</div>
 
+									<div class="superusers_list col-12 col-sm-3 mb-3" hidden>
+										<span data-bs-toggle="tooltip" data-bs-title="Для выбора нескольких зажмите Ctrl">
+											<label for="superuser_available">Открыть доступ для:</label>
+										</span>
+										<select class="form-select" aria-label="multiple select example" name="superuser_available" id="superuser_available" multiple>
+											{% for user_select in users %}
+												{% if user_select.id != request.user.id %}
+													{% if user_select in holder.available_superuser.all %}
+														<option selected value="{{ user_select.id }}">{{ user_select.username }}</option>
+													{% else %}
+														<option value="{{ user_select.id }}">{{ user_select.username }}</option>
+													{% endif %}
+												{% endif %}
+											{% endfor %}
+										</select>
+									</div>
+								{% endif %}
 							</div>
 
 							<div id="accordionStatsDaysFilter">
@@ -89,15 +111,24 @@
 
 	var url = document.location.href;
 	var a = document.cookie.split(';');
-	var token = ''
+	var token = '';
 
 	for (i = 0; i < a.length; i++) {
-		var b = a[i].split('=')
-		b[0] = b[0].replace(/\s+/g, '')
+		var b = a[i].split('=');
+		b[0] = b[0].replace(/\s+/g, '');
 		if (b[0] == 'csrftoken') {
-		token = b[1]
+			token = b[1]
 		}
-	}
+	};
+
+	$('#hide_holder').on('change', function(){
+		if($('#hide_holder').is(':checked')){
+			$('.superusers_list').removeAttr('hidden');
+		}else{
+			$('.superusers_list').attr('hidden', 'true');
+			$('#superuser_available').val('');
+		}
+	});
 
 	document.querySelector('#payment_account').addEventListener('input', function(){
 		const len = this.value.replace(/\s+/g, '').length
@@ -115,17 +146,17 @@
 	$('#holder_balance').on('input change', function(){
 		if($('#holder_balance').val()){
 			if (regEx.test($('#holder_balance').val())){
-				$('#holder_balance').addClass('is-invalid')
+				$('#holder_balance').addClass('is-invalid');
 			}else{
-				$('#holder_balance').removeClass('is-invalid')
+				$('#holder_balance').removeClass('is-invalid');
 			}
 		}else{
-			$('#holder_balance').removeClass('is-invalid')
+			$('#holder_balance').removeClass('is-invalid');
 		}
-	})
+	});
 
 	$('#payment_account').on('input change', function(){
-		var paccount = $('#payment_account').val().replace(/\s+/g, '')
+		var paccount = $('#payment_account').val().replace(/\s+/g, '');
 		if (paccount){
 			if (regEx.test(paccount) || ((paccount.length > 20)) || ((paccount.length < 16))){
 				$('#payment_account').addClass('is-invalid');
@@ -135,7 +166,7 @@
 				$('#payment_account').addClass('is-valid');
 			}
 		}
-	})
+	});
 
 	$('#organization_holder').on('input', function(){
 		$(".error").remove();
@@ -165,39 +196,40 @@
 				var x = 1;
 			}
 		)
-	})
+	});
 
 	$('#holder_type').on('change', function(){
 		if($('#holder_type').val()){
-			$('#holder_type').removeClass('is-invalid')
+			$('#holder_type').removeClass('is-invalid');
 			if ($('#holder_type').val() == "PRIVATE_PERSONE"){
-				$('#label_organisation').text('ФИО держателя')
-				$('#organization_holder').attr('placeholder', 'Иванов Иван Иванович')
+				$('#label_organisation').text('ФИО держателя');
+				$('#organization_holder').attr('placeholder', 'Иванов Иван Иванович');
 			}else if ($('#holder_type').val() == "ORGANISATION"){
-				$('#label_organisation').text('Наименование организации')
-				$('#organization_holder').attr('placeholder', 'OOO "Наименование"')
+				$('#label_organisation').text('Наименование организации');
+				$('#organization_holder').attr('placeholder', 'OOO "Наименование"');
 			}
 		}else{
-			$('#holder_type').addClass('is-invalid')
+			$('#holder_type').addClass('is-invalid');
 		}
-	})
+	});
 
 	$('#account_type').on('change', function(){
 		if($('#account_type').val()){
-			$('.payment_account_div').removeAttr('hidden')
-			$('.alias_holder_div').removeAttr('hidden')
-			$('#account_type').removeClass('is-invalid')
+			$('.payment_account_div').removeAttr('hidden');
+			$('.alias_holder_div').removeAttr('hidden');
+			$('#account_type').removeClass('is-invalid');
+			$('.hide_holder_div').removeAttr('hidden');
 			if ($('#account_type').val() == "CARD"){
-				$('#label_payment_account').text('Номер карты')
-				$('#payment_account').attr('placeholder', '**** **** **** ****')
+				$('#label_payment_account').text('Номер карты');
+				$('#payment_account').attr('placeholder', '**** **** **** ****');
 			}else if ($('#account_type').val() == "SCORE"){
-				$('#label_payment_account').text('Номер расчетного счета')
-				$('#payment_account').attr('placeholder', '**** **** **** **** ****')
+				$('#label_payment_account').text('Номер расчетного счета');
+				$('#payment_account').attr('placeholder', '**** **** **** **** ****');
 			}
 		}else{
-			$('#holder_type').addClass('is-invalid')
+			$('#holder_type').addClass('is-invalid');
 		}
-	})
+	});
 
 	// $('form').on('change keyup input click focusot live', function(){
 		

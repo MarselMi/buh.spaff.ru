@@ -596,6 +596,7 @@ def balance_holders_views(request):
 def balance_holder_create_view(request):
 
     form_class = BalanceHolderForm
+    users = CustomUser.objects.all()
 
     if request.method == 'POST':
 
@@ -619,14 +620,30 @@ def balance_holder_create_view(request):
         if request.POST.get('holder_balance'):
             holder_balance = decimal.Decimal(request.POST.get('holder_balance').replace(',', '.').replace(' ', ''))
 
+        superusers_available = request.POST.getlist('superuser_available')
+        if superusers_available:
+            for i in range(len(superusers_available)):
+                superusers_available[i] = int(superusers_available[i])
+        hide_holder = False
+        if request.POST.get('hide_holder'):
+            hide_holder = True
+
         new_balance_holder = BalanceHolder.objects.create(
             holder_type=holder_type,
             account_type=account_type,
             organization_holder=organization_holder,
             payment_account=payment_account,
             alias_holder=alias_holder,
-            holder_balance=holder_balance
+            holder_balance=holder_balance,
+            hidden_status=hide_holder
         )
+
+        new_balance_holder.available_superuser.set(superusers_available)
+        new_balance_holder.save()
+
+        if hide_holder:
+            new_balance_holder.available_superuser.add(request.user.id)
+            new_balance_holder.save()
 
         if request.user.is_superuser:
             pass
@@ -635,18 +652,18 @@ def balance_holder_create_view(request):
 
         return redirect('balance_holders')
 
-    data = {'title': 'Создание балансодержателя', 'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'},
-            'form': form_class}
+    data = {'title': 'Создание балансодержателя', 'form': form_class, 'users': users,
+            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}}
 
     return render(request, 'mainapp/balance_holder_create.html', data)
 
 
 def balance_holder_update_view(request, pk):
 
+    users = CustomUser.objects.all()
     update_balance_holder = BalanceHolder.objects.filter(pk=pk)
 
     if request.method == 'POST':
-
         if request.POST.get('type') == 'check_holder':
             organization_holder = request.POST.get('organization_holder')
             if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
@@ -670,18 +687,34 @@ def balance_holder_update_view(request, pk):
         if request.POST.get('alias_holder'):
             alias_holder = request.POST.get('alias_holder')
 
+        superusers_available = request.POST.getlist('superuser_available')
+        if superusers_available:
+            for i in range(len(superusers_available)):
+                superusers_available[i] = int(superusers_available[i])
+        hide_holder = False
+        if request.POST.get('hide_holder'):
+            hide_holder = True
+
+        update_balance_holder[0].available_superuser.set(superusers_available)
+        update_balance_holder[0].save()
+
+        if hide_holder:
+            update_balance_holder[0].available_superuser.add(request.user.id)
+            update_balance_holder[0].save()
+
         update_balance_holder.update(
             holder_type=holder_type,
             account_type=account_type,
             organization_holder=organization_holder,
             payment_account=payment_account,
             alias_holder=alias_holder,
+            hidden_status=hide_holder
         )
 
         return redirect('balance_holders')
 
-    data = {'title': 'Редактирование балансодержателя', 'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'},
-            'holder': update_balance_holder[0]}
+    data = {'title': 'Редактирование балансодержателя', 'users': users, 'holder': update_balance_holder[0],
+            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}}
 
     return render(request, 'mainapp/balance_holder_update.html', data)
 

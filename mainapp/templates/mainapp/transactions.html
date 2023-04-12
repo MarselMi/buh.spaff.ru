@@ -223,8 +223,9 @@
 											</td>
 											<td>
 												{% if object.sub_type_pay_id %}
+													{{ object.type_payment }} &ensp;
 													<span data-bs-toggle="tooltip" data-bs-title="Подкатегория: {{ object.sub_type_pay_id|sub_pay_type_decode_for_tr }}">
-														{{ object.type_payment }}
+														<i class="fa-regular fa-info"></i>
 													</span>
 												{% else %}
 													{{ object.type_payment }}
