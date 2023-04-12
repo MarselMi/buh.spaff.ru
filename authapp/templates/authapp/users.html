@@ -35,12 +35,9 @@
 											<td>
 												{{ object.id }}
 												{% if user.is_superuser %}
-													{% if object.is_superuser %}
-													{% else %}
-														<a href="{% url 'edit_user' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
-															<i class="fa-regular fa-pen-to-square"></i>
-														</a>
-													{% endif %}
+													<a href="{% url 'edit_user' object.id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+														<i class="fa-regular fa-pen-to-square"></i>
+													</a>
 												{% endif %}
 											</td>
 											<td>{{ object.username }}</td>

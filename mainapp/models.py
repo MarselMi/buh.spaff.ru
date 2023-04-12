@@ -63,6 +63,7 @@ class BalanceHolder(models.Model):
                                          verbose_name='Баланс Держателя')
     payment_account = models.CharField(max_length=20, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
+    available_superuser = models.ManyToManyField('CustomUser')
 
     def __str__(self):
         return f'{self.organization_holder}'

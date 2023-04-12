@@ -112,6 +112,7 @@ def incoming_message(message):
 Данные команды прервут создание транзакции.
 
 Дата вводится в формате: "dd/mm/YYYY" либо "dd-mm-YYYY" либо "dd.mm.YYYY"
+Для удобства можете ввести дату без разделения символоми, пример: ddmmYYYY
                 '''
                 bot.send_message(message.chat.id, text=text, reply_markup=buttons)
             except:
@@ -138,6 +139,7 @@ def send_welcome(message):
 Данные команды прервут создание транзакции.
 
 Дата вводится в формате: "dd/mm/YYYY" либо "dd-mm-YYYY" либо "dd.mm.YYYY"
+Для удобства можете ввести дату без разделения символоми, пример: ddmmYYYY
 '''
         bot.send_message(message.chat.id, text=text, reply_markup=buttons)
     except:
@@ -475,6 +477,9 @@ def transaction_sum(message):
         else:
             try:
                 date_com = message.text.replace('-', '.').replace('/', '.')
+                if len(message.text) == 8:
+                    a = message.text
+                    date_com = f'{a[:2]}.{a[1:3]}.{a[-4:]}'
                 datetime.datetime.strptime(date_com, '%d.%m.%Y').date()
                 req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
                 data_dict = req.get('json_create_transaction')
