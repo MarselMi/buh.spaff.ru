@@ -583,12 +583,6 @@ def transaction_update_view(request, pk):
     return render(request, 'mainapp/transaction_edit.html', data)
 
 
-def transactions_log_view(request):
-    transactions_log = TransactionLog.objects.all()[::-1]
-    data = {'title': 'Логи транзакций', 'transactions_log': transactions_log}
-    return render(request, 'mainapp/transactions_log.html', data)
-
-
 def balance_holders_views(request):
     if request.user.is_superuser:
         holders = get_allow_balance_holders(request.user.id, simple_user=False)
@@ -696,7 +690,7 @@ def payment_type_view(request):
     pay_type = PayType.objects.all().order_by('-id')
     sub_pay_types = SubPayType.objects.all()
     if request.method == 'POST':
-        '''Проверка наличия подтипа платежа для избегания дублирования'''
+        '''Проверка дублирования подтипа платежа при создании '''
         if request.POST.get('type') == 'check_sub_pay_type':
             sub_type = request.POST.get('sub_type_payment')
             if SubPayType.objects.filter(sub_type=sub_type).exists():
@@ -710,14 +704,14 @@ def payment_type_view(request):
             sub_pay.objects.create(sub_type=sub_type)
             return JsonResponse({'status': 'ok'})
 
-        '''Проверка наличия типа платежа во избежания дублирования'''
+        '''Проверка дублирования типа платежа при создании '''
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
             if PayType.objects.filter(pay_type=pay_type).exists():
                 return JsonResponse({'message': False})
             else:
                 return JsonResponse({'message': True})
-        '''Создание типа платежа, с привязкой доп параметров при наличии'''
+        '''Создание типа платежа, с привязкой доп параметров при выборе'''
         if request.POST.get('type') == 'new_pay_type':
             pay_type = request.POST.get('type_payment')
 
@@ -739,14 +733,17 @@ def payment_type_view(request):
                 sub_params.append(i.id)
 
             return JsonResponse({'sub_params': sub_params})
-        '''Редактирование типа платежа и добавление подтипов'''
+        '''Редактирование типа платежа и добавление/удаление подтипов'''
         if request.POST.get('type') == 'add_sub_pay_type':
             pay_type = PayType.objects.filter(pay_type=request.POST.get('type_payment'))
 
             if request.POST.getlist('sub_type_payments[]'):
                 sub_type_pay = request.POST.getlist('sub_type_payments[]')
-                for i in sub_type_pay:
-                    pay_type[0].subtypes_of_the_type.add(int(i))
+                for i in range(len(sub_type_pay)):
+                    sub_type_pay[i] = int(sub_type_pay[i])
+                pay_type[0].subtypes_of_the_type.set(sub_type_pay)
+            else:
+                pay_type[0].subtypes_of_the_type.set([])
 
             pay_type[0].save()
             return JsonResponse({'status': 'ok'})
@@ -831,6 +828,12 @@ def additional_transaction_data_create_view(request):
             }
 
     return render(request, 'mainapp/additional_data_transaction_create.html', data)
+
+
+def transactions_log_view(request):
+    transactions_log = TransactionLog.objects.all()[::-1]
+    data = {'title': 'Логи транзакций', 'transactions_log': transactions_log}
+    return render(request, 'mainapp/transactions_log.html', data)
 
 
 def lock_page(request):
