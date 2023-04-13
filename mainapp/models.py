@@ -64,7 +64,7 @@ class BalanceHolder(models.Model):
     payment_account = models.CharField(max_length=20, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
     available_superuser = models.ManyToManyField('CustomUser')
-    hidden_status = models.BooleanField(blank=True, null=True, default=None)
+    hidden_status = models.BooleanField(blank=True, null=True, default=False)
 
     def __str__(self):
         return f'{self.organization_holder}'

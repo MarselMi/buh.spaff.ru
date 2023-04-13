@@ -148,7 +148,7 @@ def get_allow_balance_holders(pk, simple_user=True):
     try:
         if simple_user:
             add_request = f'''
-            WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+            AND `mb`.`id` IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
             '''
         else:
             add_request = ''
@@ -160,8 +160,12 @@ def get_allow_balance_holders(pk, simple_user=True):
                         `mb`.`organization_holder`,
                         `mb`.`alias_holder`,
                         `mb`.`holder_balance`,
-                        `mb`.`payment_account`
+                        `mb`.`payment_account`,
+                        `mb`.`account_type`,
+                        `mb`.`hidden_status`
                     FROM `mainapp_balanceholder` mb
+                    WHERE 
+                        IF(`mb`.`hidden_status` = 1, `mb`.`hidden_status` = 1 AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
                     {add_request}
                     ORDER BY `mb`.`id` DESC
                     '''
@@ -256,24 +260,24 @@ def get_allow_additional_transactions(pk):
     try:
         with conn.cursor() as cursor:
             response = f'''
-                    SELECT 
+                    SELECT
                         CONCAT(`mat`.`transaction_id_id`,': ',`mt`.`name`) as name,
                         `mat`.`notes` 
-                    FROM 
+                    FROM
                         `mainapp_additionaldatatransaction` mat
-                    JOIN 
+                    JOIN
                         `mainapp_transaction` mt
-                    ON 
+                    ON
                         `mt`.`id`=`mat`.`transaction_id_id`
-                    JOIN 
-                        `mainapp_balanceholder` mb 
-                    ON 
-                        `mb`.`id`=`mt`.`balance_holder_id` 
-                    JOIN 
-                        `mainapp_customuser_available_holders` mcah 
-                    ON 
+                    JOIN
+                        `mainapp_balanceholder` mb
+                    ON
+                        `mb`.`id`=`mt`.`balance_holder_id`
+                    JOIN
+                        `mainapp_customuser_available_holders` mcah
+                    ON
                         `mcah`.`balanceholder_id`=`mb`.`id`
-                    WHERE 	
+                    WHERE
                         `mcah`.`customuser_id`={pk}
                     '''
             cursor.execute(response)
@@ -413,7 +417,7 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None):
     return response
 
 
-def get_balance_holders():
+def get_users_information():
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -432,14 +436,8 @@ def get_balance_holders():
                 `cu`.`is_staff`, 
                 `cu`.`is_superuser`, 
                 (SELECT GROUP_CONCAT(`bh`.`organization_holder`) FROM `mainapp_balanceholder` bh 
-                WHERE `bh`.`id` 
-                IN 
-                (SELECT `ah`.`balanceholder_id` 
-                    FROM 
-                    `mainapp_customuser_available_holders` ah 
-                    WHERE 
-                    `ah`.`customuser_id` = `cu`.`id`)
-                ) AS 'balanceholder_id' 
+                WHERE `bh`.`id` IN (SELECT `ah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` ah 
+                                    WHERE `ah`.`customuser_id` = `cu`.`id`) AND (`bh`.`hidden_status` = 0)) AS 'balanceholder_id' 
             FROM `mainapp_customuser` cu
             '''
             cursor.execute(response)
@@ -461,18 +459,31 @@ def get_holders_user(pk):
     try:
         with conn.cursor() as cursor:
             response = f'''
-                SELECT `ah`.`balanceholder_id` 
-                FROM 
-                `mainapp_customuser_available_holders` ah
-                WHERE 
-                `ah`.`customuser_id`={pk}
-                '''
+                SELECT `ah`.`balanceholder_id`
+                FROM `mainapp_customuser_available_holders` ah
+                WHERE `ah`.`customuser_id`={pk}
+            '''
             cursor.execute(response)
             response = cursor.fetchall()
     finally:
         conn.close()
 
     return response
+
+
+'''
+SELECT
+    `mb`.`id`,
+    `mb`.`organization_holder`,
+    `mb`.`alias_holder`,
+    `mb`.`holder_balance`,
+    `mb`.`payment_account`,
+    `mb`.`hidden_status`
+FROM `mainapp_balanceholder` mb
+WHERE 
+    IF(`mb`.`hidden_status` = 1, `mb`.`hidden_status` = 1 AND (1 IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+ORDER BY `mb`.`id` DESC
+'''
 
 
 # def get_coming_sum(pk):

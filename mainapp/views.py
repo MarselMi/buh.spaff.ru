@@ -21,12 +21,16 @@ def main_page_view(request):
     expenditure_sum = ''
     all_coming = 0
     all_expenditure = 0
+    # if request.user.is_superuser:
+    #
+    # else:
+    #     holders = get_allow_balance_holders(request.user.id, simple_user=True)
     if request.user.is_superuser:
-        holders = BalanceHolder.objects.filter(deleted=False)
+        holders = get_allow_balance_holders(request.user.id, simple_user=False)
         comming_sum = get_all_coming_transactions_sum(request.user.id, simpleuser=False)
         expenditure_sum = get_all_expenditure_transactions_sum(request.user.id, simpleuser=False)
     else:
-        holders = get_allow_balance_holders(request.user.id)
+        holders = get_allow_balance_holders(request.user.id, simple_user=True)
         comming_sum = get_all_coming_transactions_sum(request.user.id, simpleuser=True)
         expenditure_sum = get_all_expenditure_transactions_sum(request.user.id, simpleuser=True)
 
@@ -589,6 +593,11 @@ def balance_holders_views(request):
     else:
         holders = get_allow_balance_holders(request.user.id, simple_user=True)
 
+    for hol in holders:
+        if hol.get('hidden_status'):
+            bal_hold = BalanceHolder.objects.filter(pk=hol.get('id'))[0].available_superuser.all()
+            hol.setdefault('available_users', bal_hold)
+
     data = {'title': 'Балансодержатели', 'holders': holders}
     return render(request, 'mainapp/balance_holders.html', data)
 
@@ -624,6 +633,7 @@ def balance_holder_create_view(request):
         if superusers_available:
             for i in range(len(superusers_available)):
                 superusers_available[i] = int(superusers_available[i])
+
         hide_holder = False
         if request.POST.get('hide_holder'):
             hide_holder = True
@@ -644,6 +654,11 @@ def balance_holder_create_view(request):
         if hide_holder:
             new_balance_holder.available_superuser.add(request.user.id)
             new_balance_holder.save()
+
+        if superusers_available:
+            for i in superusers_available:
+                available_user = CustomUser.objects.filter(pk=i)
+                available_user[0].available_holders.add(new_balance_holder.pk)
 
         if request.user.is_superuser:
             pass
@@ -691,6 +706,9 @@ def balance_holder_update_view(request, pk):
         if superusers_available:
             for i in range(len(superusers_available)):
                 superusers_available[i] = int(superusers_available[i])
+                available_user = CustomUser.objects.filter(pk=int(superusers_available[i]))
+                available_user[0].available_holders.add(pk)
+
         hide_holder = False
         if request.POST.get('hide_holder'):
             hide_holder = True

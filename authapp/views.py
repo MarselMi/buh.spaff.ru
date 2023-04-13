@@ -3,18 +3,16 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
 from authapp.forms import LoginUserForm
 from django.contrib import messages
-from mainapp.data_library import get_balance_holders, get_holders_user
+from mainapp.data_library import *
 from mainapp.models import CustomUser, BalanceHolder
 from django.contrib.auth.hashers import make_password
 
 
 def users_view(request):
 
-    all_users = get_balance_holders
+    all_users = get_users_information()
 
-
-    data = {'title': 'Пользователи',
-            'users': all_users}
+    data = {'title': 'Пользователи', 'users': all_users}
 
     return render(request, 'authapp/users.html', data)
 
@@ -94,12 +92,12 @@ def edit_user_view(request, pk):
 
     user_edit = CustomUser.objects.filter(pk=pk)
     bal_hol = get_holders_user(pk)
-
+    print(bal_hol)
     bal_hol_id_list = []
     for holder_id in bal_hol:
         bal_hol_id_list.append(holder_id['balanceholder_id'])
 
-    balance_holders = BalanceHolder.objects.all()
+    balance_holders = get_allow_balance_holders(request.user.id, simple_user=False)
 
     if request.method == 'POST':
 
@@ -126,9 +124,13 @@ def edit_user_view(request, pk):
 
         holders_id = []
         all_holders = BalanceHolder.objects.all()
-        for holder_id in all_holders:
-            if str(holder_id.pk) in request.POST:
-                holders_id.append(holder_id.pk)
+        for hol in all_holders:
+            bal_holder = BalanceHolder.objects.filter(pk=hol.pk)
+            if str(hol.pk) in request.POST:
+                holders_id.append(hol.pk)
+                bal_holder[0].available_superuser.add(pk)
+            else:
+                bal_holder[0].available_superuser.remove(pk)
 
         is_staff = request.POST.get('is_staff')
         if is_staff:

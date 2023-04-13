@@ -33,6 +33,11 @@
 													<div class="d-flex justify-content-between">
 														<div class="d-flex justify-content-start">
 														{{ object.organization_holder }}
+															{% if object.hidden_status %}
+																<span data-bs-toggle="tooltip" data-bs-title="Имеют доступ: {% for obj in object.available_users %} {{ obj }} {% endfor %}">
+																	 &emsp; <i class="fa-regular fa-info"></i> <i>Скрытый</i>
+																</span>
+															{% endif %}
 														</div>
 													{% if user.is_superuser %}
 														<div class="d-flex justify-content-end">

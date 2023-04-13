@@ -66,12 +66,12 @@
 								{% else %}
 									{% for holder in balance_holders %}
 									<div class="col-12 col-sm-3 mb-3">
-										<label for="{{ holder.pk }}">{{ holder }}</label>
+										<label for="{{ holder.id }}">{{ holder.organization_holder }}</label>
 
-										{% if holder.pk in bal_hol %}
-											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}" checked/>
+										{% if holder.id in bal_hol %}
+											<input class="form-check-input" type="checkbox" name="{{ holder.id }}" id="{{ holder.id }}" checked/>
 										{% else %}
-											<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}"/>
+											<input class="form-check-input" type="checkbox" name="{{ holder.id }}" id="{{ holder.id }}"/>
 										{% endif %}
 									</div>
 									{% endfor %}
