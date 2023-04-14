@@ -156,6 +156,7 @@ class AdditionalDataTransaction(models.Model):
 class TransactionLog(models.Model):
 
     transaction_id = models.IntegerField(verbose_name='ID транзакции')
+    transaction_name = models.TextField(blank=True, null=True, verbose_name='Имя транзакции')
     changed = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
     author_references = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
                                           related_name='transactionlog_customuser', verbose_name='Автор изменения')
@@ -167,6 +168,7 @@ class TransactionLog(models.Model):
     type_payment = models.CharField(max_length=50, blank=True, null=True, verbose_name='Тип платежа до/после')
     sub_type_pay = models.CharField(max_length=50, blank=True, null=True, verbose_name='Подтип платежа до/после')
     check_img = models.TextField(blank=True, null=True, verbose_name='Чеки транз до/после')
+    balance_holder = models.TextField(blank=True, null=True, verbose_name='Балансодержатель')
 
     class Meta:
         verbose_name = 'Внесенные изменения'

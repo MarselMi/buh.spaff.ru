@@ -365,6 +365,29 @@ def get_holders_user(pk):
     return response
 
 
+def get_allow_transactions_log(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                SELECT *
+                FROM `mainapp_transactionlog` tl
+                WHERE `ah`.`customuser_id`={pk}
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
 # Нужно поработать с этими запросами
 def get_allow_additional_transactions(pk):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),

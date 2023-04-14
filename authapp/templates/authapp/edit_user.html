@@ -59,10 +59,7 @@
 							<div class="border-top mt-4 mb-4"></div>
 							<div class="row">
 
-								<label class="mb-3 mt-3 user_role">Доступные балансодержатели: </label>
-
-								
-									<strong class="mb-2 mt-2 superuser_select"{% if user_edit.is_superuser %}{% else %} hidden{% endif %}>Доступны все</strong>
+								<label class="mb-3 mt-3 user_role">Доступные балансодержатели: <strong class="mb-2 mt-2 superuser_select"{% if user_edit.is_superuser %}{% else %} hidden{% endif %}>Доступны все</strong></label>
 									
 									{% for holder in balance_holders %}
 									<div class="col-12 col-sm-3 mb-3 staff_user"{% if user_edit.is_superuser %} hidden{% else %}{% endif %}>

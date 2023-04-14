@@ -549,11 +549,16 @@ def transaction_update_view(request, pk):
                                 'amount': amount, 'type_payment': type_payment, 'check_img': check_img,
                                 'tags': tags, 'description': description, 'sub_type_pay': sub_type}
 
-        changes = {'transaction_id': pk, 'author_references': request.user}
-
         id_balance_holder = transaction[0].balance_holder.id
         balance_hodler = BalanceHolder.objects.filter(pk=id_balance_holder)
         old_balance_balance_holder = balance_hodler.values('holder_balance')[0]['holder_balance']
+
+        changes = {
+            'transaction_id': pk,
+            'author_references': request.user,
+            'transaction_name': transaction[0].name,
+            'balance_holder': balance_hodler[0].organization_holder
+        }
 
         for k in old_transaction[0]:
             check = new_transaction_data[k] == old_transaction[0][k]
@@ -569,7 +574,7 @@ def transaction_update_view(request, pk):
             dates = f'{date1}/{date2}'
             changes['transaction_date'] = dates
 
-        if len(changes.values()) > 2:
+        if len(changes.values()) > 4:
             TransactionLog.objects.create(**changes)
 
         transaction.update(update_date=dt.now())
@@ -895,8 +900,48 @@ def additional_transaction_data_create_view(request):
 
 
 def transactions_log_view(request):
+
+    limit = request.session.get("limit_transaction_logs")
+    if not limit:
+        request.session["limit_transaction_logs"] = 25
+    try:
+        page = int(request.GET.get('page'))
+    except:
+        page = None
+    if not page:
+        page = 1
+
+    if request.method == "POST":
+        '''Для установки лимита вывода информации'''
+        if request.POST.get('type') == 'limit25':
+            request.session["limit_transaction_logs"] = 25
+            return HttpResponse({'status': 'OK'})
+        if request.POST.get('type') == 'limit50':
+            request.session["limit_transaction_logs"] = 50
+            return HttpResponse({'status': 'OK'})
+        if request.POST.get('type') == 'limit100':
+            request.session["limit_transaction_logs"] = 100
+            return HttpResponse({'status': 'OK'})
+
+    limit = request.session["limit_transaction_logs"]
+    if page == 1:
+        offset = None
+    elif page == 2:
+        offset = limit
+    else:
+        offset = limit * (page - 1)
+    request.session['offset_transaction_logs'] = offset
+
     transactions_log = TransactionLog.objects.all()[::-1]
-    data = {'title': 'Логи транзакций', 'transactions_log': transactions_log}
+
+    count = 0
+    original_count = 0
+
+    url_params = str(request).split('/')[-1].rstrip("'>").split('&page=')[0]
+
+    data = {'title': 'Логи транзакций', 'transactions_log': transactions_log,
+            'count': count, 'page': page, 'limit': limit, 'url_params': url_params,
+            'original_count': original_count}
     return render(request, 'mainapp/transactions_log.html', data)
 
 
