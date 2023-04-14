@@ -12,46 +12,6 @@ def numb_format(balance):
         return '{0:,}'.format(balance).replace(',', ' ').replace('.', ',')
 
 
-def get_all_holder_transactions(pk):
-
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-    try:
-        with conn.cursor() as cursor:
-            response = \
-                f'''
-                SELECT 
-                    `status`, 
-                    `create_date`, 
-                    `update_date`, 
-                    `type_transaction`, 
-                    `transaction_date`, 
-                    `name`, 
-                    `mainapp_balanceholder`.`organization_holder` AS `balance_holder_id`, 
-                    `amount`, 
-                    `mainapp_paytype`.`pay_type` AS `type_payment_id`, 
-                    CONCAT(`mainapp_customuser`.`last_name`,' ', `mainapp_customuser`.`first_name`) AS `author_id`, 
-                    `check_img`
-                FROM `mainapp_transaction` t  
-                JOIN `mainapp_balanceholder` ON (`mainapp_balanceholder`.`id` = `t`.`balance_holder_id`)
-                JOIN `mainapp_paytype` ON (`mainapp_paytype`.`id` = `t`.`type_payment_id`)
-                JOIN `mainapp_customuser` ON (`mainapp_customuser`.`id` = `t`.`author_id`)
-                WHERE 
-                `t`.`balance_holder_id`={pk} AND `t`.`status`="SUCCESSFULLY"
-            '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
-
-    return response
-
-
 def get_all_coming_transactions_sum(pk, simpleuser=None, holder=None):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
@@ -81,7 +41,12 @@ def get_all_coming_transactions_sum(pk, simpleuser=None, holder=None):
                 SUM(`amount`) as `coming`,
                 (SELECT `pt`.`pay_type` FROM `mainapp_paytype` pt WHERE `pt`.`id` = `t`.`type_payment_id`) as `type`
             FROM `mainapp_transaction` t 
-            WHERE 
+            JOIN 
+                `mainapp_balanceholder` mb
+            ON 
+                `t`.`balance_holder_id`=`mb`.`id`
+            WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+            AND 
                 `t`.`status`="SUCCESSFULLY" 
             AND 
                 `t`.`type_transaction`="COMING"
@@ -124,8 +89,15 @@ def get_all_expenditure_transactions_sum(pk, simpleuser=None, holder=None):
                 SELECT SUM(`amount`) as `expenditure`,
                 (SELECT `pt`.`pay_type` FROM `mainapp_paytype` pt WHERE `pt`.`id` = `t`.`type_payment_id`) as `type`
                 FROM `mainapp_transaction` t 
-                WHERE `t`.`status`="SUCCESSFULLY" 
-                AND `t`.`type_transaction`="EXPENDITURE"
+                JOIN 
+                    `mainapp_balanceholder` mb
+                ON 
+                    `t`.`balance_holder_id`=`mb`.`id`
+                WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+                AND 
+                    `t`.`status`="SUCCESSFULLY" 
+                AND 
+                    `t`.`type_transaction`="EXPENDITURE"
                 {allow_data_user}
                 GROUP BY `t`.`type_payment_id`
             '''
@@ -177,7 +149,7 @@ def get_allow_balance_holders(pk, simple_user=True):
     return response
 
 
-def get_allow_balance_holder_transactions(pk, superuser_role=False):
+def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit='', offset=None):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -185,34 +157,161 @@ def get_allow_balance_holder_transactions(pk, superuser_role=False):
                            port=int(settings.DATABASES.get('default').get('PORT')),
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
+    if limit:
+        limit = f'LIMIT {limit}'
+    if offset:
+        offset = f'OFFSET {offset}'
+    else:
+        offset = ''
+
+    filters = ''
+    if author_res is None and filter_data:
+        filters += ''
+
+    author_req = ''
+    if author_res:
+        author_req = f'''
+                        AND `mt`.`balance_holder_id` IN 
+                        (SELECT `mah`.`balanceholder_id` 
+                            FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk}
+                        )
+                    '''
+    if filter_data:
+        for key, val in filter_data.items():
+            if len(filters) == 5:
+                if key == 'amount_start':
+                    filters += f''' `mt`.`amount` >= '{val}' '''
+                elif key == 'amount_end':
+                    filters += f''' `mt`.`amount` <= '{val}' '''
+                elif key == 'start':
+                    filters += f''' `mt`.`transaction_date` >= '{val}' '''
+                elif key == 'end':
+                    filters += f''' `mt`.`transaction_date` <= '{val}' '''
+                elif key == 'tags':
+                    filters += f''' `mt`.`tags` LIKE '%{val}%' '''
+                else:
+                    filters += f''' `mt`.`{key}` = '{val}' '''
+            else:
+                if key == 'amount_start':
+                    filters += f''' AND `mt`.`amount` >= '{val}' '''
+                elif key == 'amount_end':
+                    filters += f''' AND `mt`.`amount` <= '{val}' '''
+                elif key == 'start':
+                    filters += f''' AND `mt`.`transaction_date` >= '{val}' '''
+                elif key == 'end':
+                    filters += f''' AND `mt`.`transaction_date` <= '{val}' '''
+                elif key == 'tags':
+                    filters += f''' AND `mt`.`tags` LIKE '%{val}%' '''
+                else:
+                    filters += f''' AND `mt`.`{key}` = '{val}' '''
+
     try:
-        if superuser_role:
-            with conn.cursor() as cursor:
-                response = f'''
-                        SELECT
-                            `mb`.`organization_holder`
-                        FROM `mainapp_balanceholder` mb
-                        WHERE `mb`.`deleted`=0
+        with conn.cursor() as cursor:
+            response = f'''
+                        SELECT 
+                            `mt`.`id`,
+                            `mt`.`balance_holder_id`,
+                            `mt`.`type_transaction`,
+                            `mt`.`transaction_date`,
+                            `mt`.`create_date`,
+                            `mt`.`update_date`,
+                            `mt`.`name`,
+                            (SELECT `mb`.`organization_holder` FROM `mainapp_balanceholder` mb WHERE `mt`.`balance_holder_id`=`mb`.`id`) as 'balance_holder',
+                            `mt`.`amount`,
+                            `mt`.`commission`,
+                            `mt`.`transaction_sum`,
+                            (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
+                            (SELECT `mu`.`username` FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
+                            `mt`.`sub_type_pay_id`,
+                            `mt`.`status`,
+                            `mt`.`check_img`                
+                        FROM `mainapp_transaction` mt
+                        JOIN 
+                            `mainapp_balanceholder` mb
+                        ON `mt`.`balance_holder_id`=`mb`.`id`
+                        WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+                        {author_req} {filters}
+                        ORDER BY `mt`.`id` DESC
+                        {limit}
+                        {offset}
                         '''
-                cursor.execute(response)
-                response = cursor.fetchall()
-        else:
-            with conn.cursor() as cursor:
-                response = f'''
-                        SELECT
-                            `mb`.`organization_holder`
-                        FROM `mainapp_balanceholder` mb
-                        WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
-                        '''
-                cursor.execute(response)
-                response = cursor.fetchall()
+            cursor.execute(response)
+            response = cursor.fetchall()
     finally:
         conn.close()
-
     return response
 
 
-def get_allow_transaction(pk):
+def get_count_allow_transaction_filter(pk, author_res=None, filter_data=None):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+
+    filters = ''
+    if author_res is None and filter_data:
+        filters += ''
+
+    author_req = ''
+    if author_res:
+        author_req = f'''
+                        AND `mt`.`balance_holder_id` IN 
+                        (SELECT `mah`.`balanceholder_id` 
+                            FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk}
+                        )
+                    '''
+    if filter_data:
+        for key, val in filter_data.items():
+            if len(filters) == 5:
+                if key == 'amount_start':
+                    filters += f''' `mt`.`amount` >= '{val}' '''
+                elif key == 'amount_end':
+                    filters += f''' `mt`.`amount` <= '{val}' '''
+                elif key == 'start':
+                    filters += f''' `mt`.`transaction_date` >= '{val}' '''
+                elif key == 'end':
+                    filters += f''' `mt`.`transaction_date` <= '{val}' '''
+                elif key == 'tags':
+                    filters += f''' `mt`.`tags` LIKE '%{val}%' '''
+                else:
+                    filters += f''' `mt`.`{key}` = '{val}' '''
+            else:
+                if key == 'amount_start':
+                    filters += f''' AND `mt`.`amount` >= '{val}' '''
+                elif key == 'amount_end':
+                    filters += f''' AND `mt`.`amount` <= '{val}' '''
+                elif key == 'start':
+                    filters += f''' AND `mt`.`transaction_date` >= '{val}' '''
+                elif key == 'end':
+                    filters += f''' AND `mt`.`transaction_date` <= '{val}' '''
+                elif key == 'tags':
+                    filters += f''' AND `mt`.`tags` LIKE '%{val}%' '''
+                else:
+                    filters += f''' AND `mt`.`{key}` = '{val}' '''
+
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                        SELECT 
+                            COUNT(`mt`.`id`)             
+                        FROM `mainapp_transaction` mt
+                        JOIN 
+                            `mainapp_balanceholder` mb
+                        ON `mt`.`balance_holder_id`=`mb`.`id`
+                        WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+                        {author_req} {filters}
+                        '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+    return response
+
+
+def get_users_information():
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -223,24 +322,18 @@ def get_allow_transaction(pk):
     try:
         with conn.cursor() as cursor:
             response = f'''
-                    SELECT 
-                        `mt`.`id`,
-                        `mt`.`balance_holder_id`,
-                        `mt`.`type_transaction`,
-                        `mt`.`transaction_date`,
-                        `mt`.`create_date`,
-                        `mt`.`update_date`,
-                        `mt`.`name`,
-                        (SELECT `mb`.`organization_holder` FROM `mainapp_balanceholder` mb WHERE `mt`.`balance_holder_id`=`mb`.`id`) as 'balance_holder',
-                        `mt`.`amount`,
-                        (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
-                        (SELECT CONCAT(`mu`.`first_name`, ' ', `mu`.`last_name`) FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
-                        `mt`.`status`,
-                        `mt`.`check_img`                
-                    FROM `mainapp_transaction` mt
-                    WHERE `mt`.`balance_holder_id` IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk})
-                    ORDER BY `mt`.`id` DESC
-                    '''
+            SELECT 
+                `cu`.`id`, 
+                `cu`.`username`, 
+                `cu`.`first_name`, 
+                `cu`.`last_name`, 
+                `cu`.`is_staff`, 
+                `cu`.`is_superuser`, 
+                (SELECT GROUP_CONCAT(`bh`.`organization_holder`) FROM `mainapp_balanceholder` bh 
+                WHERE `bh`.`id` IN (SELECT `ah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` ah 
+                                    WHERE `ah`.`customuser_id` = `cu`.`id`)) AS 'balanceholder_id' 
+            FROM `mainapp_customuser` cu
+            '''
             cursor.execute(response)
             response = cursor.fetchall()
     finally:
@@ -249,6 +342,30 @@ def get_allow_transaction(pk):
     return response
 
 
+def get_holders_user(pk):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                SELECT `ah`.`balanceholder_id`
+                FROM `mainapp_customuser_available_holders` ah
+                WHERE `ah`.`customuser_id`={pk}
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+# Нужно поработать с этими запросами
 def get_allow_additional_transactions(pk):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
@@ -312,165 +429,141 @@ def get_additional_transactions():
     return response
 
 
-def filtered_transactions():
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-    try:
-        with conn.cursor() as cursor:
-            response = f'''
-                    SELECT
-                        CONCAT(`mat`.`transaction_id_id`,': ', (SELECT `mt`.`name` FROM `mainapp_transaction` mt WHERE `mt`.`id`=`mat`.`transaction_id_id`)) as name,
-                        `mat`.`notes`
-                    FROM  `mainapp_additionaldatatransaction` mat
-                    '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
+# def filtered_transactions():
+#     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+#                            user=settings.DATABASES.get('default').get('USER'),
+#                            password=settings.DATABASES.get('default').get('PASSWORD'),
+#                            db=settings.DATABASES.get('default').get('NAME'),
+#                            port=int(settings.DATABASES.get('default').get('PORT')),
+#                            charset='utf8mb4',
+#                            cursorclass=pymysql.cursors.DictCursor)
+#     try:
+#         with conn.cursor() as cursor:
+#             response = f'''
+#                     SELECT
+#                         CONCAT(`mat`.`transaction_id_id`,': ', (SELECT `mt`.`name` FROM `mainapp_transaction` mt WHERE `mt`.`id`=`mat`.`transaction_id_id`)) as name,
+#                         `mat`.`notes`
+#                     FROM  `mainapp_additionaldatatransaction` mat
+#                     '''
+#             cursor.execute(response)
+#             response = cursor.fetchall()
+#     finally:
+#         conn.close()
+#
+#     return response
 
-    return response
-
-
-def get_allow_transaction_filter(pk, author_res=None, filter_data=None):
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-
-    filters = ''
-    if author_res is None and filter_data:
-        filters += 'WHERE'
-
-    author_req = ''
-    if author_res:
-        author_req = f'''
-                        WHERE `mt`.`balance_holder_id` IN 
-                        (SELECT `mah`.`balanceholder_id` 
-                            FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk}
-                        )
-                    '''
-    if filter_data:
-        for key, val in filter_data.items():
-            if len(filters) == 5:
-                if key == 'amount_start':
-                    filters += f''' `mt`.`amount` >= '{val}' '''
-                elif key == 'amount_end':
-                    filters += f''' `mt`.`amount` <= '{val}' '''
-                elif key == 'start':
-                    filters += f''' `mt`.`transaction_date` >= '{val}' '''
-                elif key == 'end':
-                    filters += f''' `mt`.`transaction_date` <= '{val}' '''
-                elif key == 'tags':
-                    filters += f''' `mt`.`tags` LIKE '%{val}%' '''
-                else:
-                    filters += f''' `mt`.`{key}` = '{val}' '''
-            else:
-                if key == 'amount_start':
-                    filters += f''' AND `mt`.`amount` => '{val}' '''
-                elif key == 'amount_end':
-                    filters += f''' AND `mt`.`amount` <= '{val}' '''
-                elif key == 'start':
-                    filters += f''' AND `mt`.`transaction_date` >= '{val}' '''
-                elif key == 'end':
-                    filters += f''' AND `mt`.`transaction_date` <= '{val}' '''
-                elif key == 'tags':
-                    filters += f''' AND `mt`.`tags` LIKE '%{val}%' '''
-                else:
-                    filters += f''' AND `mt`.`{key}` = '{val}' '''
-
-    try:
-        with conn.cursor() as cursor:
-            response = f'''
-                        SELECT 
-                            `mt`.`id`,
-                            `mt`.`balance_holder_id`,
-                            `mt`.`type_transaction`,
-                            `mt`.`transaction_date`,
-                            `mt`.`create_date`,
-                            `mt`.`update_date`,
-                            `mt`.`name`,
-                            (SELECT `mb`.`organization_holder` FROM `mainapp_balanceholder` mb WHERE `mt`.`balance_holder_id`=`mb`.`id`) as 'balance_holder',
-                            `mt`.`amount`,
-                            `mt`.`commission`,
-                            `mt`.`transaction_sum`,
-                            (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
-                            (SELECT `mu`.`username` FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
-                            `mt`.`sub_type_pay_id`,
-                            `mt`.`status`,
-                            `mt`.`check_img`                
-                        FROM `mainapp_transaction` mt
-                        {author_req} {filters}
-                        ORDER BY `mt`.`id` DESC
-                        '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
-    return response
+# def get_allow_transaction(pk):
+#     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+#                            user=settings.DATABASES.get('default').get('USER'),
+#                            password=settings.DATABASES.get('default').get('PASSWORD'),
+#                            db=settings.DATABASES.get('default').get('NAME'),
+#                            port=int(settings.DATABASES.get('default').get('PORT')),
+#                            charset='utf8mb4',
+#                            cursorclass=pymysql.cursors.DictCursor)
+#     try:
+#         with conn.cursor() as cursor:
+#             response = f'''
+#                     SELECT
+#                         `mt`.`id`,
+#                         `mt`.`balance_holder_id`,
+#                         `mt`.`type_transaction`,
+#                         `mt`.`transaction_date`,
+#                         `mt`.`create_date`,
+#                         `mt`.`update_date`,
+#                         `mt`.`name`,
+#                         (SELECT `mb`.`organization_holder` FROM `mainapp_balanceholder` mb WHERE `mt`.`balance_holder_id`=`mb`.`id`) as 'balance_holder',
+#                         `mt`.`amount`,
+#                         (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
+#                         (SELECT CONCAT(`mu`.`first_name`, ' ', `mu`.`last_name`) FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
+#                         `mt`.`status`,
+#                         `mt`.`check_img`
+#                     FROM `mainapp_transaction` mt
+#                     WHERE `mt`.`balance_holder_id` IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk})
+#                     ORDER BY `mt`.`id` DESC
+#                     '''
+#             cursor.execute(response)
+#             response = cursor.fetchall()
+#     finally:
+#         conn.close()
+#
+#     return response
+#
 
 
-def get_users_information():
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-    try:
-        with conn.cursor() as cursor:
-            response = f'''
-            SELECT 
-                `cu`.`id`, 
-                `cu`.`username`, 
-                `cu`.`first_name`, 
-                `cu`.`last_name`, 
-                `cu`.`is_staff`, 
-                `cu`.`is_superuser`, 
-                (SELECT GROUP_CONCAT(`bh`.`organization_holder`) FROM `mainapp_balanceholder` bh 
-                WHERE `bh`.`id` IN (SELECT `ah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` ah 
-                                    WHERE `ah`.`customuser_id` = `cu`.`id`) AND (`bh`.`hidden_status` = 0)) AS 'balanceholder_id' 
-            FROM `mainapp_customuser` cu
-            '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
+# def get_allow_transactions_by_balance_holder(pk, superuser_role=False):
+#     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+#                            user=settings.DATABASES.get('default').get('USER'),
+#                            password=settings.DATABASES.get('default').get('PASSWORD'),
+#                            db=settings.DATABASES.get('default').get('NAME'),
+#                            port=int(settings.DATABASES.get('default').get('PORT')),
+#                            charset='utf8mb4',
+#                            cursorclass=pymysql.cursors.DictCursor)
+#     try:
+#         if superuser_role:
+#             with conn.cursor() as cursor:
+#                 response = f'''
+#                         SELECT
+#                             `mb`.`organization_holder`
+#                         FROM `mainapp_balanceholder` mb
+#                         WHERE `mb`.`deleted`=0
+#                         '''
+#                 cursor.execute(response)
+#                 response = cursor.fetchall()
+#         else:
+#             with conn.cursor() as cursor:
+#                 response = f'''
+#                         SELECT
+#                             `mb`.`organization_holder`
+#                         FROM `mainapp_balanceholder` mb
+#                         WHERE id IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+#                         '''
+#                 cursor.execute(response)
+#                 response = cursor.fetchall()
+#     finally:
+#         conn.close()
+#
+#     return response
+#
 
-    return response
-
-
-def get_holders_user(pk):
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-    try:
-        with conn.cursor() as cursor:
-            response = f'''
-                SELECT `ah`.`balanceholder_id`
-                FROM `mainapp_customuser_available_holders` ah
-                WHERE `ah`.`customuser_id`={pk}
-            '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
-
-    return response
-
-
+# def get_all_transactions_by_holder(pk):
+#
+#     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+#                            user=settings.DATABASES.get('default').get('USER'),
+#                            password=settings.DATABASES.get('default').get('PASSWORD'),
+#                            db=settings.DATABASES.get('default').get('NAME'),
+#                            port=int(settings.DATABASES.get('default').get('PORT')),
+#                            charset='utf8mb4',
+#                            cursorclass=pymysql.cursors.DictCursor)
+#     try:
+#         with conn.cursor() as cursor:
+#             response = \
+#                 f'''
+#                 SELECT
+#                     `status`,
+#                     `create_date`,
+#                     `update_date`,
+#                     `type_transaction`,
+#                     `transaction_date`,
+#                     `name`,
+#                     `mainapp_balanceholder`.`organization_holder` AS `balance_holder_id`,
+#                     `amount`,
+#                     `mainapp_paytype`.`pay_type` AS `type_payment_id`,
+#                     CONCAT(`mainapp_customuser`.`last_name`,' ', `mainapp_customuser`.`first_name`) AS `author_id`,
+#                     `check_img`
+#                 FROM `mainapp_transaction` t
+#                 JOIN `mainapp_balanceholder` ON (`mainapp_balanceholder`.`id` = `t`.`balance_holder_id`)
+#                 JOIN `mainapp_paytype` ON (`mainapp_paytype`.`id` = `t`.`type_payment_id`)
+#                 JOIN `mainapp_customuser` ON (`mainapp_customuser`.`id` = `t`.`author_id`)
+#                 WHERE
+#                 `t`.`balance_holder_id`={pk} AND `t`.`status`="SUCCESSFULLY"
+#             '''
+#             cursor.execute(response)
+#             response = cursor.fetchall()
+#     finally:
+#         conn.close()
+#
+#     return response
+#
 '''
 SELECT
     `mb`.`id`,
@@ -484,8 +577,6 @@ WHERE
     IF(`mb`.`hidden_status` = 1, `mb`.`hidden_status` = 1 AND (1 IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
 ORDER BY `mb`.`id` DESC
 '''
-
-
 # def get_coming_sum(pk):
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),

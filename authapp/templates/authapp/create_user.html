@@ -30,19 +30,6 @@
 
 							</div>
 							<div class="border-top mt-4 mb-4"></div>
-							<div class="row">
-								<label class="mb-2 h5">Добавить балансодержателей к пользователю</label>
-
-								{% for holder in balance_holders %}
-								<div class="col-12 col-sm-3 mb-3">
-									<label for="{{ holder.pk }}">{{ holder }}</label>
-									<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}"/>
-								</div>
-								{% endfor %}
-
-							</div>
-
-							<div class="border-top mt-4 mb-4"></div>
 
 							<div class="row">
 								<div class="col-12 col-sm-3 mb-3">
@@ -60,6 +47,20 @@
 								</div>
 
 							</div>
+
+							<div class="border-top mt-4 mb-4"></div>
+							<div class="row">
+								<label class="mb-2 h5 user_role">Добавить балансодержателей к пользователю: </label>
+
+								{% for holder in balance_holders %}
+								<div class="col-12 col-sm-3 mb-3 staff_user">
+									<label for="{{ holder.pk }}">{{ holder }}</label>
+									<input class="form-check-input" type="checkbox" name="{{ holder.pk }}" id="{{ holder.pk }}"/>
+								</div>
+								{% endfor %}
+
+							</div>
+
 							<div class="border-top mt-4 mb-4"></div>
 							<div class="row">
 								<div class="col-12 col-sm-3 mb-3">
@@ -103,6 +104,20 @@
 		token = b[1]
 		}
 	}
+
+	$('#is_superuser').on('change', function(){
+		if($('#is_superuser').is(':checked')){
+			var superuser_select = `<strong class="mb-2 mt-2 superuser_select"> Доступны все</strong>`;
+			$('.user_role').append(superuser_select);
+			$('.staff_user').attr('hidden', 'true');
+			if(!$('#is_staff').prop('checked')){
+				$('#is_staff').click();
+			}
+		}else{
+			$('.superuser_select').attr('hidden', 'true');
+			$('.staff_user').removeAttr('hidden');
+		}
+	});
 
 	$('#username').on('input', function() {
 		$.ajax(

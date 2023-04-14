@@ -12,6 +12,19 @@ def users_view(request):
 
     all_users = get_users_information()
 
+    for us in all_users:
+        if us.get('balanceholder_id'):
+            holders = us.get('balanceholder_id').split(',')
+            new_list_bal = []
+            for i in holders:
+                bal_hole = BalanceHolder.objects.filter(organization_holder=i)
+                if bal_hole[0].hidden_status == 1:
+                    if request.user in bal_hole[0].available_superuser.all():
+                        new_list_bal.append(bal_hole[0].organization_holder)
+                else:
+                    new_list_bal.append(bal_hole[0].organization_holder)
+            us['balanceholder_id'] = new_list_bal
+
     data = {'title': 'Пользователи', 'users': all_users}
 
     return render(request, 'authapp/users.html', data)
@@ -42,9 +55,9 @@ def create_user_view(request):
 
         holders_id = []
         all_holders = BalanceHolder.objects.all()
-        for holder_id in all_holders:
-            if str(holder_id.pk) in request.POST:
-                holders_id.append(holder_id.pk)
+        for hol in all_holders:
+            if str(hol.pk) in request.POST:
+                holders_id.append(hol.pk)
 
         is_staff = request.POST.get('is_staff')
         if is_staff:
@@ -70,7 +83,7 @@ def create_user_view(request):
                 password=password1
             )
         else:
-            object = new_user.objects.create_user(
+            obj = new_user.objects.create_user(
                 username=username,
                 first_name=first_name,
                 last_name=last_name,
@@ -78,7 +91,9 @@ def create_user_view(request):
                 password=password1
             )
             for i in holders_id:
-                object.available_holders.add(i)
+                bal_holder = BalanceHolder.objects.filter(pk=i)
+                obj.available_holders.add(i)
+                bal_holder[0].available_superuser.add(obj.id)
 
         return redirect('users')
 
@@ -92,7 +107,6 @@ def edit_user_view(request, pk):
 
     user_edit = CustomUser.objects.filter(pk=pk)
     bal_hol = get_holders_user(pk)
-    print(bal_hol)
     bal_hol_id_list = []
     for holder_id in bal_hol:
         bal_hol_id_list.append(holder_id['balanceholder_id'])

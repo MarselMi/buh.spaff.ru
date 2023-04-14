@@ -169,3 +169,23 @@ def translate_type_balance_holder(obj):
         return 'Частное лицо'
     elif obj == 'ORGANISATION':
         return 'Организация'
+
+
+@register.filter
+def create_range(num):
+    return list(range(num))
+
+
+@register.filter
+def increment_page(num):
+    return num + 1
+
+
+@register.filter
+def decrement_page(num):
+    return num - 1
+
+
+@register.filter
+def multiply(num1, num2):
+    return num1 * num2

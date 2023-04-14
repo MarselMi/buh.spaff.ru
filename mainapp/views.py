@@ -1,5 +1,6 @@
 import json
 import decimal
+import math
 from hashlib import md5
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
@@ -21,10 +22,6 @@ def main_page_view(request):
     expenditure_sum = ''
     all_coming = 0
     all_expenditure = 0
-    # if request.user.is_superuser:
-    #
-    # else:
-    #     holders = get_allow_balance_holders(request.user.id, simple_user=True)
     if request.user.is_superuser:
         holders = get_allow_balance_holders(request.user.id, simple_user=False)
         comming_sum = get_all_coming_transactions_sum(request.user.id, simpleuser=False)
@@ -35,13 +32,11 @@ def main_page_view(request):
         expenditure_sum = get_all_expenditure_transactions_sum(request.user.id, simpleuser=True)
 
     type_payments = PayType.objects.all()
-
     try:
         for k in comming_sum:
             all_coming += k.get('coming')
     except:
         pass
-
     try:
         for k in expenditure_sum:
             all_expenditure += k.get('expenditure')
@@ -153,11 +148,6 @@ def main_page_view(request):
 
             return HttpResponse(json.dumps(data))
 
-    # color_list = ['primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
-    #               'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
-    #               'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark',
-    #               'primary', 'secondary', 'success', 'info', 'light', 'danger', 'warning', 'dark']
-
     label_coming = []
     profit_coming = []
     for i in comming_sum:
@@ -192,10 +182,41 @@ def transaction_view(request):
     if collapsed is None:
         request.session['transaction_collapse'] = 2
 
+    limit = request.session.get("limit_transactions")
+    if not limit:
+        request.session["limit_transactions"] = 25
+    try:
+        page = int(request.GET.get('page'))
+    except:
+        page = None
+    if not page:
+        page = 1
+
+    if request.method == "POST":
+        '''Для установки лимита вывода информации'''
+        if request.POST.get('type') == 'limit25':
+            request.session["limit_transactions"] = 25
+            return HttpResponse({'status': 'OK'})
+        if request.POST.get('type') == 'limit50':
+            request.session["limit_transactions"] = 50
+            return HttpResponse({'status': 'OK'})
+        if request.POST.get('type') == 'limit100':
+            request.session["limit_transactions"] = 100
+            return HttpResponse({'status': 'OK'})
+
+    limit = request.session["limit_transactions"]
+    if page == 1:
+        offset = None
+    elif page == 2:
+        offset = limit
+    else:
+        offset = limit * (page - 1)
+    request.session['offset_transactions'] = offset
     ''' Заполенние словаря для SQL-запроса '''
     for element in get_param_filter:
-        if get_param_filter.get(element) != [''] and element != 'collapse' and element != 'csrfmiddlewaretoken':
-            dict_for_sql_filter.setdefault(element, get_param_filter[element][0])
+        if element != 'page':
+            if get_param_filter.get(element) != [''] and element != 'collapse' and element != 'csrfmiddlewaretoken':
+                dict_for_sql_filter.setdefault(element, get_param_filter[element][0])
 
     '''Заменяю данные для отработки SQL запроса '''
     if dict_for_sql_filter.get('type_payment_id'):
@@ -223,11 +244,27 @@ def transaction_view(request):
         dict_for_sql_filter['end'] = dt.strptime(dict_for_sql_filter.get('end'), '%d.%m.%Y').strftime('%Y-%m-%d')
 
     if request.user.is_superuser:
-        balance_holders = get_allow_balance_holder_transactions(request.user.id, superuser_role=True)
-        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter)
+        balance_holders = get_allow_balance_holders(request.user.id, simple_user=False)
+        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, limit=limit, offset=offset)
+        original_count = get_count_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter)[0].get('COUNT(`mt`.`id`)')
     else:
-        balance_holders = get_allow_balance_holder_transactions(request.user.id)
-        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True)
+        balance_holders = get_allow_balance_holders(request.user.id, simple_user=True)
+        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True, limit=limit, offset=offset)
+        original_count = get_count_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True)[0].get('COUNT(`mt`.`id`)')
+
+    coming_sum = 0
+    expenditure_comission = 0
+    expenditure_transaction = 0
+    expenditure_amount = 0
+    for transaction in transactions:
+        if transaction.get('type_transaction') == 'COMING':
+            coming_sum += int(transaction.get('amount'))
+        if transaction.get('type_transaction') == 'EXPENDITURE':
+            expenditure_amount += int(transaction.get('amount'))
+            expenditure_comission += int(transaction.get('commission'))
+            expenditure_transaction += int(transaction.get('transaction_sum'))
+
+    count = math.ceil(int(original_count) / limit)
 
     if request.GET.get('collapse'):
         collapsed = request.session.get('transaction_collapse')
@@ -240,9 +277,14 @@ def transaction_view(request):
         if transa.get('commission'):
             transa['percent'] = round(float(transa.get('commission')) / float(transa.get('transaction_sum')) * 100)
 
+    url_params = str(request).split('/')[-1].rstrip("'>").split('&page=')[0]
+
     data = {'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
             'transactions': transactions, 'authors': authors, 'get_param_filter': get_param_filter,
-            'collapsed': collapsed, 'sub_type': sub_type}
+            'collapsed': collapsed, 'sub_type': sub_type, 'count': count, 'page': page, 'limit': limit,
+            'url_params': url_params, 'original_count': original_count, 'coming_sum': coming_sum,
+            'expenditure_amount': expenditure_amount, 'expenditure_comission': expenditure_comission,
+            'expenditure_transaction': expenditure_transaction}
 
     return render(request, 'mainapp/transactions.html', data)
 
@@ -254,10 +296,9 @@ def create_transaction_view(request):
     type_payments = PayType.objects.all()
     balance_holders = []
     if request.user.is_superuser:
-        balance_holders = BalanceHolder.objects.all()
+        balance_holders = get_allow_balance_holders(request.user.id, simple_user=False)
     else:
-        for holder in get_allow_balance_holder_transactions(request.user.id):
-            balance_holders.append(holder['organization_holder'])
+        balance_holders = get_allow_balance_holders(request.user.id, simple_user=True)
 
     if request.method == 'POST':
         if request.POST.get('type') == 'check_holder':
@@ -804,34 +845,6 @@ def payment_type_view(request):
     return render(request, 'mainapp/payments_type.html', data)
 
 
-'''не применяется'''
-def payment_create_view(request):
-
-    if request.method == 'POST':
-
-        if request.POST.get('type') == 'check_type':
-            pay_type = request.POST.get('type_payment')
-            if PayType.objects.filter(pay_type=pay_type).exists():
-                return JsonResponse(
-                    {'message': False}
-                )
-            else:
-                return JsonResponse(
-                    {'message': True}
-                )
-
-        pay_type = request.POST.get('type_payment')
-        PayType.objects.create(pay_type=pay_type)
-
-        return redirect('pay_types')
-
-    data = {
-            'title': 'Создание типа платежа',
-            'inside': {'page_url': 'pay-types', 'page_title': 'Типы платежей'},
-            }
-    return render(request, 'mainapp/payment_type_add.html', data)
-
-
 def additional_data_transaction_view(request):
     additional = ''
     if request.user.is_superuser:
@@ -849,7 +862,7 @@ def additional_transaction_data_create_view(request):
     if request.user.is_superuser:
         transactions = Transaction.objects.all().values('id', 'name')
     else:
-        transactions = get_allow_transaction(request.user.id)
+        transactions = get_allow_transaction_filter(request.user.id)
     if request.method == 'POST':
         if request.POST.get('type') == 'get_transaction_id':
             transaction_id = request.POST.get('transaction')
@@ -916,3 +929,31 @@ def handler500(request):
 
 def handler501(request):
     return render(request, '501.html', status=501)
+
+
+'''не применяется'''
+def payment_create_view(request):
+
+    if request.method == 'POST':
+
+        if request.POST.get('type') == 'check_type':
+            pay_type = request.POST.get('type_payment')
+            if PayType.objects.filter(pay_type=pay_type).exists():
+                return JsonResponse(
+                    {'message': False}
+                )
+            else:
+                return JsonResponse(
+                    {'message': True}
+                )
+
+        pay_type = request.POST.get('type_payment')
+        PayType.objects.create(pay_type=pay_type)
+
+        return redirect('pay_types')
+
+    data = {
+            'title': 'Создание типа платежа',
+            'inside': {'page_url': 'pay-types', 'page_title': 'Типы платежей'},
+            }
+    return render(request, 'mainapp/payment_type_add.html', data)

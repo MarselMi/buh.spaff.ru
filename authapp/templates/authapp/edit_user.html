@@ -31,7 +31,7 @@
 									<input autocomplete="off" class="form-control" name="last_name" id="last_name" value="{{ user_edit.last_name }}" placeholder="Введите Фамилию пользователя" required/>
 								</div>
 							</div>
-
+							<div class="border-top mt-4 mb-4"></div>
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -44,7 +44,6 @@
 								</div>
 
 							</div>
-
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -57,15 +56,16 @@
 								</div>
 							</div>
 
+							<div class="border-top mt-4 mb-4"></div>
 							<div class="row">
 
-								<label class="mb-3 mt-3">Доступные балансодержатели: </label>
+								<label class="mb-3 mt-3 user_role">Доступные балансодержатели: </label>
 
-								{% if user_edit.is_superuser %}
-									<strong class="mb-2 mt-2">Доступны все</strong>
-								{% else %}
+								
+									<strong class="mb-2 mt-2 superuser_select"{% if user_edit.is_superuser %}{% else %} hidden{% endif %}>Доступны все</strong>
+									
 									{% for holder in balance_holders %}
-									<div class="col-12 col-sm-3 mb-3">
+									<div class="col-12 col-sm-3 mb-3 staff_user"{% if user_edit.is_superuser %} hidden{% else %}{% endif %}>
 										<label for="{{ holder.id }}">{{ holder.organization_holder }}</label>
 
 										{% if holder.id in bal_hol %}
@@ -75,27 +75,37 @@
 										{% endif %}
 									</div>
 									{% endfor %}
-								{% endif %}
+
 							</div>
+
+							<div class="border-top mt-4 mb-4"></div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<input class="form-check-input" type="checkbox" id="change_pwd"/>
+									<label for="change_pwd">Сменить пароль</label>
+								</div>
+
+								<div class="change_pwd" hidden>
+									<div class="row">
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="password1">Новый пароль</label>
+											<input autocomplete="new-password" class="form-control" type="password" name="password1" id="password1" placeholder="Введите пароль" required/>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-12 col-sm-3">
+											<label for="password2">Повторите новый пароль</label>
+											<input autocomplete="new-password" class="form-control" type="password" name="password2" id="password2" placeholder="Повторите пароль" required/>
+										</div>
+									</div>
+								</div>
+							<div class="border-top mt-4 mb-4"></div>
 
 							<div class="row">
 								<label for="password">Для внесения изменений введите пароль</label>
 								<div class="col-12 col-sm-3 mb-3 mt-1">
 									<input autocomplete="new-password" class="form-control is-invalid" type="password" name="password" id="password" placeholder="Введите старый пароль" required/>
-								</div>
-							</div>
-
-							<div class="row">
-								<div class="col-12 col-sm-3 mb-3">
-									<label for="password1">Новый пароль</label>
-									<input autocomplete="new-password" class="form-control" type="password" name="password1" id="password1" placeholder="Введите пароль" required/>
-								</div>
-							</div>
-
-							<div class="row">
-								<div class="col-12 col-sm-3">
-									<label for="password2">Повторите новый пароль</label>
-									<input autocomplete="new-password" class="form-control" type="password" name="password2" id="password2" placeholder="Повторите пароль" required/>
 								</div>
 							</div>
 
@@ -114,15 +124,37 @@
 
 	var url = document.location.href;
 	var a = document.cookie.split(';');
-	var token = ''
+	var token = '';
 
 	for (i = 0; i < a.length; i++) {
-		var b = a[i].split('=')
-		b[0] = b[0].replace(/\s+/g, '')
+		var b = a[i].split('=');
+		b[0] = b[0].replace(/\s+/g, '');
 		if (b[0] == 'csrftoken') {
-		token = b[1]
+			token = b[1];
 		}
-	}
+	};
+
+	$('#is_superuser').on('change', function(){
+		if($('#is_superuser').is(':checked')){
+			var superuser_select = `<strong class="mb-2 mt-2 superuser_select">Доступны все</strong>`;
+			$('.user_role').append(superuser_select);
+			$('.staff_user').attr('hidden', 'true');
+			if(!$('#is_staff').prop('checked')){
+				$('#is_staff').click();
+			}
+		}else{
+			$('.superuser_select').attr('hidden', 'true');
+			$('.staff_user').removeAttr('hidden');
+		}
+	});
+	
+	$('#change_pwd').on('change', function(){
+		if($('#change_pwd').is(':checked')){
+			$('.change_pwd').removeAttr('hidden');
+		}else{
+			$('.change_pwd').attr('hidden', 'true');
+		}
+	});
 
 	$('#username').on('input', function() {
 		$.ajax(
@@ -194,14 +226,6 @@
 		}
 	})
 
-	$('form').on('change keyup input', function(){
-		if ($('#password2').hasClass('is-invalid') || $('#username').hasClass('is-invalid')){
-			$('button').attr('disabled');
-		}else{
-			$('button').removeAttr('disabled');
-		}
-	})
-
 	$('#password1').on('input', function() {
 		if ($('#password1').val() == $('#password2').val()){
 			$('#password2').removeClass('is-invalid');
@@ -213,22 +237,6 @@
 			$('#password2').removeClass('is-valid');
 			$('#password2').addClass('is-invalid');
 			$('#password1').addClass('is-invalid');
-		}
-	})
-
-	$('form').on('change keyup input', function(){
-		if ($('#password').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
-		}else if ($('#password2').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
-		}else if ($('#username').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
-		}else if ($('#first_name').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
-		}else if ($('#last_name').hasClass('is-invalid')){
-			$('button').attr('disabled', 'true');
-		}else{
-			$('button').removeAttr('disabled');
 		}
 	})
 
@@ -248,6 +256,22 @@
 		}
 	})
 
+	$('form').on('input change', function(){
+		if ($('#password').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#password2').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#username').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#first_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else if ($('#last_name').hasClass('is-invalid')){
+			$('button').attr('disabled', 'true');
+		}else{
+			$('button').removeAttr('disabled');
+		}
+	});
+	
 </script>
 
 {% endblock content %}

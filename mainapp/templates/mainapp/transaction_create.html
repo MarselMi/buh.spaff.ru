@@ -17,7 +17,7 @@
 									<input class="form-control" name="balance_holder" id="balance_holder" autocomplete="off" onfocus="this.value=''" list="balance_holder_list" placeholder="Выберите балансодержателя" required/>
 									<datalist id="balance_holder_list">
 										{% for holder in balance_holders %}
-										<option value="{{ holder }}">{{ holder }}</option>
+										<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
 										{% endfor %}
 									</datalist>
 

@@ -47,7 +47,7 @@
 												All <i class="fa-regular fa-circle-check text-success" data-bs-toggle="tooltip" data-bs-title="Суперпользователь"></i>
 												{% else %}
 													{% if object.balanceholder_id %}
-														{% for holder in object.balanceholder_id|split_holders %}
+														{% for holder in object.balanceholder_id %}
 															{{ holder }}<br>
 														{% endfor %}
 													{% else %}
