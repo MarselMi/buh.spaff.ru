@@ -311,6 +311,38 @@ def get_count_allow_transaction_filter(pk, author_res=None, filter_data=None):
     return response
 
 
+def get_allow_transactions_log(limit='', offset=None):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        if limit:
+            limit = f'LIMIT {limit}'
+        if offset:
+            offset = f'OFFSET {offset}'
+        else:
+            offset = ''
+
+        with conn.cursor() as cursor:
+            response = f'''
+                SELECT *
+                FROM `mainapp_transactionlog` tl
+                {limit}
+                {offset}
+
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
 def get_users_information():
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
@@ -365,7 +397,7 @@ def get_holders_user(pk):
     return response
 
 
-def get_allow_transactions_log(pk):
+def get_allow_additional_transactions(pk, simple_user=''):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -374,75 +406,25 @@ def get_allow_transactions_log(pk):
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
     try:
-        with conn.cursor() as cursor:
-            response = f'''
-                SELECT *
-                FROM `mainapp_transactionlog` tl
-                WHERE `ah`.`customuser_id`={pk}
+        if simple_user:
+            simple_user = f'''AND `mat`.`balance_holder_id_id` IN 
+                    (SELECT `mah`.`balanceholder_id` 
+                        FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk}
+                    )
             '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
-
-    return response
-
-
-# Нужно поработать с этими запросами
-def get_allow_additional_transactions(pk):
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-    try:
         with conn.cursor() as cursor:
             response = f'''
                     SELECT
-                        CONCAT(`mat`.`transaction_id_id`,': ',`mt`.`name`) as name,
-                        `mat`.`notes` 
+                        CONCAT(`mat`.`transaction_id_id`,': ',(SELECT `mt`.`name` FROM mainapp_transaction mt WHERE `mat`.`transaction_id_id`=`mt`.`id`)) as name,
+                        `mat`.`notes`,
+                        `mb`.`organization_holder`
                     FROM
                         `mainapp_additionaldatatransaction` mat
-                    JOIN
-                        `mainapp_transaction` mt
-                    ON
-                        `mt`.`id`=`mat`.`transaction_id_id`
-                    JOIN
+                    JOIN 
                         `mainapp_balanceholder` mb
-                    ON
-                        `mb`.`id`=`mt`.`balance_holder_id`
-                    JOIN
-                        `mainapp_customuser_available_holders` mcah
-                    ON
-                        `mcah`.`balanceholder_id`=`mb`.`id`
-                    WHERE
-                        `mcah`.`customuser_id`={pk}
-                    '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
-
-    return response
-
-
-def get_additional_transactions():
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-    try:
-        with conn.cursor() as cursor:
-            response = f'''
-                    SELECT
-                        CONCAT(`mat`.`transaction_id_id`,': ', (SELECT `mt`.`name` FROM `mainapp_transaction` mt WHERE `mt`.`id`=`mat`.`transaction_id_id`)) as name,
-                        `mat`.`notes`
-                    FROM  `mainapp_additionaldatatransaction` mat
+                    ON `mat`.`balance_holder_id_id`=`mb`.`id`
+                    WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+                    {simple_user}
                     '''
             cursor.execute(response)
             response = cursor.fetchall()

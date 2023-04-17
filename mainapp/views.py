@@ -853,9 +853,9 @@ def payment_type_view(request):
 def additional_data_transaction_view(request):
     additional = ''
     if request.user.is_superuser:
-        additional = get_additional_transactions()
-    else:
         additional = get_allow_additional_transactions(request.user.id)
+    else:
+        additional = get_allow_additional_transactions(request.user.id, simple_user=True)
 
     data = {'title': 'Дополнительные данные по транзакциям', 'additional': additional}
 
@@ -864,13 +864,15 @@ def additional_data_transaction_view(request):
 
 def additional_transaction_data_create_view(request):
     transactions = ''
+
     if request.user.is_superuser:
-        transactions = Transaction.objects.all().values('id', 'name')
-    else:
         transactions = get_allow_transaction_filter(request.user.id)
+    else:
+        transactions = get_allow_transaction_filter(request.user.id, author_res=True)
+
     if request.method == 'POST':
         if request.POST.get('type') == 'get_transaction_id':
-            transaction_id = request.POST.get('transaction')
+            transaction_id = request.POST.get('transaction').split(',')[0]
             result = set()
 
             for transaction in transactions:
@@ -884,11 +886,14 @@ def additional_transaction_data_create_view(request):
                 return JsonResponse(
                     {'message': False}
                 )
-
-        transaction_id = Transaction.objects.filter(pk=request.POST.get('transaction')[0])[0]
+        tr_id = request.POST.get('transaction').split(':')[0]
+        transaction_id = Transaction.objects.filter(pk=tr_id)[0]
         additional_data = request.POST.get('notes_transaction')
-
-        AdditionalDataTransaction.objects.create(transaction_id=transaction_id, notes=additional_data)
+        bal_hold = request.POST.get('transaction').split(', ')[1]
+        bal_hold = BalanceHolder.objects.filter(organization_holder=bal_hold)
+        AdditionalDataTransaction.objects.create(transaction_id=transaction_id,
+                                                 notes=additional_data,
+                                                 balance_holder_id=bal_hold[0])
 
         return redirect('additional_data')
 
@@ -931,15 +936,31 @@ def transactions_log_view(request):
     else:
         offset = limit * (page - 1)
     request.session['offset_transaction_logs'] = offset
+    bal_holders = BalanceHolder.objects.all()
+    users_obj = CustomUser.objects.all()
 
-    transactions_log = TransactionLog.objects.all()[::-1]
+    transaction_log_list = []
+    for tr in get_allow_transactions_log(limit=limit, offset=offset):
+        if bal_holders.filter(organization_holder=tr.get('balance_holder')):
+            holder = bal_holders.filter(organization_holder=tr.get('balance_holder'))
+            if holder.values('hidden_status')[0].get('hidden_status'):
+                for user_available in holder.values('available_superuser'):
+                    if int(request.user.id) == int(user_available.get('available_superuser')):
+                        transaction_log_list.append(tr)
+            else:
+                if request.user.is_superuser:
+                    transaction_log_list.append(tr)
+                else:
+                    for bal_holder in users_obj.values('available_holders'):
+                        if int(holder.values('id')[0].get('id')) == int(bal_holder.get('available_holders')):
+                            transaction_log_list.append(tr)
 
     count = 0
     original_count = 0
 
     url_params = str(request).split('/')[-1].rstrip("'>").split('&page=')[0]
 
-    data = {'title': 'Логи транзакций', 'transactions_log': transactions_log,
+    data = {'title': 'Логи транзакций', 'transactions_log': transaction_log_list,
             'count': count, 'page': page, 'limit': limit, 'url_params': url_params,
             'original_count': original_count}
     return render(request, 'mainapp/transactions_log.html', data)

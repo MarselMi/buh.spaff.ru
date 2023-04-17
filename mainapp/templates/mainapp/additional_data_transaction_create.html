@@ -14,10 +14,10 @@
 
 							<div class="col-12 col-sm-3 mb-3">
 								<label for="transaction">Выберите транзакцию</label>
-								<input class="form-control" name="transaction" id="transaction" autocomplete="off" onfocus="this.value=''" list="transaction_list" placeholder="id: Имя транзакции"/>
+								<input class="form-control" name="transaction" id="transaction" autocomplete="off" list="transaction_list" placeholder="id: Имя транзакции"/>
 								<datalist id="transaction_list">
 									{% for transaction in transactions %}
-									<option value="{{ transaction.id }}: {{ transaction.name }}">{{ transaction.id }}: {{ transaction.name }}</option>
+									<option value="{{ transaction.id }}: {{ transaction.name }}, {{ transaction.balance_holder }}">{{ transaction.id }}: {{ transaction.name }}, {{ transaction.balance_holder }}</option>
 									{% endfor %}
 								</datalist>
 							</div>

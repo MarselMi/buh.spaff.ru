@@ -136,8 +136,16 @@ class Transaction(models.Model):
 
 
 class AdditionalDataTransaction(models.Model):
-    transaction_id = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name='additionaldatatransaction_transaction', verbose_name='Транзакция')
+    balance_holder_id = models.ForeignKey(BalanceHolder, 
+                                          on_delete=models.SET_NULL,
+                                          null=True, blank=True,
+                                          related_name='additionaldatatransaction_transaction',
+                                          verbose_name='Балансодержатель')
+    transaction_id = models.ForeignKey(Transaction,
+                                       on_delete=models.SET_NULL,
+                                       null=True, blank=True,
+                                       related_name='additionaldatatransaction_transaction',
+                                       verbose_name='Транзакция')
     notes = models.TextField(verbose_name='Дополнительные данные по транзакции')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
 
