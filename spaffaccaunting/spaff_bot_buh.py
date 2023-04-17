@@ -275,15 +275,18 @@ def transaction_balance_holder(message):
 
                 '''обозначение и определение кнопок в зависимости от доступных'''
                 buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-                if req.get('is_superuser'):
-                    for holder in b_holders:
-                        button = types.KeyboardButton(text=holder.get('organization_holder'))
-                        buttons.add(button)
-                else:
-                    for holder in b_holders:
-                        if holder.get('id') in req.get('available_holders'):
-                            button = types.KeyboardButton(text=holder.get('organization_holder'))
-                            buttons.add(button)
+
+                for hold in b_holders:
+                    if hold.get('hidden_status'):
+                        if user_id in hold.get('available_superuser'):
+                            buttons.add(types.KeyboardButton(text=hold.get('organization_holder')))
+                    else:
+                        if req.get('is_superuser'):
+                            buttons.add(types.KeyboardButton(text=hold.get('organization_holder')))
+                        else:
+                            if hold.get('id') in req.get('available_holders'):
+                                buttons.add(types.KeyboardButton(text=hold.get('organization_holder')))
+
                 '''вывод кнопок с возможностью выбора типа транзакции'''
                 bot.send_message(message.chat.id, "Выберите балансодержателя: ", reply_markup=buttons)
                 bot.register_next_step_handler(message, pay_type)
