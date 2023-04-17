@@ -149,8 +149,24 @@ def send_welcome(message):
 @bot.message_handler(commands=['crt', 'create', 'break', 'br'])
 def send_break_create(message):
     try:
-        json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
-
+        r = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
+        user_id = r.get('id')
+        data_dict = {
+            "transaction_name": "",
+            "type_transaction": "",
+            "type_payment": "",
+            "sub_type": "",
+            "balance_holder": "",
+            "transaction_date": "",
+            "transaction_sum_post": "",
+            "commission_post": "",
+            "transaction_status": "",
+            "tags": "",
+            "author_id": user_id,
+            "check_img": ""
+        }
+        requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
+                       data={"json_create_transaction": json.dumps(data_dict)})
         buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         button1 = types.KeyboardButton('Создать транзакцию')
         buttons.add(button1)
