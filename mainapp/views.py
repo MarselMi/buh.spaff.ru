@@ -296,9 +296,9 @@ def create_transaction_view(request):
     type_payments = PayType.objects.all()
     balance_holders = []
     if request.user.is_superuser:
-        balance_holders = get_allow_balance_holders(request.user.id, simple_user=False)
+        balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
     else:
-        balance_holders = get_allow_balance_holders(request.user.id, simple_user=True)
+        balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=True)
 
     if request.method == 'POST':
         if request.POST.get('type') == 'check_holder':
