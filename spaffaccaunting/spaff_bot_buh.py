@@ -290,7 +290,7 @@ def transaction_balance_holder(message):
                 b_holders = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/bal-holders/').content)
 
                 '''обозначение и определение кнопок в зависимости от доступных'''
-                buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+                buttons = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 
                 for hold in b_holders:
                     if hold.get('hidden_status'):
