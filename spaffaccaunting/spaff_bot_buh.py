@@ -346,7 +346,7 @@ def pay_type(message):
 
                 pay_types = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/pays-type/').content)
 
-                buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+                buttons = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 
                 for type_pay in pay_types:
                     button = types.KeyboardButton(text=type_pay.get('pay_type'))
