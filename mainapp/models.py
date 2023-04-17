@@ -63,7 +63,8 @@ class BalanceHolder(models.Model):
                                          verbose_name='Баланс Держателя')
     payment_account = models.CharField(max_length=20, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
-    available_superuser = models.ManyToManyField('CustomUser')
+    available_superuser = models.ManyToManyField('CustomUser', related_name='Разрешить доступ для+')
+    hide_for_me = models.ManyToManyField('CustomUser', related_name='Скрыть транзакции для пользователей+')
     hidden_status = models.BooleanField(blank=True, null=True, default=False)
 
     def __str__(self):
@@ -136,7 +137,7 @@ class Transaction(models.Model):
 
 
 class AdditionalDataTransaction(models.Model):
-    balance_holder_id = models.ForeignKey(BalanceHolder, 
+    balance_holder_id = models.ForeignKey(BalanceHolder,
                                           on_delete=models.SET_NULL,
                                           null=True, blank=True,
                                           related_name='additionaldatatransaction_transaction',

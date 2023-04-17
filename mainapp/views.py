@@ -635,14 +635,27 @@ def transaction_update_view(request, pk):
 
 def balance_holders_views(request):
     if request.user.is_superuser:
-        holders = get_allow_balance_holders(request.user.id, simple_user=False)
+        holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
     else:
-        holders = get_allow_balance_holders(request.user.id, simple_user=True)
+        holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=True)
 
     for hol in holders:
+        bal_hold = BalanceHolder.objects.filter(pk=hol.get('id'))
         if hol.get('hidden_status'):
-            bal_hold = BalanceHolder.objects.filter(pk=hol.get('id'))[0].available_superuser.all()
-            hol.setdefault('available_users', bal_hold)
+            hol.setdefault('available_users', bal_hold[0].available_superuser.all())
+        hol.setdefault('hide_for_me', bal_hold[0].hide_for_me.all())
+
+    if request.method == 'POST':
+        if request.POST.get('type') == 'hide_for_me':
+            holder_id = request.POST.get('holder_id')
+            bal_hol = BalanceHolder.objects.filter(pk=holder_id)[0]
+            bal_hol.hide_for_me.add(request.user.id)
+            return JsonResponse({'message': 'OK'})
+        elif request.POST.get('type') == 'show_for_me':
+            holder_id = request.POST.get('holder_id')
+            bal_hol = BalanceHolder.objects.filter(pk=holder_id)[0]
+            bal_hol.hide_for_me.remove(request.user.id)
+            return JsonResponse({'message': 'OK'})
 
     data = {'title': 'Балансодержатели', 'holders': holders}
     return render(request, 'mainapp/balance_holders.html', data)

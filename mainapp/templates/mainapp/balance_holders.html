@@ -31,11 +31,18 @@
 											<tr class="align-middle">
 												<td>
 													<div class="d-flex justify-content-between">
+														<div class="d-flex justify-content-start" >
+															<span data-bs-toggle="tooltip" data-bs-trigger="hover" title="Скрыть транзакции балансодержателя" >
+																<input class="form-check-input" type="checkbox" name="{{ object.id }}" 
+																{% if request.user in object.hide_for_me %} checked{% endif %}/>
+														   </span>
+															
+														</div>
 														<div class="d-flex justify-content-start">
 														{{ object.organization_holder }}
 															{% if object.hidden_status %}
 																<span data-bs-toggle="tooltip" data-bs-title="Имеют доступ: {% for obj in object.available_users %} {{ obj }} {% endfor %}">
-																	 &emsp; <i class="fa-regular fa-info"></i> <i>Скрытый</i>
+																	 &emsp; <i class="fa-regular fa-info"></i>  <i>Невидимый</i>
 																</span>
 															{% endif %}
 														</div>
@@ -70,5 +77,57 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+
+<script>
+	var url = document.location.href;
+	var a = document.cookie.split(';');
+	var token = '';
+
+	for (i = 0; i < a.length; i++) {
+		var b = a[i].split('=');
+		b[0] = b[0].replace(/\s+/g, '');
+		if (b[0] == 'csrftoken') {
+			token = b[1]
+		}
+	};
+	
+	inputEl = document.querySelectorAll('.form-check-input')
+	for (let i=0; i<inputEl.length; i++){
+		inputEl[i].addEventListener('click', function(event){
+			if(event.currentTarget == inputEl[i]){
+				if (inputEl[i].checked){
+					$.ajax({
+						url: url,
+						method: 'POST',
+						data: {
+							csrfmiddlewaretoken: token,
+							type: 'hide_for_me',
+							holder_id: inputEl[i].name
+						}
+					}).then(function(result){
+						var x = 1;
+					}).catch(function(err){
+						var x = 0;
+					});
+				}else{
+					$.ajax({
+						url: url,
+						method: 'POST',
+						data: {
+							csrfmiddlewaretoken: token,
+							type: 'show_for_me',
+							holder_id: inputEl[i].name
+						}
+					}).then(function(result){
+						var x = 1;
+					}).catch(function(err){
+						var x = 0;
+					});
+				}
+			}
+		})
+	};
+
+</script>
 
 {% endblock content %}

@@ -51,6 +51,7 @@ def get_all_coming_transactions_sum(pk, simpleuser=None, holder=None):
             AND 
                 `t`.`type_transaction`="COMING"
                 {allow_data_user}
+            AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
             GROUP BY `t`.`type_payment_id`
             '''
             cursor.execute(response)
@@ -98,6 +99,7 @@ def get_all_expenditure_transactions_sum(pk, simpleuser=None, holder=None):
                     `t`.`status`="SUCCESSFULLY" 
                 AND 
                     `t`.`type_transaction`="EXPENDITURE"
+                AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
                 {allow_data_user}
                 GROUP BY `t`.`type_payment_id`
             '''
@@ -110,6 +112,47 @@ def get_all_expenditure_transactions_sum(pk, simpleuser=None, holder=None):
 
 
 def get_allow_balance_holders(pk, simple_user=True):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        if simple_user:
+            add_request = f'''
+            AND `mb`.`id` IN (SELECT `mah`.`balanceholder_id` FROM `mainapp_customuser_available_holders` mah WHERE `mah`.`customuser_id`={pk} AND `mb`.`deleted`=0)
+            '''
+        else:
+            add_request = ''
+
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT
+                        `mb`.`id`,
+                        `mb`.`organization_holder`,
+                        `mb`.`alias_holder`,
+                        `mb`.`holder_balance`,
+                        `mb`.`payment_account`,
+                        `mb`.`account_type`,
+                        `mb`.`hidden_status`
+                    FROM `mainapp_balanceholder` mb
+                    WHERE 
+                        IF(`mb`.`hidden_status` = 1, `mb`.`hidden_status` = 1 AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+                    AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
+                    {add_request}
+                    ORDER BY `mb`.`id` DESC
+                    '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+def get_allow_and_hide_balance_holders(pk, simple_user=True):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -231,6 +274,7 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                         ON `mt`.`balance_holder_id`=`mb`.`id`
                         WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
                         {author_req} {filters}
+                        AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
                         ORDER BY `mt`.`id` DESC
                         {limit}
                         {offset}
@@ -302,6 +346,7 @@ def get_count_allow_transaction_filter(pk, author_res=None, filter_data=None):
                             `mainapp_balanceholder` mb
                         ON `mt`.`balance_holder_id`=`mb`.`id`
                         WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+                        AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
                         {author_req} {filters}
                         '''
             cursor.execute(response)
