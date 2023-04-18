@@ -214,6 +214,17 @@
 		</div> <!-- /modal-dialog -->
 	</div> <!-- /modal -->
 
+	<div class="position-fixed bottom-0 end-4 p-4" style="z-index: 11">
+		<div id="liveToast" class="toast hide bg-primary" role="alert" aria-live="assertive" aria-atomic="true">
+			 <div class="toast-header">
+				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+			  </div>
+			<div class="toast-body text-white" id="toast_content">
+				
+			</div>
+		</div>
+	</div>
+
 	<script>
 
 		var url = document.location.href;
@@ -270,8 +281,8 @@
 					sub_type_payments: checkedArray
 				}
 			}).then(function(result){
+				window.location.hash = 'new_pay';
 				location.reload();
-				var x = 1;
 			}).catch(function(err){
 				var x = 0
 			})
@@ -316,7 +327,7 @@
 				$('.subPayTypeClose').click();
 				$('#sub_type_payment').removeClass('is-valid');
 				$('#sub_type_payment').val('')
-				var x = 1
+				window.location.hash = 'new_sub_pay';
 				location.reload();
 			}).catch(function(err){
 				var x = 0
@@ -378,13 +389,41 @@
 				}
 			}).then(function(result){
 				$('.close_add_sub_params').click();
-				var x = 1;
+				window.location.hash = 'edit_pay';
 				location.reload();
 			}).catch(function(err){
 				var x = 0;
 			})
 		})
 
-</script>
+		document.addEventListener("DOMContentLoaded", function(event) { 
+			if(window.location.hash == "#edit_pay"){
+				var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+				var toastList = toastElList.map(function(toastEl) {
+					$('#toast_content').text("Успешное редактирование");
+					// Creates an array of toasts (it only initializes them)
+					return new bootstrap.Toast(toastEl) // No need for options; use the default options
+				});
+				toastList.forEach(toast => toast.show()); // This show them
+			}else if(window.location.hash == "#new_sub_pay"){
+				var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+				var toastList = toastElList.map(function(toastEl) {
+					$('#toast_content').text("Создана новая подкатегория");
+					// Creates an array of toasts (it only initializes them)
+					return new bootstrap.Toast(toastEl) // No need for options; use the default options
+				});
+				toastList.forEach(toast => toast.show()); // This show them
+			}else if(window.location.hash == "#new_pay"){
+				var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+				var toastList = toastElList.map(function(toastEl) {
+					$('#toast_content').text("Создана новая категория");
+					// Creates an array of toasts (it only initializes them)
+					return new bootstrap.Toast(toastEl) // No need for options; use the default options
+				});
+				toastList.forEach(toast => toast.show()); // This show them
+			}
+		});
+
+	</script>
 
 {% endblock content %}

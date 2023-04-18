@@ -55,16 +55,6 @@
 					</div>
 				</div>
 
-				{% if user.is_superuser %}
-				<a class="dropdown-item" href="{% url 'admin:index' %}">
-					<i class="fa-regular fa-circle-user me-2"></i>
-					Административный режим
-				</a> <!-- /dropdown-item -->
-
-				<hr class="dropdown-divider">
-
-				{% endif %}
-
 				<a class="dropdown-item mb-0" href="{% url 'logout' %}">
 					<i class="fa-regular fa-right-from-bracket me-2"></i>
 					Выход
@@ -96,14 +86,6 @@
 						</div>
 					</div>
 				</div>
-				{% if user.is_superuser %}
-				<a class="dropdown-item" href="{% url 'admin:index' %}">
-					<i class="fa-regular fa-circle-user me-2"></i>
-					Административный режим
-				</a> <!-- /dropdown-item -->
-				<hr class="dropdown-divider">
-				{% endif %}
-
 
 				<a class="dropdown-item mb-0" href="{% url 'logout' %}">
 					<i class="fa-regular fa-right-from-bracket me-2"></i>

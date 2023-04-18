@@ -33,7 +33,7 @@
 													<div class="d-flex justify-content-between">
 														<div class="d-flex justify-content-start" >
 															<span data-bs-toggle="tooltip" data-bs-trigger="hover" title="Скрыть транзакции балансодержателя" >
-																<input class="form-check-input" type="checkbox" name="{{ object.id }}" 
+																<input class="form-check-input" type="checkbox" name="{{ object.id }}" data-holder-name="{{ object.organization_holder }}"
 																{% if request.user in object.hide_for_me %} checked{% endif %}/>
 														   </span>
 															
@@ -78,6 +78,17 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
+	<div class="position-fixed bottom-0 end-4 p-4" style="z-index: 11">
+		<div id="liveToast" class="toast hide bg-primary" role="alert" aria-live="assertive" aria-atomic="true">
+			 <div class="toast-header">
+				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+			  </div>
+			<div class="toast-body text-white" id="toast_content">
+				
+			</div>
+		</div>
+	</div>
+
 <script>
 	var url = document.location.href;
 	var a = document.cookie.split(';');
@@ -105,7 +116,13 @@
 							holder_id: inputEl[i].name
 						}
 					}).then(function(result){
-						var x = 1;
+						var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+						var toastList = toastElList.map(function(toastEl) {
+							$('#toast_content').text(`Скрыты транзакции ${inputEl[i].getAttribute('data-holder-name')}`);
+							// Creates an array of toasts (it only initializes them)
+							return new bootstrap.Toast(toastEl) // No need for options; use the default options
+						});
+						toastList.forEach(toast => toast.show()); // This show them
 					}).catch(function(err){
 						var x = 0;
 					});
@@ -119,7 +136,13 @@
 							holder_id: inputEl[i].name
 						}
 					}).then(function(result){
-						var x = 1;
+						var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+						var toastList = toastElList.map(function(toastEl) {
+							$('#toast_content').text(`Доступны транзакции ${inputEl[i].getAttribute('data-holder-name')}`);
+							// Creates an array of toasts (it only initializes them)
+							return new bootstrap.Toast(toastEl) // No need for options; use the default options
+						});
+						toastList.forEach(toast => toast.show()); // This show them
 					}).catch(function(err){
 						var x = 0;
 					});
