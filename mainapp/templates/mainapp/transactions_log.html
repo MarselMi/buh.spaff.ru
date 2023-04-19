@@ -32,7 +32,7 @@
 											<td>{{ object.transaction_id }}: {{ object.transaction_name }}</td>
 											<td>{{ object.balance_holder|dash|safe }}</td>
 											<td>{{ object.changed|dash }}</td>
-											<td>{{ object.author_references|dash }}</td>
+											<td>{{ object.author_references_id|dash }}</td>
 											<td>{{ object.status|change_status|safe }}</td>
 											<td>{{ object.transaction_date|dash|safe }}</td>
 											<td>{{ object.amount|change_sum_trans|safe }}</td>

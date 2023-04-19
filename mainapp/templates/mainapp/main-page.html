@@ -248,7 +248,7 @@
 		</div> <!-- /modal-dialog -->
 	</div> <!-- /modal -->
 
-	<div class="position-fixed bottom-0 end-4 p-4" style="z-index: 11">
+	<div class="position-fixed bottom-0 top-5 end-0 p-3" style="z-index: 11">
 		<div id="liveToast" class="toast hide bg-primary" role="alert" aria-live="assertive" aria-atomic="true">
 			 <div class="toast-header">
 				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
@@ -837,6 +837,7 @@
 					return new bootstrap.Toast(toastEl) // No need for options; use the default options
 				});
 				toastList.forEach(toast => toast.show()); // This show them
+				history.pushState('', document.title, window.location.pathname);
 			}
 		});
 

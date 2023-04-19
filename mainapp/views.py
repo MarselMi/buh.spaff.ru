@@ -501,7 +501,6 @@ def transaction_update_view(request, pk):
     old_transaction = transaction.values(
         'status', 'transaction_date', 'amount', 'description', 'type_payment', 'check_img', 'sub_type_pay'
     )
-
     if request.method == 'POST':
         if request.POST.get('type') == 'check_type':
             pay_type = request.POST.get('type_payment')
@@ -967,6 +966,7 @@ def transactions_log_view(request):
                     for bal_holder in users_obj.values('available_holders'):
                         if int(holder.values('id')[0].get('id')) == int(bal_holder.get('available_holders')):
                             transaction_log_list.append(tr)
+        tr['author_references_id'] = users_obj.filter(pk=tr.get('author_references_id'))[0]
 
     count = 0
     original_count = 0
