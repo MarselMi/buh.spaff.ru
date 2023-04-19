@@ -66,6 +66,7 @@ class BalanceHolder(models.Model):
     available_superuser = models.ManyToManyField('CustomUser', related_name='Разрешить доступ для+')
     hide_for_me = models.ManyToManyField('CustomUser', related_name='Скрыть транзакции для пользователей+')
     hidden_status = models.BooleanField(blank=True, null=True, default=False)
+    color = models.CharField(max_length=40, blank=True, null=True, verbose_name='Цвет балансодержателя')
 
     def __str__(self):
         return f'{self.organization_holder}'

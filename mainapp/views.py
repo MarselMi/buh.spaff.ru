@@ -16,6 +16,11 @@ from mainapp.models import (
 )
 
 
+def fond_view(request):
+    data = {'title': 'Фонд'}
+    return render(request, 'mainapp/fond.html', data)
+
+
 def main_page_view(request):
     holders = []
     comming_sum = ''

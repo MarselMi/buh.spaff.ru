@@ -2,6 +2,11 @@
 {% load static %}
 {% block content %}
 
+<style type="text/css">
+	option.red {background-color: #cc0000; font-weight: bold; font-size: 12px;}
+	option.pink {background-color: #ffcccc;}
+</style>
+
 	<div class="row mb-4">
 		<div class="col-12">
 			<div class="card">
@@ -63,17 +68,12 @@
 									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" value="{{ holder.alias_holder }}"/>
 								</div>
 								{% if user.is_superuser %}
-									{% if holder.hidden_status %}
-										<div class="col-12 col-sm-3 mb-3">
-											<label for="hide_holder">Скрыть балансодержателя</label><br>
-											<input class="form-check-input" type="checkbox" name="hide_holder" id="hide_holder" checked/>
-										</div>
-									{% else %}
-										<div class="col-12 col-sm-3 mb-3">
-											<label for="hide_holder">Скрыть балансодержателя</label><br>
-											<input class="form-check-input" type="checkbox" name="hide_holder" id="hide_holder"/>
-										</div>
-									{% endif %}
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="hide_holder">Скрыть балансодержателя</label><br>
+										<input class="form-check-input" type="checkbox" name="hide_holder" id="hide_holder"
+											   {% if holder.hidden_status %} checked{% else %}{% endif %}/>
+									</div>
 
 									<div class="superusers_list col-12 col-sm-3 mb-3" {% if holder.hidden_status %}{% else %} hidden {% endif %}>
 										<span data-bs-toggle="tooltip" data-bs-title="Для выбора нескольких зажмите Ctrl">
@@ -91,7 +91,16 @@
 											{% endfor %}
 										</select>
 									</div>
+
 								{% endif %}
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label for="color">Отображение цвета</label>
+									<select autocomplete="off" class="form-select-color" name="color" id="color">
+										<option class="bg-red" value="bg-red">white</option>
+									</select>
+								</div>
+
 							</div>
 
 							<div class="row">

@@ -1,0 +1,92 @@
+{% extends 'mainapp/base.html' %}
+{% load static %}
+{% block content %}
+
+	<div class="row">
+		<div class="col-12">
+			<div class="card mb-4">
+				<div class="card-body">
+
+					<div class="card-header d-flex align-items-center card-header-no-bg">
+
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+							Предполагаемые затраты
+						</div>
+
+					</div>
+
+					<div class="card-body">
+						<form action="">
+							<div class="row">
+
+								<div class="card-options ms-auto">
+									<label class="label" for="month">Месяц</label>
+									<input class="form-control" autocomplete="off" name="month" id="month" placeholder="Январь"/>
+								</div>
+
+								<div class="border-top mt-4 mb-4"></div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label class="label" for="office_rent">Аренда офиса</label>
+									<input class="form-control" autocomplete="off" name="office_rent" id="office_rent" placeholder="50000"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label class="label" for="office_electric">Электричество</label>
+									<input class="form-control" autocomplete="off" name="office_rent" id="office_electric" placeholder="15000"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label class="label" for="office_heating">Отопление</label>
+									<input class="form-control" autocomplete="off" name="office_heating" id="office_heating" placeholder="8000"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label class="label" for="salary">Зарплата</label>
+									<input class="form-control" autocomplete="off" name="salary" id="salary" placeholder="500000"/>
+								</div>
+
+							</div>
+						</form>
+					</div>
+
+					<div class="card-header d-flex align-items-center card-header-no-bg">
+
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+							Предполагаемый доход
+						</div>
+
+					</div>
+
+					<div class="card-body">
+						<form action="">
+							<div class="row">
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label class="label" for="partner_program">Партнерская программа</label>
+									<input class="form-control" autocomplete="off" name="partner_program" id="partner_program" placeholder="500000"/>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label class="label" for="additional_income">Сторонний доход</label>
+									<input class="form-control" autocomplete="off" name="additional_income" id="additional_income" placeholder="15000"/>
+								</div>
+
+							</div>
+							<div class="row">
+								<div class="col-sm-3 mb-3">
+									<button class="btn btn-primary save_button" type="submit">
+										Сохранить
+									</button> <!-- /btn -->
+								</div>
+							</div>
+						</form>
+					</div>
+
+				</div> <!-- /card-body -->
+
+			</div> <!-- /card -->
+		</div> <!-- /col -->
+	</div> <!-- /row -->
+
+{% endblock content %}
