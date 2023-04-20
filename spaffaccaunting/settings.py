@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'debug_toolbar',
     'django_filters',
+    'drf_yasg',
     'mainapp',
     'authapp',
     'apiapp',
