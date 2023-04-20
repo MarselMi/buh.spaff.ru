@@ -680,7 +680,7 @@ def balance_holder_create_view(request):
         'orange': 'Оранжевый',
         'yellow': 'Желтый',
         'green': 'Зеленый',
-        'teal': 'Салатовый',
+        'teal': 'Хаки',
         'cyan': 'Небесный',
         'gray': 'Серый'
     }
@@ -768,7 +768,7 @@ def balance_holder_update_view(request, pk):
         'orange': 'Оранжевый',
         'yellow': 'Желтый',
         'green': 'Зеленый',
-        'teal': 'Салатовый',
+        'teal': 'Хаки',
         'cyan': 'Небесный',
         'gray': 'Серый'
     }
