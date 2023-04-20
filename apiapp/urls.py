@@ -17,8 +17,8 @@ urlpatterns = [
     # path('pay-types/', PayTypeModelView.as_view(), name='pay_type_api'),
     # path('bal-holders/', BalanceHolderModelView.as_view(), name='b_holders_api'),
     # path('transactions-api/', TransactionModelView.as_view(), name='transactions_api'),
-    path('add-data-tr/', AdditionalDataTransactionModelView.as_view(), name='add_data_tr_api'),
-    path('logs-transaction/', TransactionLogModelView.as_view(), name='logs_tr_api'),
+    # path('add-data-tr/', AdditionalDataTransactionModelView.as_view(), name='add_data_tr_api'),
+    # path('logs-transaction/', TransactionLogModelView.as_view(), name='logs_tr_api'),
 ]
 
 
