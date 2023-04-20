@@ -95,9 +95,20 @@
 								{% endif %}
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="color">Отображение цвета</label>
-									<select autocomplete="off" class="form-select-color" name="color" id="color">
-										<option class="bg-red" value="bg-red">white</option>
+									<label class="flex-inline" for="color">
+										Отображение цвета
+										<span id="color_example" {% if holder.color %} style="background: {{ holder.color }}"{% else %} style="background: lightblue;" {% endif %}>
+											{пример}
+										</span>
+									</label>
+									<select autocomplete="off" class="form-select" name="color" id="color">
+										{% for value, item in color_dict.items %}
+											{% if value == holder.color %}
+												<option selected value="{{ value }}">{{ item }}</option>
+											{% else %}
+												<option value="{{ value }}">{{ item }}</option>
+											{% endif %}
+										{% endfor %}
 									</select>
 								</div>
 
@@ -141,6 +152,10 @@
 			$('#superuser_available').val('');
 		}
 	})
+
+	$('#color').on('change', function(){
+		$('#color_example').attr('style', `background: ${$('#color').val()}`)
+	});
 
 	$('#holder_balance').on('input change', function(){
 		if($('#holder_balance').val()){

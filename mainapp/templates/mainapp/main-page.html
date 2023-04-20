@@ -10,7 +10,17 @@
 					<div class="row">
 						{% for count, holder in holders|enu_list %}
 						<div class="col-lg-3 col-6 text-center mb-2">
-							<div class="container-fluid" style="border-radius: 15px; background: lightblue">
+							<div {% if holder.color %}
+									 {% if holder.color == 'blue' or holder.color == 'indigo' or holder.color == 'purple' %}
+										 class="container-fluid text-white"
+									 {% else %}
+									 	class="container-fluid"
+									 {% endif %}
+								 	 style="border-radius: 15px; background: {{ holder.color }}"
+								 {% else %}
+									 class="container-fluid"
+									 style="border-radius: 15px; background: lightblue"
+								 {% endif %}>
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h1>
 										{{ holder.holder_balance|numb_format }}

@@ -670,6 +670,21 @@ def balance_holder_create_view(request):
     form_class = BalanceHolderForm
     users = CustomUser.objects.all()
 
+    color_dict = {
+        'lightblue': 'Светло-голубой',
+        'blue': 'Голубой',
+        'indigo': 'Индиго',
+        'purple': 'Фиолетовый',
+        'pink': 'Розовый',
+        'red': 'Красный',
+        'orange': 'Оранжевый',
+        'yellow': 'Желтый',
+        'green': 'Зеленый',
+        'teal': 'Салатовый',
+        'cyan': 'Небесный',
+        'gray': 'Серый'
+    }
+
     if request.method == 'POST':
 
         if request.POST.get('type') == 'check_holder':
@@ -683,6 +698,7 @@ def balance_holder_create_view(request):
         account_type = request.POST.get('account_type')
         organization_holder = request.POST.get('organization_holder')
         payment_account = request.POST.get('payment_account').replace(' ', '')
+        color = request.POST.get('color')
 
         alias_holder = None
         if request.POST.get('alias_holder'):
@@ -708,7 +724,8 @@ def balance_holder_create_view(request):
             payment_account=payment_account,
             alias_holder=alias_holder,
             holder_balance=holder_balance,
-            hidden_status=hide_holder
+            hidden_status=hide_holder,
+            color=color
         )
 
         new_balance_holder.available_superuser.set(superusers_available)
@@ -731,7 +748,7 @@ def balance_holder_create_view(request):
         return redirect('balance_holders')
 
     data = {'title': 'Создание балансодержателя', 'form': form_class, 'users': users,
-            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}}
+            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}, 'color_dict': color_dict}
 
     return render(request, 'mainapp/balance_holder_create.html', data)
 
@@ -741,7 +758,23 @@ def balance_holder_update_view(request, pk):
     users = CustomUser.objects.all()
     update_balance_holder = BalanceHolder.objects.filter(pk=pk)
 
+    color_dict = {
+        'lightblue': 'Светло-голубой',
+        'blue': 'Голубой',
+        'indigo': 'Индиго',
+        'purple': 'Фиолетовый',
+        'pink': 'Розовый',
+        'red': 'Красный',
+        'orange': 'Оранжевый',
+        'yellow': 'Желтый',
+        'green': 'Зеленый',
+        'teal': 'Салатовый',
+        'cyan': 'Небесный',
+        'gray': 'Серый'
+    }
+
     if request.method == 'POST':
+
         if request.POST.get('type') == 'check_holder':
             organization_holder = request.POST.get('organization_holder')
             if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
@@ -756,10 +789,12 @@ def balance_holder_update_view(request, pk):
                 return JsonResponse(
                     {'message': True}
                 )
+
         holder_type = request.POST.get('holder_type')
         account_type = request.POST.get('account_type')
         organization_holder = request.POST.get('organization_holder')
         payment_account = request.POST.get('payment_account').replace(' ', '')
+        color = request.POST.get('color')
 
         alias_holder = None
         if request.POST.get('alias_holder'):
@@ -789,13 +824,14 @@ def balance_holder_update_view(request, pk):
             organization_holder=organization_holder,
             payment_account=payment_account,
             alias_holder=alias_holder,
-            hidden_status=hide_holder
+            hidden_status=hide_holder,
+            color=color
         )
 
         return redirect('balance_holders')
 
     data = {'title': 'Редактирование балансодержателя', 'users': users, 'holder': update_balance_holder[0],
-            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}}
+            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}, 'color_dict': color_dict}
 
     return render(request, 'mainapp/balance_holder_update.html', data)
 

@@ -68,6 +68,21 @@
 										</select>
 									</div>
 								{% endif %}
+
+								<div class="col-12 col-sm-3 mb-3">
+									<label class="flex-inline" for="color">
+										Отображение цвета
+										<span id="color_example" style="background: lightblue;">
+											{пример}
+										</span>
+									</label>
+									<select autocomplete="off" class="form-select" name="color" id="color">
+										{% for value, item in color_dict.items %}
+											<option value="{{ value }}">{{ item }}</option>
+										{% endfor %}
+									</select>
+								</div>
+
 							</div>
 
 							<div id="accordionStatsDaysFilter">
@@ -230,6 +245,10 @@
 			$('#holder_type').addClass('is-invalid');
 		}
 	});
+
+	$('#color').on('change', function(){
+		$('#color_example').attr('style', `background: ${$('#color').val()}`)
+	})
 
 	// $('form').on('change keyup input click focusot live', function(){
 		

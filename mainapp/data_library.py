@@ -136,7 +136,8 @@ def get_allow_balance_holders(pk, simple_user=True):
                         `mb`.`holder_balance`,
                         `mb`.`payment_account`,
                         `mb`.`account_type`,
-                        `mb`.`hidden_status`
+                        `mb`.`hidden_status`,
+                        `mb`.`color`
                     FROM `mainapp_balanceholder` mb
                     WHERE 
                         IF(`mb`.`hidden_status` = 1, `mb`.`hidden_status` = 1 AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
