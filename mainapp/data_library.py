@@ -480,6 +480,40 @@ def get_allow_additional_transactions(pk, simple_user=''):
     return response
 
 
+def get_bdr_data(start=None, end=None):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        sum_period = ''
+        if start and end:
+            sum_period = 'SUM '
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT 
+                        `mbdr`.`month_year`,
+                        {sum_period}(`mbdr`.`office_rent`),
+                        {sum_period}(`mbdr`.`office_electric`),
+                        {sum_period}(`mbdr`.`office_heating`),
+                        {sum_period}(`mbdr`.`salary`),
+                        {sum_period}(`mbdr`.`unplanned_expenses`),
+                        {sum_period}(`mbdr`.`profit_partnership`),
+                        {sum_period}(`mbdr`.`profit_other`)
+                    FROM `mainapp_bdrfond` mbdr
+                    WHERE `mbdr`.`month_year` = '{start}'
+                '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
 # def filtered_transactions():
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),

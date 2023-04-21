@@ -1,3 +1,4 @@
+import datetime
 import json
 import decimal
 import math
@@ -12,12 +13,81 @@ from mainapp.forms import (
 )
 from mainapp.models import (
     CustomUser, Transaction, BalanceHolder, PayType,
-    AdditionalDataTransaction, TransactionLog, SubPayType
+    AdditionalDataTransaction, TransactionLog, SubPayType, BdrFond
 )
 
 
 def fond_view(request):
-    data = {'title': 'Фонд'}
+
+    month_dict = {
+        '01-01': 'Январь',
+        '01-02': 'Февраль',
+        '01-03': 'Март',
+        '01-04': 'Апрель',
+        '01-05': 'Май',
+        '01-06': 'Июнь',
+        '01-07': 'Июль',
+        '01-08': 'Август',
+        '01-09': 'Сентябрь',
+        '01-10': 'Октябрь',
+        '01-11': 'Ноябрь',
+        '01-12': 'Декабрь'
+    }
+    date_today = dt.today().strftime('%Y-%m-%d')
+    date_today = f'{date_today[:-2]}01'
+
+    bdr_info = get_bdr_data(start=date_today)[0]
+    sum_expenses = 0
+    sum_profit = 0
+    for i in bdr_info:
+        if bdr_info.get('office_electric'):
+            sum_expenses += bdr_info.get('office_electric')
+        if bdr_info.get('office_heating'):
+            sum_expenses += bdr_info.get('office_heating')
+        if bdr_info.get('salary'):
+            sum_expenses += bdr_info.get('salary')
+        if bdr_info.get('unplanned_expenses'):
+            sum_expenses += bdr_info.get('unplanned_expenses')
+
+        if bdr_info.get('profit_partnership'):
+            sum_profit += bdr_info.get('profit_partnership')
+        if bdr_info.get('profit_other'):
+            sum_profit += bdr_info.get('profit_other')
+
+    # bdr_info['sum_expenses'] = sum_expenses
+    # bdr_info['sum_profit'] = sum_profit
+
+    print(bdr_info)
+    print(sum_expenses)
+    print(sum_profit)
+
+    if request.method == 'POST':
+
+        month = request.POST.get('month')
+        year = request.POST.get('year')
+        rent = request.POST.get('office_rent')
+        electrical = request.POST.get('office_electric')
+        heating = request.POST.get('office_heating')
+        salary = request.POST.get('salary')
+        unplanned_expenses = request.POST.get('unplanned_expenses')
+        partnership = request.POST.get('partner_program')
+        other_profit = request.POST.get('additional_income')
+        dates = dt.strptime(f'{month}-{year}', '%d-%m-%Y').date()
+
+        new_bdr = BdrFond
+        new_bdr.objects.create(
+            month_year=dates,
+            office_rent=rent,
+            office_electric=electrical,
+            office_heating=heating,
+            salary=salary,
+            unplanned_expenses=unplanned_expenses,
+            profit_partnership=partnership,
+            profit_other=other_profit
+        )
+
+    data = {'title': 'Фонд', 'month_dict': month_dict, 'bdr_info': bdr_info}
+
     return render(request, 'mainapp/fond.html', data)
 
 
@@ -779,16 +849,10 @@ def balance_holder_update_view(request, pk):
             organization_holder = request.POST.get('organization_holder')
             if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
                 if BalanceHolder.objects.filter(organization_holder=organization_holder)[0] == BalanceHolder.objects.filter(pk=pk)[0]:
-                    return JsonResponse(
-                        {'message': True}
-                    )
-                return JsonResponse(
-                    {'message': False}
-                )
+                    return JsonResponse({'message': True})
+                return JsonResponse({'message': False})
             else:
-                return JsonResponse(
-                    {'message': True}
-                )
+                return JsonResponse({'message': True})
 
         holder_type = request.POST.get('holder_type')
         account_type = request.POST.get('account_type')
