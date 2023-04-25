@@ -7,20 +7,63 @@
 			<div class="card mb-4">
 				<div class="card-body">
 					<div id="accordion">
-						<div id="collapse-1" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordion">
-
-							<div class="card-header d-flex align-items-center card-header-no-bg">
-
-								<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
-									Предполагаемые затраты
+						<div id="collapse-1" class="row accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordion">
+							
+							<div class="col-12 col-sm-3 mb-3">
+								
+								<div class="card-header d-flex align-items-center card-header-no-bg">
+									<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+										Предполагаемые затраты
+									</div>
 								</div>
 
+							</div>	
+
+							<div class="col-12 col-sm-3 mb-3">
+
+								<label for="balance_holder">Для балансодержателя</label>
+								<input class="form-control" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+								<datalist id="balance_holder_list">
+									{% for holder in balance_holders %}
+									<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
+									{% endfor %}
+								</datalist>
+
 							</div>
+
+							<div class="col-12 col-sm-3 mb-3 additional_params" hidden>
+								
+								<label for="category_id">Добавить поле категории/подкатегории</label>
+								<select class="form-select" name="category_id" id="category_id">
+									
+									{% for type in type_pay %}
+										<option value="pay_type&{{ type.id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
+									{% endfor %}
+
+									{% for sub in sub_type %}
+										<option value="sub_pay&{{ sub.id }}&{{ sub.sub_type }}">{{ sub.sub_type }}</option>
+									{% endfor %}
+
+								</select>
+
+							</div>
+
+							<div class="col-12 col-sm-3 mb-3 mt-4 additional_params" hidden>
+
+								<button class="btn btn-primary add_category">
+									Добавить
+								</button>
+
+							</div>
+
+							<div class="border-top mt-4 mb-4"></div>
 
 							<form action="" method="POST" type="add_pdr">
 								{% csrf_token %}
 								<div class="card-body">
 									<div class="row">
+										
+										<input id="bal_hol_post" name="balance_holder" hidden/>
 
 										<div class="col-12 col-sm-3 mb-3">
 											<label class="label" for="month">Месяц</label>
@@ -38,39 +81,20 @@
 
 										<div class="border-top mt-4 mb-4"></div>
 
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="office_rent">Аренда офиса</label>
-											<input class="form-control" autocomplete="off" name="office_rent" id="office_rent" placeholder="50000"/>
-										</div>
+										<div class="row category_list">
 
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="office_electric">Электричество</label>
-											<input class="form-control" autocomplete="off" name="office_electric" id="office_electric" placeholder="15000"/>
-										</div>
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="office_heating">Отопление</label>
-											<input class="form-control" autocomplete="off" name="office_heating" id="office_heating" placeholder="8000"/>
-										</div>
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="salary">Зарплата</label>
-											<input class="form-control" autocomplete="off" name="salary" id="salary" placeholder="500000"/>
-										</div>
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="unplanned_expenses">Незапланированные расходы</label>
-											<input class="form-control" autocomplete="off" name="unplanned_expenses" id="unplanned_expenses" placeholder="30000"/>
-										</div>
+										</div>	
 
 									</div>
 
-									<div class="card-header d-flex align-items-center card-header-no-bg">
+								</div>
 
-										<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
-											Предполагаемый доход
-										</div>
+								<div class="border-top mt-4 mb-4"></div>
 
+								<div class="card-header d-flex align-items-center card-header-no-bg">
+
+									<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+										Предполагаемый доход
 									</div>
 
 								</div>
@@ -81,12 +105,12 @@
 
 										<div class="col-12 col-sm-3 mb-3">
 											<label class="label" for="partner_program">Партнерская программа</label>
-											<input class="form-control" autocomplete="off" name="partner_program" id="partner_program" placeholder="500000"/>
+											<input class="form-control" autocomplete="off" name="type_pay&1&Партнерская программа" id="partner_program" placeholder="500000"/>
 										</div>
 
 										<div class="col-12 col-sm-3 mb-3">
 											<label class="label" for="additional_income">Сторонний доход</label>
-											<input class="form-control" autocomplete="off" name="additional_income" id="additional_income" placeholder="15000"/>
+											<input class="form-control" autocomplete="off" name="type_pay&2&Сторонний доход" id="additional_income" placeholder="15000"/>
 										</div>
 
 									</div>
@@ -95,7 +119,7 @@
 
 										<div class="col-sm-3">
 											<button class="btn btn-primary save_button" type="submit">
-												Добавить
+												Создать
 											</button>
 										</div>
 
@@ -108,124 +132,6 @@
 
 					<button onclick="$(this).text($(this).text() == 'Добавить' ? 'Скрыть' : 'Добавить');" type="button" class="mb-3 btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false" aria-controls="collapse-1">Добавить</button>
 
-					<div class="table-responsive">
-						<table class="table table-bordered text-nowrap mb-0">
-							<thead class="text-center">
-								<tr>
-									<th class="text-center" rowspan="2">Категория</th>
-									<th colspan="2">
-										{{ bdr_info.month_year }}
-									</th>
-									<th colspan="2">Суммарно</th>
-									<th colspan="2">Отклонения</th>
-									<th rowspan="2">Итого</th>
-								</tr>
-								<tr>
-									<th>Предполагаемый</th>
-									<th>Фактический</th>
-									<th>Предполагаемый</th>
-									<th>Фактический</th>
-									<th>В руб.</th>
-									<th>В процентах</th>
-								</tr>
-							</thead>
-							<tbody class="text-center">
-								<tr class="align-middle">
-									<td class="h6 text-uppercase fw-bold">Расходы</td>
-									<td></td>
-									<td></td>
-									<td rowspan="5">
-										{{ bdr_info.sum_expenses }}
-									</td>
-									<td rowspan="5" style="background: red">
-										479 000<br>(факт расх)
-									</td>
-									<td rowspan="5">
-										-4 000<br>(предп-факт)<br>расх
-									</td>
-									<td rowspan="5">
-										-0,8 % <br>((откл-руб) /<br>предп расх*100)
-									</td>
-									<td rowspan="8" style="background: cyan">
-										106 000<br>(итог откл.руб)
-									</td>
-								</tr>
-								<tr>
-									<td>Аренда офиса</td>
-									<td>
-										{{ bdr_info.office_rent }}
-									</td>
-									<td style="background: lightblue">
-										50 000<br>(факт аренда)
-									</td>
-								</tr>
-
-								<tr>
-									<td>Электричество</td>
-									<td>
-										{{ bdr_info.office_electric }}
-									</td>
-									<td style="background: red">
-										20 000<br>(факт эл)
-									</td>
-								</tr>
-								<tr>
-									<td>Отопление</td>
-									<td>
-										{{ bdr_info.office_heating }}
-									</td>
-									<td style="background: cyan">
-										9 000<br>(факт отоп)
-									</td>
-								</tr>
-								<tr>
-									<td>Зарплата</td>
-									<td>
-										{{ bdr_info.salary }}
-									</td>
-									<td style="background: lightblue">
-										400 000<br>(факт зп)
-									</td>
-								</tr>
-
-								<tr class="align-middle">
-									<td class="h6 text-uppercase fw-bold">Доход</td>
-									<td></td>
-									<td></td>
-									<td rowspan="3">
-										{{ bdr_info.sum_profit }}
-									</td>
-									<td rowspan="3" style="background: cyan">
-										960 000<br>(сум доход факт)
-									</td>
-									<td rowspan="3">
-										110 000<br>(сум (факт-предп))
-									</td>
-									<td rowspan="3">
-										13 %<br>предп/(сум (факт-предп))*100
-									</td>
-								</tr>
-
-								<tr>
-									<td>Партнерская программа</td>
-									<td>
-										{{ bdr_info.profit_partnership }}
-									</td>
-									<td style="background: cyan">860 000</td>
-								</tr>
-								<tr>
-									<td>Сторонний доход</td>
-									<td>
-										{{ bdr_info.profit_other }}
-									</td>
-									<td style="background: cyan">
-										100 000<br>факт сторон
-									</td>
-								</tr>
-							</tbody>
-						</table> <!-- /table -->
-					</div>
-
 					<div class="card-header d-flex align-items-center card-header-no-bg">
 
 						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mt-3">
@@ -234,27 +140,43 @@
 
 					</div>
 
-					<div class="row">
+					<form method="POST">
+						{% csrf_token %}
+						<div class="row">
 
-						
-						<div class="col-12 col-sm-3 mb-3">
-							<label class="label" for="start_pdr">Старт</label>
-							<input class="form-control" autocomplete="off" name="start_pdr" id="start_pdr" placeholder="01-2023"/>
+							<div class="col-12 col-sm-3 mb-3">
+								<label for="balance_holder_req">Балансодержатель</label>
+								<input class="form-control" name="balance_holder_req" id="balance_holder_req" autocomplete="off" onfocus="this.value=''" list="balance_holder_req_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+								<datalist id="balance_holder_req_list">
+									{% for holder in balance_holders %}
+									<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
+									{% endfor %}
+								</datalist>
+
+								<div class="invalid-feedback">
+									Пожалуйста, выберите балансодержателя
+								</div>
+							</div>
+							
+							<div class="col-12 col-sm-3 mb-3">
+								<label class="label" for="start_pdr">Старт</label>
+								<input class="form-control" autocomplete="off" name="start_pdr" id="start_pdr" placeholder="01-2023"/>
+							</div>
+							
+							<div class="col-12 col-sm-3 mb-3">
+								<label class="label" for="end_pdr">Конец</label>
+								<input class="form-control" autocomplete="off" name="end_pdr" id="end_pdr" placeholder="01-2023"/>
+							</div>
+
+							<div class="">
+								<button class="btn btn-primary show_pdr" type="submit">
+									Посмотреть
+								</button>
+							</div>
+
 						</div>
 
-						
-						<div class="col-12 col-sm-3 mb-3">
-							<label class="label" for="end_pdr">Конец</label>
-							<input class="form-control" autocomplete="off" name="end_pdr" id="end_pdr" placeholder="01-2023"/>
-						</div>
-
-						<div class="">
-							<button class="btn btn-primary show_pdr" type="submit">
-								Посмотреть
-							</button>
-						</div>
-
-					</div>
+					</form>	
 
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
@@ -263,17 +185,78 @@
 
 	<script type="text/javascript">
 
+		var url = document.location.href;
+		var a = document.cookie.split(';');
+		var token = ''
+
+		for (i = 0; i < a.length; i++) {
+			var b = a[i].split('=')
+			b[0] = b[0].replace(/\s+/g, '')
+			if (b[0] == 'csrftoken') {
+			token = b[1]
+			}
+		}
+
 		$(function(){
 			$("#start_pdr").datepicker({
+				changeMonth: true,
 				dateFormat: 'mm-yy',
 				maxDate: '0'})
 		});
 
 		$(function(){
 			$("#end_pdr").datepicker({
+				changeMonth: true,
 				dateFormat: 'mm-yy',
 				maxDate: '0'})
 		});
+
+		$('#balance_holder').on('input', function(){
+			if($('#balance_holder').val()){
+				$('#bal_hol_post').val($('#balance_holder').val())
+				$.ajax(
+				{
+					url: url,
+					method: 'POST',
+					data: {
+						csrfmiddlewaretoken: token,
+						type: 'balance_holder',
+						bal_holder: $('#balance_holder').val()
+					}
+				}).then(function(result){
+					console.log(result.bal_holder)
+					if(result.bal_holder.length){
+						$('.additional_params').attr('hidden', 'true');
+						var list_el = result.bal_holder;
+						for (let i=0; list_el.length > i; i++){
+							console.log(list_el[i][0])
+							var new_category = `<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="${list_el[i][1].html_el_id}">${list_el[i][1].label}</label>
+										<input class="form-control" autocomplete="off" name="${list_el[i][0]}" id="${list_el[i][1].html_el_id}" placeholder="30000"/>
+									</div>`;
+							$('.category_list').append(new_category)
+						}
+					}else{
+						$('.additional_params').removeAttr('hidden');
+					}
+				}).catch(function(err){
+					var x = 0
+				})
+			}
+		})
+
+		$('.add_category').on('click', function(){
+			if($('#category_id').val()){
+				var inputEls = $('#category_id').val().split('&')
+				var new_category = `<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="${inputEls[0]}_${inputEls[1]}">${inputEls[2]}</label>
+										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}" id="${inputEls[0]}_${inputEls[1]}" placeholder="3000"/>
+									</div>`
+				if(!$('.category_list').find($(`#${inputEls[0]}_${inputEls[1]}`)).length){
+					$('.category_list').append(new_category)
+				}
+			}
+		})
 
 	</script>
 

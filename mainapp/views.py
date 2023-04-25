@@ -1,4 +1,3 @@
-import datetime
 import json
 import decimal
 import math
@@ -19,6 +18,77 @@ from mainapp.models import (
 
 def fond_view(request):
 
+    pdr_fond_show = None
+    if request.method == 'POST':
+
+        if request.POST.get('balance_holder'):
+            bal_hold = BalanceHolder.objects.filter(organization_holder=request.POST.get('balance_holder'))[0]
+            month = request.POST.get('month')
+            year = request.POST.get('year')
+            dates = dt.strptime(f'{month}-{year}', '%d-%m-%Y').date()
+
+            new_dict = {
+                'balance_holder_id': '',
+                'month_year': '',
+                'params_data': {}
+            }
+
+            didi = dict(request.POST)
+
+            del didi['csrfmiddlewaretoken']
+            del didi['month']
+            del didi['year']
+            del didi['balance_holder']
+
+            for i in didi:
+                new_dict['params_data'].setdefault(
+                    i,
+                    {
+                        'value': didi[i][0],
+                        'type_id': (i.split('&'))[1],
+                        'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}",
+                        'label': (i.split('&'))[2]
+                    }
+                )
+
+            new_dict['balance_holder_id'] = bal_hold
+            new_dict['month_year'] = dates
+            json.dumps(new_dict['params_data'])
+            new_bdr = BdrFond
+            new_bdr.objects.create(**new_dict)
+
+        if request.POST.get('start_pdr'):
+            bal_req = request.POST.get('balance_holder_req')
+            bal_req_id = BalanceHolder.objects.filter(organization_holder=bal_req)[0].pk
+            req_start_date = f"01-{request.POST.get('start_pdr')}"
+            start_date = dt.strptime(req_start_date, '%d-%m-%Y')
+            if request.POST.get('end_pdr'):
+                req_end_date = dt.strptime(f"01-{request.POST.get('end_pdr')}", '%d-%m-%Y')
+            else:
+                req_end_date = start_date
+
+            pdr_fond_show = get_bdr_data(balance_holder=bal_req_id, start=req_start_date, end=req_end_date)[0]
+            pdr_fond_show['params_data'] = json.loads(pdr_fond_show.get('params_data'))
+            print(pdr_fond_show)
+
+        if request.POST.get('type') == 'balance_holder':
+            try:
+                bal_holder = BalanceHolder.objects.filter(organization_holder=request.POST.get('bal_holder'))[0].pk
+                pdr_info = BdrFond.objects.filter(balance_holder_id=bal_holder).last()
+                data_output = pdr_info.params_data
+                list_data = []
+
+                for i in data_output:
+                    list_data.append([i, data_output[i]])
+                for i in list_data:
+                    print(i)
+
+                return JsonResponse({'bal_holder': list_data})
+            except:
+                pdr_info = []
+                return JsonResponse({'bal_holder': pdr_info})
+
+
     month_dict = {
         '01-01': 'Январь',
         '01-02': 'Февраль',
@@ -33,60 +103,25 @@ def fond_view(request):
         '01-11': 'Ноябрь',
         '01-12': 'Декабрь'
     }
+    balance_holders = []
+    if request.user.is_superuser:
+        balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
+    else:
+        balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=True)
+
+    type_pay = PayType.objects.all()
+    sub_type = SubPayType.objects.all()
+
     date_today = dt.today().strftime('%Y-%m-%d')
     date_today = f'{date_today[:-2]}01'
 
-    bdr_info = get_bdr_data(start=date_today)[0]
-    sum_expenses = 0
-    sum_profit = 0
-    for i in bdr_info:
-        if bdr_info.get('office_electric'):
-            sum_expenses += bdr_info.get('office_electric')
-        if bdr_info.get('office_heating'):
-            sum_expenses += bdr_info.get('office_heating')
-        if bdr_info.get('salary'):
-            sum_expenses += bdr_info.get('salary')
-        if bdr_info.get('unplanned_expenses'):
-            sum_expenses += bdr_info.get('unplanned_expenses')
+    try:
+        bdr_info = get_bdr_data(start=date_today)[0]
+    except:
+        bdr_info = ''
 
-        if bdr_info.get('profit_partnership'):
-            sum_profit += bdr_info.get('profit_partnership')
-        if bdr_info.get('profit_other'):
-            sum_profit += bdr_info.get('profit_other')
-
-    # bdr_info['sum_expenses'] = sum_expenses
-    # bdr_info['sum_profit'] = sum_profit
-
-    print(bdr_info)
-    print(sum_expenses)
-    print(sum_profit)
-
-    if request.method == 'POST':
-
-        month = request.POST.get('month')
-        year = request.POST.get('year')
-        rent = request.POST.get('office_rent')
-        electrical = request.POST.get('office_electric')
-        heating = request.POST.get('office_heating')
-        salary = request.POST.get('salary')
-        unplanned_expenses = request.POST.get('unplanned_expenses')
-        partnership = request.POST.get('partner_program')
-        other_profit = request.POST.get('additional_income')
-        dates = dt.strptime(f'{month}-{year}', '%d-%m-%Y').date()
-
-        new_bdr = BdrFond
-        new_bdr.objects.create(
-            month_year=dates,
-            office_rent=rent,
-            office_electric=electrical,
-            office_heating=heating,
-            salary=salary,
-            unplanned_expenses=unplanned_expenses,
-            profit_partnership=partnership,
-            profit_other=other_profit
-        )
-
-    data = {'title': 'Фонд', 'month_dict': month_dict, 'bdr_info': bdr_info}
+    data = {'title': 'Фонд', 'month_dict': month_dict, 'bdr_info': bdr_info, 'pdr_fond_show': pdr_fond_show,
+            'balance_holders': balance_holders, 'type_pay': type_pay, 'sub_type': sub_type}
 
     return render(request, 'mainapp/fond.html', data)
 

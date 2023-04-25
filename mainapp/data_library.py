@@ -480,7 +480,7 @@ def get_allow_additional_transactions(pk, simple_user=''):
     return response
 
 
-def get_bdr_data(start=None, end=None):
+def get_bdr_data(balance_holder='', start='', end=''):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -489,22 +489,24 @@ def get_bdr_data(start=None, end=None):
                            charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
     try:
-        sum_period = ''
-        if start and end:
-            sum_period = 'SUM '
+        if start == end:
+            where = f'''WHERE `mbdr`.`month_year` LIKE '{start}%' '''
+        else:
+            where = f'''WHERE `mbdr`.`month_year` >= '{start}' 
+            AND
+            `mbdr`.`month_year` <= '{end}'
+            '''
+        balance_sql = ''
+        if balance_holder:
+            balance_sql = f'''AND
+            `mbdr`.`balance_holder_id` = {balance_holder}
+            '''
         with conn.cursor() as cursor:
             response = f'''
-                    SELECT 
-                        `mbdr`.`month_year`,
-                        {sum_period}(`mbdr`.`office_rent`),
-                        {sum_period}(`mbdr`.`office_electric`),
-                        {sum_period}(`mbdr`.`office_heating`),
-                        {sum_period}(`mbdr`.`salary`),
-                        {sum_period}(`mbdr`.`unplanned_expenses`),
-                        {sum_period}(`mbdr`.`profit_partnership`),
-                        {sum_period}(`mbdr`.`profit_other`)
+                    SELECT *
                     FROM `mainapp_bdrfond` mbdr
-                    WHERE `mbdr`.`month_year` = '{start}'
+                    {where}
+                    {balance_sql}
                 '''
             cursor.execute(response)
             response = cursor.fetchall()

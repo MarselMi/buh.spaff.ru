@@ -109,11 +109,14 @@ def change_sum_trans(obj):
 
 @register.filter
 def numb_format(balance):
-    if round(balance, 2) % 1 == 0:
-        return '{0:,}'.format(int(balance)).replace(',', ' ')
+    if balance:
+        if round(balance, 2) % 1 == 0:
+            return '{0:,}'.format(int(balance)).replace(',', ' ')
+        else:
+            balance = round(balance, 2)
+            return '{0:,}'.format(balance).replace(',', ' ').replace('.', ',')
     else:
-        balance = round(balance, 2)
-        return '{0:,}'.format(balance).replace(',', ' ').replace('.', ',')
+        return 0
 
 
 @register.filter

@@ -186,14 +186,9 @@ class TransactionLog(models.Model):
 
 
 class BdrFond(models.Model):
+    balance_holder_id = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='brdfond_balanceholder', verbose_name='Балансодержатель')
     month_year = models.DateField(max_length=10, null=True, blank=True, verbose_name='Планируемый 01-месяц-год')
-    office_rent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Аренда Офиса')
-    office_electric = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Электричество Офис')
-    office_heating = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Отопление Офис')
-    salary = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Зарплата')
-    unplanned_expenses = models.DecimalField(max_digits=10, decimal_places=2,
-                                             verbose_name='Незапланированные расходы')
 
-    profit_partnership = models.DecimalField(max_digits=10, decimal_places=2,
-                                             verbose_name='Доход с партнерской программы')
-    profit_other = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сторонний доход')
+    params_data = models.JSONField(null=True, blank=True, verbose_name='Параметры для БДР')
+
