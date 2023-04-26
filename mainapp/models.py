@@ -188,7 +188,7 @@ class TransactionLog(models.Model):
 class BdrFond(models.Model):
     balance_holder_id = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
                                           related_name='brdfond_balanceholder', verbose_name='Балансодержатель')
-    month_year = models.DateField(max_length=10, null=True, blank=True, verbose_name='Планируемый 01-месяц-год')
+    month_year = models.DateField(max_length=10, null=True, blank=True, verbose_name='Период для БДР')
 
-    params_data = models.JSONField(null=True, blank=True, verbose_name='Параметры для БДР')
+    params_data = models.JSONField(null=True, blank=True, verbose_name='Планируемый расход/расход')
 

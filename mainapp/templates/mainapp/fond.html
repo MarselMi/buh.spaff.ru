@@ -8,78 +8,82 @@
 				<div class="card-body">
 					<div id="accordion">
 						<div id="collapse-1" class="row accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordion">
-							
-							<div class="col-12 col-sm-3 mb-3">
-								
-								<div class="card-header d-flex align-items-center card-header-no-bg">
-									<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
-										Предполагаемые затраты
-									</div>
-								</div>
-
-							</div>	
-
-							<div class="col-12 col-sm-3 mb-3">
-
-								<label for="balance_holder">Для балансодержателя</label>
-								<input class="form-control" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
-								<datalist id="balance_holder_list">
-									{% for holder in balance_holders %}
-									<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
-									{% endfor %}
-								</datalist>
-
-							</div>
-
-							<div class="col-12 col-sm-3 mb-3 additional_params" hidden>
-								
-								<label for="category_id">Добавить поле категории/подкатегории</label>
-								<select class="form-select" name="category_id" id="category_id">
-									
-									{% for type in type_pay %}
-										<option value="pay_type&{{ type.id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
-									{% endfor %}
-
-									{% for sub in sub_type %}
-										<option value="sub_pay&{{ sub.id }}&{{ sub.sub_type }}">{{ sub.sub_type }}</option>
-									{% endfor %}
-
-								</select>
-
-							</div>
-
-							<div class="col-12 col-sm-3 mb-3 mt-4 additional_params" hidden>
-
-								<button class="btn btn-primary add_category">
-									Добавить
-								</button>
-
-							</div>
-
-							<div class="border-top mt-4 mb-4"></div>
 
 							<form action="" method="POST" type="add_pdr">
 								{% csrf_token %}
+								<div class="row">
+									<div class="col-12 col-sm-3 mb-3">
+
+										<label for="balance_holder">Для балансодержателя</label>
+										<input class="form-control" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+										<datalist id="balance_holder_list">
+											{% for holder in balance_holders %}
+											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
+											{% endfor %}
+										</datalist>
+
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="month">Месяц</label>
+										<select class="form-select" name="month" id="month">
+											{% for key, val in month_dict.items %}
+												<option value="{{ key }}">{{ val }}</option>
+											{% endfor %}
+										</select>
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="year">Год</label>
+										<input class="form-control" autocomplete="off" name="year" id="year" placeholder="2023"/>
+									</div>
+								</div>
+
+								<div class="border-top mt-1"></div>
+
+								<div class="row">
+									
+									<div class="col-12 col-sm-3">
+										
+										<div class="card-header d-flex align-items-center card-header-no-bg">
+											<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2">
+												Предполагаемые затраты
+											</div>
+										</div>
+
+									</div>
+									<div class="col-12 col-sm-3 mb-1 additional_params" hidden>
+										
+										<label for="category_id">Добавить поле категории/подкатегории</label>
+										<select class="form-select" name="category_id" id="category_id">
+											
+											{% for type in type_pay %}
+												<option value="pay_type&{{ type.id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
+											{% endfor %}
+
+											{% for sub in sub_type %}
+												<option value="sub_pay&{{ sub.id }}&{{ sub.sub_type }}">{{ sub.sub_type }}</option>
+											{% endfor %}
+
+										</select>
+
+									</div>
+
+									<div class="col-12 col-sm-3 mb-1 mt-4 additional_params" hidden>
+
+										<a class="btn btn-primary add_category">
+											Добавить
+										</a>
+
+									</div>
+								</div>	
+								
 								<div class="card-body">
 									<div class="row">
 										
 										<input id="bal_hol_post" name="balance_holder" hidden/>
 
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="month">Месяц</label>
-											<select class="form-select" name="month" id="month">
-												{% for key, val in month_dict.items %}
-													<option value="{{ key }}">{{ val }}</option>
-												{% endfor %}
-											</select>
-										</div>
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="year">Год</label>
-											<input class="form-control" autocomplete="off" name="year" id="year" placeholder="2023"/>
-										</div>
-
-										<div class="border-top mt-4 mb-4"></div>
+										<div class="border-top mt-1 mb-4"></div>
 
 										<div class="row category_list">
 
@@ -89,53 +93,75 @@
 
 								</div>
 
-								<div class="border-top mt-4 mb-4"></div>
+								<div class="border-top mt-1 mb-4"></div>
 
-								<div class="card-header d-flex align-items-center card-header-no-bg">
+								<div class="row">
+									
+									<div class="col-12 col-sm-3 mb-3">
+										<div class="card-header d-flex align-items-center card-header-no-bg ">
+											<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
+												Предполагаемый доход
+											</div>
+										</div>
+									</div>
 
-									<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mb-3">
-										Предполагаемый доход
+									<div class="col-12 col-sm-3 mb-3 profit_params" hidden>
+									
+										<label for="category_profit_id">Добавить поле категории/подкатегории</label>
+										<select class="form-select" id="category_profit_id">
+											
+											{% for type in type_pay %}
+												<option value="pay_type&{{ type.id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
+											{% endfor %}
+		
+											{% for sub in sub_type %}
+												<option value="sub_pay&{{ sub.id }}&{{ sub.sub_type }}">{{ sub.sub_type }}</option>
+											{% endfor %}
+		
+										</select>
+		
+									</div>
+		
+									<div class="col-12 col-sm-3 mb-1 mt-4 profit_params" hidden>
+		
+										<a class="btn btn-primary add_profit_category">
+											Добавить
+										</a>
+		
 									</div>
 
 								</div>
 
+								<div class="border-top mt-1 mb-4"></div>
+
 								<div class="card-body">
 
-									<div class="row">
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="partner_program">Партнерская программа</label>
-											<input class="form-control" autocomplete="off" name="type_pay&1&Партнерская программа" id="partner_program" placeholder="500000"/>
-										</div>
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label class="label" for="additional_income">Сторонний доход</label>
-											<input class="form-control" autocomplete="off" name="type_pay&2&Сторонний доход" id="additional_income" placeholder="15000"/>
-										</div>
+									<div class="row profit_params_row">
 
 									</div>
 
+									<div class="border-top mt-1 mb-4"></div>
+									
 									<div class="row">
-
 										<div class="col-sm-3">
 											<button class="btn btn-primary save_button" type="submit">
 												Создать
 											</button>
 										</div>
-
 									</div>
-
+									
 								</div>
+								<div class="border-top mt-1 mb-4"></div>
 							</form>	
 						</div>
 					</div>
 
-					<button onclick="$(this).text($(this).text() == 'Добавить' ? 'Скрыть' : 'Добавить');" type="button" class="mb-3 btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false" aria-controls="collapse-1">Добавить</button>
+					<button onclick="$(this).text($(this).text() == 'Добавить' ? 'Скрыть' : 'Добавить');" type="button" class="mb-1 btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false" aria-controls="collapse-1">Добавить</button>
 
 					<div class="card-header d-flex align-items-center card-header-no-bg">
 
 						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mt-3">
-							Задать период для просмотра данных
+							Выбрать балансодержателя и период для просмотра данных
 						</div>
 
 					</div>
@@ -146,37 +172,97 @@
 
 							<div class="col-12 col-sm-3 mb-3">
 								<label for="balance_holder_req">Балансодержатель</label>
-								<input class="form-control" name="balance_holder_req" id="balance_holder_req" autocomplete="off" onfocus="this.value=''" list="balance_holder_req_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
-								<datalist id="balance_holder_req_list">
-									{% for holder in balance_holders %}
-									<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
-									{% endfor %}
-								</datalist>
+								<select class="form-select" name="balance_holder_req" id="balance_holder_req">
 
-								<div class="invalid-feedback">
-									Пожалуйста, выберите балансодержателя
-								</div>
+									<option selected value="">Выберите</option>
+									{% for holder in bdr_fond_information %}
+									<option value="{{ holder.bal_hol }}">{{ holder.bal_hol }}</option>
+									{% endfor %}
+
+								</select>
+
 							</div>
-							
-							<div class="col-12 col-sm-3 mb-3">
-								<label class="label" for="start_pdr">Старт</label>
-								<input class="form-control" autocomplete="off" name="start_pdr" id="start_pdr" placeholder="01-2023"/>
+
+							<div class="col-12 col-sm-3 mb-3 period_req_div_el" hidden>
+								<label class="label" for="start_bdr">Старт</label>
+								<select class="form-select date_select" name="start_bdr" id="start_bdr">
+
+								</select>
 							</div>
-							
-							<div class="col-12 col-sm-3 mb-3">
-								<label class="label" for="end_pdr">Конец</label>
-								<input class="form-control" autocomplete="off" name="end_pdr" id="end_pdr" placeholder="01-2023"/>
+
+							<div class="col-12 col-sm-3 mb-3 period_req_div_el" hidden>
+								<label class="label" for="end_bdr">Конец</label>
+								<select class="form-select date_select" name="end_bdr" id="end_bdr">
+
+								</select>
 							</div>
 
 							<div class="">
-								<button class="btn btn-primary show_pdr" type="submit">
+								<a class="btn btn-primary show_pdr">
 									Посмотреть
-								</button>
+								</a>
 							</div>
 
 						</div>
-
 					</form>	
+
+					<div class="table-responsive mt-4">
+						<div class="mb-3">
+							Данные по: <span id="information_tabel" class="h6 fw-bold text-uppercase"></span>
+						</div>
+						<table class="text-center table table-bordered text-nowrap mb-0 table-hover">
+							<thead>
+
+								<tr>
+									<th>Категория</th>
+									<th>Предполагаемый (руб)</th>
+									<th>Фактический (руб)</th>
+									<th>Отклонения (руб)</th>
+									<th>Отклонения (%)</th>
+								</tr>
+
+							</thead>
+							<tbody>
+
+								<tr class="align-middle">
+									<td>Аренда</td>
+									<td>50000</td>
+									<td>факт.руб</td>
+									<td>предп-факт</td>
+									<td>разн %</td>
+								</tr>
+
+								<tr class="table-light">
+									<td><span class="h6 fw-bold text-uppercase">Итого расх</span></td>
+									<td>50000</td>
+									<td>факт.руб</td>
+									<td>предп-факт</td>
+									<td>разн %</td>
+								</tr>
+								<tr class="align-middle">
+									<td>Партнерка</td>
+									<td>50000</td>
+									<td>факт.руб</td>
+									<td>предп-факт</td>
+									<td>разн %</td>
+								</tr>
+								<tr class="align-middle">
+									<td>Реклама</td>
+									<td id="">50000</td>
+									<td>факт.руб</td>
+									<td>предп-факт</td>
+									<td>разн %</td>
+								</tr>
+								<tr class="table-light">
+									<td><span class="h6 fw-bold text-uppercase">Итого Доходов</span></td>
+									<td>100000</td>
+									<td>факт.руб</td>
+									<td>предп-факт</td>
+									<td>разн %</td>
+								</tr>
+							</tbody>
+						</table> <!-- /table -->
+					</div>
 
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
@@ -187,29 +273,29 @@
 
 		var url = document.location.href;
 		var a = document.cookie.split(';');
-		var token = ''
+		var token = '';
 
 		for (i = 0; i < a.length; i++) {
-			var b = a[i].split('=')
-			b[0] = b[0].replace(/\s+/g, '')
+			var b = a[i].split('=');
+			b[0] = b[0].replace(/\s+/g, '');
 			if (b[0] == 'csrftoken') {
-			token = b[1]
+				token = b[1];
 			}
-		}
+		};
 
-		$(function(){
-			$("#start_pdr").datepicker({
-				changeMonth: true,
-				dateFormat: 'mm-yy',
-				maxDate: '0'})
-		});
+		// $(function(){
+		// 	$("#start_pdr").datepicker({
+		// 		changeMonth: true,
+		// 		dateFormat: 'mm-yy',
+		// 		maxDate: '0'})
+		// });
 
-		$(function(){
-			$("#end_pdr").datepicker({
-				changeMonth: true,
-				dateFormat: 'mm-yy',
-				maxDate: '0'})
-		});
+		// $(function(){
+		// 	$("#end_pdr").datepicker({
+		// 		changeMonth: true,
+		// 		dateFormat: 'mm-yy',
+		// 		maxDate: '0'})
+		// });
 
 		$('#balance_holder').on('input', function(){
 			if($('#balance_holder').val()){
@@ -224,23 +310,28 @@
 						bal_holder: $('#balance_holder').val()
 					}
 				}).then(function(result){
-					console.log(result.bal_holder)
 					if(result.bal_holder.length){
 						$('.additional_params').attr('hidden', 'true');
+						$('.profit_params').attr('hidden', 'true');
 						var list_el = result.bal_holder;
 						for (let i=0; list_el.length > i; i++){
-							console.log(list_el[i][0])
-							var new_category = `<div class="col-12 col-sm-3 mb-3">
+							var new_category = `<div class="col-12 col-sm-3 mb-3 input_elems">
 										<label class="label" for="${list_el[i][1].html_el_id}">${list_el[i][1].label}</label>
-										<input class="form-control" autocomplete="off" name="${list_el[i][0]}" id="${list_el[i][1].html_el_id}" placeholder="30000"/>
+										<input class="form-control" autocomplete="off" name="${list_el[i][0]}" id="${list_el[i][1].html_el_id}" placeholder="${list_el[i][1].value}"/>
 									</div>`;
-							$('.category_list').append(new_category)
+							if(list_el[i][1].type == 'expend'){
+								$('.category_list').append(new_category);
+							}else if (list_el[i][1].type == 'profit'){
+								$('.profit_params_row').append(new_category);
+							}
 						}
 					}else{
 						$('.additional_params').removeAttr('hidden');
+						$('.profit_params').removeAttr('hidden');
+						$('.input_elems').remove();
 					}
 				}).catch(function(err){
-					var x = 0
+					var x = 0;
 				})
 			}
 		})
@@ -250,12 +341,80 @@
 				var inputEls = $('#category_id').val().split('&')
 				var new_category = `<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="${inputEls[0]}_${inputEls[1]}">${inputEls[2]}</label>
-										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}" id="${inputEls[0]}_${inputEls[1]}" placeholder="3000"/>
+										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&expend" id="${inputEls[0]}_${inputEls[1]}" placeholder="3000"/>
 									</div>`
 				if(!$('.category_list').find($(`#${inputEls[0]}_${inputEls[1]}`)).length){
 					$('.category_list').append(new_category)
 				}
 			}
+		})
+
+		$('.add_profit_category').on('click', function(){
+			if($('#category_profit_id').val()){
+				var inputEls = $('#category_profit_id').val().split('&')
+				var new_category = `<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="${inputEls[0]}_${inputEls[1]}">${inputEls[2]}</label>
+										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&profit" id="${inputEls[0]}_${inputEls[1]}" placeholder="3000"/>
+									</div>`
+				if(!$('.profit_params_row').find($(`#${inputEls[0]}_${inputEls[1]}`)).length){
+					$('.profit_params_row').append(new_category)
+				}
+			}
+		})
+
+		$('#balance_holder_req').on('change', function(){
+			if($('#balance_holder_req').val()){
+				$.ajax(
+				{
+					url: url,
+					method: 'POST',
+					data: {
+						csrfmiddlewaretoken: token,
+						type: 'bal_hol_req_sql',
+						bal_holder: $('#balance_holder_req').val()
+					}
+				}).then(function(result){
+					$('.period_req_div_el').removeAttr('hidden');
+					document.getElementById('start_bdr').innerHTML = '';
+					document.getElementById('end_bdr').innerHTML = '';
+					var dateEl = result.allow_date
+					for(let i = 0; dateEl.length > i; i++){
+						var option_element = `<option value="${dateEl[i].month_year}">${dateEl[i].month_year}</option>`
+						$('.date_select').append(option_element)
+					}
+				}).catch(function(err){
+					var x = 0;
+				});
+			}
+		})
+
+		$('.show_pdr').on('click', function(){
+			$.ajax(
+			{
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'show_bdr',
+					balance_holder_req: $('#balance_holder_req').val(),
+					start_bdr: $('#start_bdr').val(),
+					end_bdr: $('#end_bdr').val()
+				}
+			}).then(function(result){
+				var bh = $('#balance_holder_req').val();
+				var start_ = $('#start_bdr').val();
+				var end_ = $('#end_bdr').val();
+				$('#information_tabel').text(`${bh}, ${start_}  :  ${end_}`)
+				
+				var res = result.res
+				for (var key of Object.keys(res)){
+					if(key == 'расход'){
+
+					}
+				}
+			}).catch(function(err){
+				var x = 0;
+			})
 		})
 
 	</script>

@@ -481,6 +481,7 @@ def get_allow_additional_transactions(pk, simple_user=''):
 
 
 def get_bdr_data(balance_holder='', start='', end=''):
+    '''Для вывода информации '''
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -490,23 +491,34 @@ def get_bdr_data(balance_holder='', start='', end=''):
                            cursorclass=pymysql.cursors.DictCursor)
     try:
         if start == end:
-            where = f'''WHERE `mbdr`.`month_year` LIKE '{start}%' '''
-        else:
-            where = f'''WHERE `mbdr`.`month_year` >= '{start}' 
+            where = f'''WHERE 
+            `mbdr`.`month_year` = '{start}' '''
+        elif start != end:
+            where = f'''WHERE 
+            `mbdr`.`month_year` >= '{start}' 
             AND
             `mbdr`.`month_year` <= '{end}'
             '''
+        else:
+            where = ''
+
         balance_sql = ''
         if balance_holder:
-            balance_sql = f'''AND
-            `mbdr`.`balance_holder_id` = {balance_holder}
-            '''
+            if where:
+                balance_sql = f'''AND
+                `mbdr`.`balance_holder_id_id` = {balance_holder}
+                '''
+            else:
+                balance_sql = f'''WHERE
+                `mbdr`.`balance_holder_id_id` = {balance_holder}
+                '''
+
         with conn.cursor() as cursor:
             response = f'''
-                    SELECT *
+                    SELECT
+                        `mbdr`.`params_data`
                     FROM `mainapp_bdrfond` mbdr
-                    {where}
-                    {balance_sql}
+                    {where}{balance_sql}
                 '''
             cursor.execute(response)
             response = cursor.fetchall()
@@ -514,6 +526,58 @@ def get_bdr_data(balance_holder='', start='', end=''):
         conn.close()
 
     return response
+
+
+def get_bdr_data_holders(balance_holder_dates=''):
+    '''Для вывода только ДАТЫ по балансодержателю в БДР'''
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT
+                        `mbdr`.`month_year`
+                    FROM `mainapp_bdrfond` mbdr
+                    WHERE
+                        `mbdr`.`balance_holder_id_id` = {balance_holder_dates}
+                '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+def get_bdr_bal_holders():
+    '''Для вывода Только балансодержателей в БДР'''
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                    SELECT 
+                        (SELECT `mb`.`organization_holder` FROM mainapp_balanceholder mb WHERE `mb`.`id` = `mbdr`.`balance_holder_id_id`) as bal_hol
+                    FROM `mainapp_bdrfond` mbdr
+                    GROUP BY `bal_hol`
+                '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
 
 
 # def filtered_transactions():

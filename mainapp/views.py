@@ -20,7 +20,6 @@ def fond_view(request):
 
     pdr_fond_show = None
     if request.method == 'POST':
-
         if request.POST.get('balance_holder'):
             bal_hold = BalanceHolder.objects.filter(organization_holder=request.POST.get('balance_holder'))[0]
             month = request.POST.get('month')
@@ -41,35 +40,51 @@ def fond_view(request):
             del didi['balance_holder']
 
             for i in didi:
-                new_dict['params_data'].setdefault(
-                    i,
-                    {
-                        'value': didi[i][0],
-                        'type_id': (i.split('&'))[1],
-                        'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}",
-                        'label': (i.split('&'))[2]
-                    }
-                )
-
+                new_dict['params_data'].setdefault(i,
+                                                   {
+                                                       'value': didi[i][0],
+                                                       'type_id': (i.split('&'))[1],
+                                                       'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}",
+                                                       'label': (i.split('&'))[2],
+                                                       'type': (i.split('&'))[-1]
+                                                   }
+                                                   )
             new_dict['balance_holder_id'] = bal_hold
             new_dict['month_year'] = dates
             json.dumps(new_dict['params_data'])
             new_bdr = BdrFond
             new_bdr.objects.create(**new_dict)
 
-        if request.POST.get('start_pdr'):
+        if request.POST.get('type') == 'show_bdr':
             bal_req = request.POST.get('balance_holder_req')
             bal_req_id = BalanceHolder.objects.filter(organization_holder=bal_req)[0].pk
-            req_start_date = f"01-{request.POST.get('start_pdr')}"
+            req_start_date = f"01-{request.POST.get('start_bdr')}"
             start_date = dt.strptime(req_start_date, '%d-%m-%Y')
-            if request.POST.get('end_pdr'):
-                req_end_date = dt.strptime(f"01-{request.POST.get('end_pdr')}", '%d-%m-%Y')
+
+            if request.POST.get('end_bdr'):
+                req_end_date = dt.strptime(f"01-{request.POST.get('end_bdr')}", '%d-%m-%Y')
             else:
                 req_end_date = start_date
 
-            pdr_fond_show = get_bdr_data(balance_holder=bal_req_id, start=req_start_date, end=req_end_date)[0]
-            pdr_fond_show['params_data'] = json.loads(pdr_fond_show.get('params_data'))
-            print(pdr_fond_show)
+            bdr_fond_show = get_bdr_data(balance_holder=bal_req_id, start=start_date, end=req_end_date)
+            income_dict_list = []
+            data_for_table = {
+                'доход': {},
+                'расход': {}
+            }
+
+            for i in bdr_fond_show:
+                di_encode = json.loads(i.get('params_data'))
+                for key, val in di_encode.items():
+                    if key.find('expend') > 0:
+                        data_for_table['расход'].setdefault(val.get('label'), int())
+                        data_for_table['расход'][val.get('label')] += int(val.get('value'))
+                    else:
+                        data_for_table['доход'].setdefault(val.get('label'), int())
+                        data_for_table['доход'][val.get('label')] += int(val.get('value'))
+
+            print(data_for_table)
+            return JsonResponse({'res': data_for_table})
 
         if request.POST.get('type') == 'balance_holder':
             try:
@@ -77,18 +92,21 @@ def fond_view(request):
                 pdr_info = BdrFond.objects.filter(balance_holder_id=bal_holder).last()
                 data_output = pdr_info.params_data
                 list_data = []
-
                 for i in data_output:
                     list_data.append([i, data_output[i]])
-                for i in list_data:
-                    print(i)
-
                 return JsonResponse({'bal_holder': list_data})
             except:
                 pdr_info = []
                 return JsonResponse({'bal_holder': pdr_info})
 
+        if request.POST.get('type') == 'bal_hol_req_sql':
+            bal_hol = BalanceHolder.objects.filter(organization_holder=request.POST.get('bal_holder'))[0].pk
+            allow_dates = get_bdr_data_holders(balance_holder_dates=bal_hol)
+            for date in allow_dates:
+                date['month_year'] = dt.strftime(date.get('month_year'), '%m-%Y')
+            return JsonResponse({'allow_date': allow_dates})
 
+    bdr_fond_information = get_bdr_bal_holders()
     month_dict = {
         '01-01': 'Январь',
         '01-02': 'Февраль',
@@ -115,13 +133,9 @@ def fond_view(request):
     date_today = dt.today().strftime('%Y-%m-%d')
     date_today = f'{date_today[:-2]}01'
 
-    try:
-        bdr_info = get_bdr_data(start=date_today)[0]
-    except:
-        bdr_info = ''
-
-    data = {'title': 'Фонд', 'month_dict': month_dict, 'bdr_info': bdr_info, 'pdr_fond_show': pdr_fond_show,
-            'balance_holders': balance_holders, 'type_pay': type_pay, 'sub_type': sub_type}
+    data = {'title': 'Фонд', 'month_dict': month_dict, 'pdr_fond_show': pdr_fond_show,
+            'balance_holders': balance_holders, 'type_pay': type_pay, 'sub_type': sub_type,
+            'bdr_fond_information': bdr_fond_information}
 
     return render(request, 'mainapp/fond.html', data)
 
