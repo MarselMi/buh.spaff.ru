@@ -266,7 +266,7 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                             `mt`.`transaction_sum`,
                             (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
                             (SELECT `mu`.`username` FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
-                            `mt`.`sub_type_pay_id`,
+                            (SELECT `sb`.`sub_type` FROM `mainapp_subpaytype` sb WHERE `sb`.`id`=`mt`.`sub_type_pay_id`) as sub_type_pay_id,
                             `mt`.`status`,
                             `mt`.`check_img`                
                         FROM `mainapp_transaction` mt
@@ -497,7 +497,7 @@ def get_bdr_data(balance_holder='', start='', end=''):
             where = f'''WHERE 
             `mbdr`.`month_year` >= '{start}' 
             AND
-            `mbdr`.`month_year` <= '{end}'
+            `mbdr`.`month_year` < '{end}'
             '''
         else:
             where = ''
@@ -576,6 +576,48 @@ def get_bdr_bal_holders():
     finally:
         conn.close()
 
+    return response
+
+
+def get_for_bdr_transaction(filter_data):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                        SELECT
+                            `mt`.`amount`,
+                            `mt`.`type_transaction`,
+                            (SELECT 
+                                `mp`.`pay_type` 
+                            FROM 
+                                `mainapp_paytype` mp 
+                            WHERE 
+                                `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
+                            (SELECT 
+                                `sb`.`sub_type` 
+                            FROM 
+                                `mainapp_subpaytype` sb 
+                            WHERE `sb`.`id`=`mt`.`sub_type_pay_id`) as sub_type_pay_id
+                        FROM 
+                            `mainapp_transaction` mt
+                        WHERE 
+                            `mt`.`transaction_date` >= '{filter_data.get('start')}' 
+                        AND 
+                            `mt`.`transaction_date` < '{filter_data.get('end')}' 
+                        AND 
+                            `mt`.`balance_holder_id` = '{filter_data.get('balance_holder_id')}'
+                        '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
     return response
 
 

@@ -62,17 +62,60 @@ def fond_view(request):
             start_date = dt.strptime(req_start_date, '%d-%m-%Y')
 
             if request.POST.get('end_bdr'):
-                req_end_date = dt.strptime(f"01-{request.POST.get('end_bdr')}", '%d-%m-%Y')
+                date_replace = request.POST.get('end_bdr').split('-')
+                if date_replace[0] != '12':
+                    date_replace = f'{1 + int(date_replace[0])}-{date_replace[1]}'
+                else:
+                    date_replace = f'01-{1 + int(date_replace[1])}'
+                req_end_date = dt.strptime(f"01-{date_replace}", '%d-%m-%Y')
             else:
                 req_end_date = start_date
 
             bdr_fond_show = get_bdr_data(balance_holder=bal_req_id, start=start_date, end=req_end_date)
-            income_dict_list = []
+
+            filters_transaction = {'start': start_date, 'end': req_end_date, 'balance_holder_id': bal_req_id}
+            fact_transactions = get_for_bdr_transaction(filter_data=filters_transaction)
+
+            data_tr_fact_elementary = {
+                'доход': {},
+                'расход': {}
+            }
             data_for_table = {
                 'доход': {},
                 'расход': {}
             }
+            data_tr_ready = {
+                'доход': {},
+                'расход': {}
+            }
+            all_data_plane_fact = {
+                'доход': {},
+                'расход': {}
+            }
 
+            '''Все фактические транзакции'''
+            for tr in fact_transactions:
+                for key, val in tr.items():
+                    if val == 'COMING':
+                        if tr.get('sub_type_pay_id') is not None:
+                            type_sub = tr.get('sub_type_pay_id')
+                        else:
+                            type_sub = tr.get('type_payment')
+                        if data_tr_fact_elementary['доход'].get(type_sub):
+                            data_tr_fact_elementary['доход'][type_sub] += tr.get('amount')
+                        else:
+                            data_tr_fact_elementary['доход'].setdefault(type_sub, tr.get('amount'))
+                    else:
+                        if tr.get('sub_type_pay_id'):
+                            type_sub = tr.get('sub_type_pay_id')
+                        else:
+                            type_sub = tr.get('type_payment')
+                        if data_tr_fact_elementary['расход'].get(type_sub):
+                            data_tr_fact_elementary['расход'][type_sub] += tr.get('amount')
+                        else:
+                            data_tr_fact_elementary['расход'].setdefault(type_sub, tr.get('amount'))
+
+            '''Параметры по запланированным данным'''
             for i in bdr_fond_show:
                 di_encode = json.loads(i.get('params_data'))
                 for key, val in di_encode.items():
@@ -83,8 +126,40 @@ def fond_view(request):
                         data_for_table['доход'].setdefault(val.get('label'), int())
                         data_for_table['доход'][val.get('label')] += int(val.get('value'))
 
-            print(data_for_table)
-            return JsonResponse({'res': data_for_table})
+            for va, kr in data_for_table.items():
+                fact_finaly = 0
+                plane_finaly = 0
+                for key, val in data_for_table.get(va).items():
+                    plane_finaly += data_for_table.get(va).get(key)
+                    if data_tr_fact_elementary.get(va).get(key):
+                        fact_finaly += data_tr_fact_elementary.get(va).get(key)
+                        data_tr_ready[va].setdefault(key, data_tr_fact_elementary.get(va).get(key))
+                    else:
+                        data_tr_ready[va].setdefault(key, 0)
+                data_tr_ready[va].setdefault('final', fact_finaly)
+                data_for_table[va].setdefault('final', plane_finaly)
+
+            def proc(first, second):
+                if second == 0:
+                    return 100
+                else:
+                    return round(first / second * 100, 2)
+
+            for i, k in data_for_table.items():
+                if i == 'доход':
+                    for key, val in k.items():
+                        all_data_plane_fact['доход'].setdefault(key, {'plan': val, 'fact': data_tr_ready['доход'].get(key),
+                                                        'raznica': data_tr_ready['доход'].get(key) - val,
+                                                        'proc': proc(data_tr_ready['доход'].get(key) - val, val)})
+                elif i == 'расход':
+                    for key, val in k.items():
+                        all_data_plane_fact['расход'].setdefault(key, {'plan': val, 'fact': data_tr_ready['расход'].get(key),
+                                                         'raznica': val - data_tr_ready['расход'].get(key),
+                                                         'proc': proc(val - data_tr_ready['расход'].get(key), val)})
+
+            print(all_data_plane_fact)
+
+            return JsonResponse({'res': data_tr_ready})
 
         if request.POST.get('type') == 'balance_holder':
             try:

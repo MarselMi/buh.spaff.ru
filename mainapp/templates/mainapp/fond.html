@@ -212,7 +212,6 @@
 						</div>
 						<table class="text-center table table-bordered text-nowrap mb-0 table-hover">
 							<thead>
-
 								<tr>
 									<th>Категория</th>
 									<th>Предполагаемый (руб)</th>
@@ -220,11 +219,10 @@
 									<th>Отклонения (руб)</th>
 									<th>Отклонения (%)</th>
 								</tr>
-
 							</thead>
 							<tbody>
 
-								<tr class="align-middle">
+								<tr>
 									<td>Аренда</td>
 									<td>50000</td>
 									<td>факт.руб</td>
@@ -239,14 +237,14 @@
 									<td>предп-факт</td>
 									<td>разн %</td>
 								</tr>
-								<tr class="align-middle">
+								<tr>
 									<td>Партнерка</td>
 									<td>50000</td>
 									<td>факт.руб</td>
 									<td>предп-факт</td>
 									<td>разн %</td>
 								</tr>
-								<tr class="align-middle">
+								<tr>
 									<td>Реклама</td>
 									<td id="">50000</td>
 									<td>факт.руб</td>
@@ -405,13 +403,8 @@
 				var start_ = $('#start_bdr').val();
 				var end_ = $('#end_bdr').val();
 				$('#information_tabel').text(`${bh}, ${start_}  :  ${end_}`)
-				
 				var res = result.res
-				for (var key of Object.keys(res)){
-					if(key == 'расход'){
-
-					}
-				}
+				console.log(res)
 			}).catch(function(err){
 				var x = 0;
 			})
