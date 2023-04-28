@@ -158,9 +158,9 @@
 
 					<button onclick="$(this).text($(this).text() == 'Добавить' ? 'Скрыть' : 'Добавить');" type="button" class="mb-1 btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false" aria-controls="collapse-1">Добавить</button>
 
-					<div class="card-header d-flex align-items-center card-header-no-bg" {% if bdr_fond_information %}{% else %} hidden {% endif %}>
+					<div class="card-header d-flex align-items-center card-header-no-bg">
 
-						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mt-3">
+						<div class="card-title h6 fw-bold text-uppercase border-start border-primary border-3 ps-2 mt-3" {% if bdr_fond_information %}{% else %} hidden {% endif %}>
 							Выбрать балансодержателя и период для просмотра данных
 						</div>
 
