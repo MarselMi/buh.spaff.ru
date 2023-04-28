@@ -15,7 +15,7 @@
 									<div class="col-12 col-sm-3 mb-3">
 
 										<label for="balance_holder">Для балансодержателя</label>
-										<input class="form-control" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
 										<datalist id="balance_holder_list">
 											{% for holder in balance_holders %}
 											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
@@ -55,14 +55,14 @@
 									<div class="col-12 col-sm-3 mb-1 additional_params" hidden>
 										
 										<label for="category_id">Добавить поле категории/подкатегории</label>
-										<select class="form-select" name="category_id" id="category_id">
+										<select class="form-select" id="category_id">
 											
-											{% for type in type_pay %}
-												<option value="pay_type&{{ type.id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
-											{% endfor %}
-
-											{% for sub in sub_type %}
-												<option value="sub_pay&{{ sub.id }}&{{ sub.sub_type }}">{{ sub.sub_type }}</option>
+											{% for type in type_pay_for_final %}
+												{% if type.type_id %}
+												<option value="pay_type&{{ type.type_id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
+												{% else %}
+												<option value="pay_sub_type&{{ type.sub_id }}&{{ type.sub_type }}">{{ type.sub_type }}</option>
+												{% endif %}
 											{% endfor %}
 
 										</select>
@@ -110,12 +110,12 @@
 										<label for="category_profit_id">Добавить поле категории/подкатегории</label>
 										<select class="form-select" id="category_profit_id">
 											
-											{% for type in type_pay %}
-												<option value="pay_type&{{ type.id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
-											{% endfor %}
-		
-											{% for sub in sub_type %}
-												<option value="sub_pay&{{ sub.id }}&{{ sub.sub_type }}">{{ sub.sub_type }}</option>
+											{% for type in type_pay_for_final %}
+												{% if type.type_id %}
+												<option value="pay_type&{{ type.type_id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
+												{% else %}
+												<option value="pay_sub_type&{{ type.sub_id }}&{{ type.sub_type }}">{{ type.sub_type }}</option>
+												{% endif %}
 											{% endfor %}
 		
 										</select>
@@ -206,7 +206,7 @@
 						</div>
 					</form>	
 
-					<div class="table-responsive mt-4">
+					<div class="table-responsive mt-4 table_for_bdr" hidden>
 						<div class="mb-3">
 							Данные по: <span id="information_tabel" class="h6 fw-bold text-uppercase"></span>
 						</div>
@@ -220,44 +220,8 @@
 									<th>Отклонения (%)</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody class="information_result">
 
-								<tr>
-									<td>Аренда</td>
-									<td>50000</td>
-									<td>факт.руб</td>
-									<td>предп-факт</td>
-									<td>разн %</td>
-								</tr>
-
-								<tr class="table-light">
-									<td><span class="h6 fw-bold text-uppercase">Итого расх</span></td>
-									<td>50000</td>
-									<td>факт.руб</td>
-									<td>предп-факт</td>
-									<td>разн %</td>
-								</tr>
-								<tr>
-									<td>Партнерка</td>
-									<td>50000</td>
-									<td>факт.руб</td>
-									<td>предп-факт</td>
-									<td>разн %</td>
-								</tr>
-								<tr>
-									<td>Реклама</td>
-									<td id="">50000</td>
-									<td>факт.руб</td>
-									<td>предп-факт</td>
-									<td>разн %</td>
-								</tr>
-								<tr class="table-light">
-									<td><span class="h6 fw-bold text-uppercase">Итого Доходов</span></td>
-									<td>100000</td>
-									<td>факт.руб</td>
-									<td>предп-факт</td>
-									<td>разн %</td>
-								</tr>
 							</tbody>
 						</table> <!-- /table -->
 					</div>
@@ -338,10 +302,10 @@
 			if($('#category_id').val()){
 				var inputEls = $('#category_id').val().split('&')
 				var new_category = `<div class="col-12 col-sm-3 mb-3">
-										<label class="label" for="${inputEls[0]}_${inputEls[1]}">${inputEls[2]}</label>
-										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&expend" id="${inputEls[0]}_${inputEls[1]}" placeholder="3000"/>
+										<label class="label" for="${inputEls[0]}_${inputEls[1]}_expend">${inputEls[2]}</label>
+										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&expend" id="${inputEls[0]}_${inputEls[1]}_expend" placeholder="3000"/>
 									</div>`
-				if(!$('.category_list').find($(`#${inputEls[0]}_${inputEls[1]}`)).length){
+				if(!$('.category_list').find($(`#${inputEls[0]}_${inputEls[1]}_expend`)).length){
 					$('.category_list').append(new_category)
 				}
 			}
@@ -351,10 +315,10 @@
 			if($('#category_profit_id').val()){
 				var inputEls = $('#category_profit_id').val().split('&')
 				var new_category = `<div class="col-12 col-sm-3 mb-3">
-										<label class="label" for="${inputEls[0]}_${inputEls[1]}">${inputEls[2]}</label>
-										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&profit" id="${inputEls[0]}_${inputEls[1]}" placeholder="3000"/>
+										<label class="label" for="${inputEls[0]}_${inputEls[1]}_profit">${inputEls[2]}</label>
+										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&profit" id="${inputEls[0]}_${inputEls[1]}_profit" placeholder="3000"/>
 									</div>`
-				if(!$('.profit_params_row').find($(`#${inputEls[0]}_${inputEls[1]}`)).length){
+				if(!$('.profit_params_row').find($(`#${inputEls[0]}_${inputEls[1]}_profit`)).length){
 					$('.profit_params_row').append(new_category)
 				}
 			}
@@ -386,6 +350,21 @@
 			}
 		})
 
+		var priceSet;
+
+		priceSet = function(data){
+			var price       = Number.prototype.toFixed.call(parseFloat(data) || 0, 2),
+				price_sep   = price.replace(/(\D)/g, ","),
+				price_sep   = price_sep.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
+			if(price_sep[0] == ','){
+				price_sep = price_sep.substring(1);
+				price_sep = '-' + price_sep;
+				return price_sep;
+			}else{
+				return price_sep;
+		}
+		};
+
 		$('.show_pdr').on('click', function(){
 			$.ajax(
 			{
@@ -399,12 +378,162 @@
 					end_bdr: $('#end_bdr').val()
 				}
 			}).then(function(result){
+				$('.table_for_bdr').removeAttr('hidden');
 				var bh = $('#balance_holder_req').val();
 				var start_ = $('#start_bdr').val();
 				var end_ = $('#end_bdr').val();
-				$('#information_tabel').text(`${bh}, ${start_}  :  ${end_}`)
-				var res = result.res
-				console.log(res)
+				$('#information_tabel').text(`${bh}, ${start_}  :  ${end_}`);
+				var res = result.res;
+				$('.information_result').empty();
+				for (var key in res){
+					if(key == 'расход'){
+						for(var values in res[key]){
+							if (values != 'final'){
+								if(res[key][values].plan > res[key][values].fact){
+									var trElement = `
+									<tr>
+										<td>${values}</td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].fact)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: lightblue">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else if(res[key][values].plan < res[key][values].fact){
+									var trElement = `
+									<tr>
+										<td>${values}</td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: pink">${priceSet(res[key][values].fact)}</td>
+										<td style="background: pink">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: pink">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else{
+									var trElement = `
+									<tr>
+										<td>${values}</td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td>${priceSet(res[key][values].fact)}</td>
+										<td>${priceSet(res[key][values].raznica)}</td>
+										<td>${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}
+							}else if(values == 'final'){
+								if(res[key][values].plan > res[key][values].fact){
+									var trElement = `
+									<tr class="table-light">
+										<td><span class="h6 fw-bold text-uppercase">Итого Расходов</span></td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].fact)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: lightblue">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else if(res[key][values].plan < res[key][values].fact){
+									var trElement = `
+									<tr class="table-light">
+										<td><span class="h6 fw-bold text-uppercase">Итого Расходов</span></td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: pink">${priceSet(res[key][values].fact)}</td>
+										<td style="background: pink">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: pink">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else{
+									var trElement = `
+									<tr class="table-light">
+										<td><span class="h6 fw-bold text-uppercase">Итого Расходов</span></td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td>${priceSet(res[key][values].fact)}</td>
+										<td>${priceSet(res[key][values].raznica)}</td>
+										<td>${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}
+							}
+						}
+					}else if (key == 'доход'){
+						for(var values in res[key]){
+							if (values != 'final'){
+								if(res[key][values].plan < res[key][values].fact){
+									var trElement = `
+									<tr>
+										<td>${values}</td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].fact)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: lightblue">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else if(res[key][values].plan > res[key][values].fact){
+									var trElement = `
+									<tr>
+										<td>${values}</td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: pink">${priceSet(res[key][values].fact)}</td>
+										<td style="background: pink">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: pink">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else{
+									var trElement = `
+									<tr>
+										<td>${values}</td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td>${priceSet(res[key][values].fact)}</td>
+										<td>${priceSet(res[key][values].raznica)}</td>
+										<td>${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}
+							}else if(values == 'final'){
+								if(res[key][values].plan < res[key][values].fact){
+									var trElement = `
+									<tr class="table-light">
+										<td><span class="h6 fw-bold text-uppercase">Итого Доходов</span></td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].fact)}</td>
+										<td style="background: lightblue">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: lightblue">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else if(res[key][values].plan > res[key][values].fact){
+									var trElement = `
+									<tr class="table-light">
+										<td><span class="h6 fw-bold text-uppercase">Итого Доходов</span></td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td style="background: pink">${priceSet(res[key][values].fact)}</td>
+										<td style="background: pink">${priceSet(res[key][values].raznica)}</td>
+										<td style="background: pink">${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}else{
+									var trElement = `
+									<tr class="table-light">
+										<td><span class="h6 fw-bold text-uppercase">Итого Доходов</span></td>
+										<td>${priceSet(res[key][values].plan)}</td>
+										<td>${priceSet(res[key][values].fact)}</td>
+										<td>${priceSet(res[key][values].raznica)}</td>
+										<td>${res[key][values].proc}</td>
+									</tr>`;
+									$('.information_result').append(trElement);
+								}
+							}
+						}
+					}else if(key == 'diff'){
+						var trElement = `
+						<tr class="table-info">
+							<th><span class="h6 fw-bold text-uppercase">РАЗНИЦА ДОХ-РАСХ</span></th>
+							<th>${priceSet(res[key].plan)}</th>
+							<th>${priceSet(res[key].fact)}</th>
+							<th>${priceSet(res[key].raznica)}</th>
+							<th></th>
+						</tr>`
+						$('.information_result').append(trElement);
+					}
+				}
 			}).catch(function(err){
 				var x = 0;
 			})

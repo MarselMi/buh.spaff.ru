@@ -19,8 +19,11 @@ from mainapp.models import (
 def fond_view(request):
 
     pdr_fond_show = None
+
     if request.method == 'POST':
+
         if request.POST.get('balance_holder'):
+            '''для создания БДР'''
             bal_hold = BalanceHolder.objects.filter(organization_holder=request.POST.get('balance_holder'))[0]
             month = request.POST.get('month')
             year = request.POST.get('year')
@@ -33,22 +36,33 @@ def fond_view(request):
             }
 
             didi = dict(request.POST)
-
             del didi['csrfmiddlewaretoken']
             del didi['month']
             del didi['year']
             del didi['balance_holder']
 
             for i in didi:
-                new_dict['params_data'].setdefault(i,
-                                                   {
-                                                       'value': didi[i][0],
-                                                       'type_id': (i.split('&'))[1],
-                                                       'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}",
-                                                       'label': (i.split('&'))[2],
-                                                       'type': (i.split('&'))[-1]
-                                                   }
-                                                   )
+                if (i.find('pay_type')) == 0:
+                    new_dict['params_data'].setdefault(i,
+                                                       {
+                                                           'value': didi[i][0],
+                                                           'type_id': (i.split('&'))[1],
+                                                           'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
+                                                           'label': (i.split('&'))[2],
+                                                           'type': (i.split('&'))[-1]
+                                                       }
+                                                       )
+                elif (i.find('pay_sub_type')) == 0:
+                    new_dict['params_data'].setdefault(i,
+                                                       {
+                                                           'value': didi[i][0],
+                                                           'sub_id': (i.split('&'))[1],
+                                                           'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
+                                                           'label': (i.split('&'))[2],
+                                                           'type': (i.split('&'))[-1]
+                                                       }
+                                                       )
+
             new_dict['balance_holder_id'] = bal_hold
             new_dict['month_year'] = dates
             json.dumps(new_dict['params_data'])
@@ -89,27 +103,30 @@ def fond_view(request):
                 'расход': {}
             }
             all_data_plane_fact = {
+                'расход': {},
                 'доход': {},
-                'расход': {}
+                'diff': {}
             }
 
             '''Все фактические транзакции'''
             for tr in fact_transactions:
                 for key, val in tr.items():
                     if val == 'COMING':
-                        if tr.get('sub_type_pay_id') is not None:
-                            type_sub = tr.get('sub_type_pay_id')
+                        if tr.get('sub_type_pay_id'):
+                            type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
                         else:
                             type_sub = tr.get('type_payment')
+
                         if data_tr_fact_elementary['доход'].get(type_sub):
                             data_tr_fact_elementary['доход'][type_sub] += tr.get('amount')
                         else:
                             data_tr_fact_elementary['доход'].setdefault(type_sub, tr.get('amount'))
                     else:
                         if tr.get('sub_type_pay_id'):
-                            type_sub = tr.get('sub_type_pay_id')
+                            type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
                         else:
                             type_sub = tr.get('type_payment')
+
                         if data_tr_fact_elementary['расход'].get(type_sub):
                             data_tr_fact_elementary['расход'][type_sub] += tr.get('amount')
                         else:
@@ -157,9 +174,19 @@ def fond_view(request):
                                                          'raznica': val - data_tr_ready['расход'].get(key),
                                                          'proc': proc(val - data_tr_ready['расход'].get(key), val)})
 
-            print(all_data_plane_fact)
+            all_data_plane_fact['diff'].setdefault('plan',
+                all_data_plane_fact['доход']['final'].get('plan') - all_data_plane_fact['расход']['final'].get('plan')
+            )
 
-            return JsonResponse({'res': data_tr_ready})
+            all_data_plane_fact['diff'].setdefault('fact',
+                all_data_plane_fact['доход']['final'].get('fact') - all_data_plane_fact['расход']['final'].get('fact')
+            )
+
+            all_data_plane_fact['diff'].setdefault('raznica',
+                all_data_plane_fact['diff'].get('fact') - all_data_plane_fact['diff'].get('plan')
+            )
+
+            return JsonResponse({'res': all_data_plane_fact})
 
         if request.POST.get('type') == 'balance_holder':
             try:
@@ -181,7 +208,7 @@ def fond_view(request):
                 date['month_year'] = dt.strftime(date.get('month_year'), '%m-%Y')
             return JsonResponse({'allow_date': allow_dates})
 
-    bdr_fond_information = get_bdr_bal_holders()
+    bdr_fond_information_for_show = get_bdr_bal_holders()
     month_dict = {
         '01-01': 'Январь',
         '01-02': 'Февраль',
@@ -196,21 +223,30 @@ def fond_view(request):
         '01-11': 'Ноябрь',
         '01-12': 'Декабрь'
     }
+
     balance_holders = []
+
     if request.user.is_superuser:
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
     else:
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=True)
 
     type_pay = PayType.objects.all()
-    sub_type = SubPayType.objects.all()
+
+    type_pay_for_final = []
+    for i in type_pay:
+        if i.subtypes_of_the_type.all():
+            for sub in i.subtypes_of_the_type.all():
+                type_pay_for_final.append({'sub_id': f'{i.id}_{sub.id}', 'sub_type': f'{i.pay_type}_{sub.sub_type}'})
+        else:
+            type_pay_for_final.append({'type_id': i.id, 'pay_type': i.pay_type})
 
     date_today = dt.today().strftime('%Y-%m-%d')
     date_today = f'{date_today[:-2]}01'
 
     data = {'title': 'Фонд', 'month_dict': month_dict, 'pdr_fond_show': pdr_fond_show,
-            'balance_holders': balance_holders, 'type_pay': type_pay, 'sub_type': sub_type,
-            'bdr_fond_information': bdr_fond_information}
+            'balance_holders': balance_holders, 'type_pay': type_pay, 'type_pay_for_final': type_pay_for_final,
+            'bdr_fond_information': bdr_fond_information_for_show}
 
     return render(request, 'mainapp/fond.html', data)
 
