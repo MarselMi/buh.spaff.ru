@@ -121,7 +121,7 @@ def fond_view(request):
                             data_tr_fact_elementary['доход'][type_sub] += tr.get('amount')
                         else:
                             data_tr_fact_elementary['доход'].setdefault(type_sub, tr.get('amount'))
-                    else:
+                    elif val == 'EXPENDITURE':
                         if tr.get('sub_type_pay_id'):
                             type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
                         else:
