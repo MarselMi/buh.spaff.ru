@@ -191,15 +191,26 @@ def fond_view(request):
         if request.POST.get('type') == 'balance_holder':
             try:
                 bal_holder = BalanceHolder.objects.filter(organization_holder=request.POST.get('bal_holder'))[0].pk
-                pdr_info = BdrFond.objects.filter(balance_holder_id=bal_holder).last()
-                data_output = pdr_info.params_data
+                bdr_info = BdrFond.objects.filter(balance_holder_id=bal_holder).last()
+
+                year = dt.strftime(bdr_info.month_year, '%Y')
+                month = dt.strftime(bdr_info.month_year, '%d-%m')
+                if int(month.split('-')[1]) != 12:
+                    if int(month.split('-')[1]) < 10:
+                        month = f"01-0{1 + int(month.split('-')[1])}"
+                    else:
+                        month = f"01-{1 + int(month.split('-')[1])}"
+                else:
+                    month = '01-01'
+                    year = int(year) + 1
+                data_output = bdr_info.params_data
                 list_data = []
                 for i in data_output:
                     list_data.append([i, data_output[i]])
-                return JsonResponse({'bal_holder': list_data})
+                return JsonResponse({'bal_holder': list_data, 'date_year': year, 'date_month': month})
             except:
-                pdr_info = []
-                return JsonResponse({'bal_holder': pdr_info})
+                bdr_info = []
+                return JsonResponse({'bal_holder': bdr_info})
 
         if request.POST.get('type') == 'bal_hol_req_sql':
             bal_hol = BalanceHolder.objects.filter(organization_holder=request.POST.get('bal_holder'))[0].pk
@@ -241,12 +252,11 @@ def fond_view(request):
         else:
             type_pay_for_final.append({'type_id': i.id, 'pay_type': i.pay_type})
 
-    date_today = dt.today().strftime('%Y-%m-%d')
-    date_today = f'{date_today[:-2]}01'
+    year_list = [dt.now().year - 1, dt.now().year, dt.now().year + 1, dt.now().year + 2]
 
     data = {'title': 'Фонд', 'month_dict': month_dict, 'pdr_fond_show': pdr_fond_show,
             'balance_holders': balance_holders, 'type_pay': type_pay, 'type_pay_for_final': type_pay_for_final,
-            'bdr_fond_information': bdr_fond_information_for_show}
+            'bdr_fond_information': bdr_fond_information_for_show, 'year_list': year_list}
 
     return render(request, 'mainapp/fond.html', data)
 
