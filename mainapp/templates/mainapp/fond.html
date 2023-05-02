@@ -284,6 +284,11 @@
 					}else{
 						$('#month').val('01-01');
 					};
+					if (result.date_year){
+						$('#year').val(result.date_year);
+					}else{
+						$('#year').val('2023');
+					}
 					$('#year').val(result.date_year);
 					if(result.bal_holder.length){
 						$('.additional_params').attr('hidden', 'true');
