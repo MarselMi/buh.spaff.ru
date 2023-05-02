@@ -26,6 +26,11 @@ ACCAUNTING_ROLE = [
     ('SCORE', 'Номер Счета')
 ]
 
+IMPORT_STATUS = [
+    ('ACTIVE', 'Активен'),
+    ('COMPLETE', 'Выполнен')
+]
+
 
 class SubPayType(models.Model):
     sub_type = models.CharField(unique=True, max_length=60, verbose_name='Подтип платежа')
@@ -98,6 +103,7 @@ class CustomUser(AbstractUser, models.Model):
 
 class Transaction(models.Model):
 
+    import_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='id импортированной транзакции')
     create_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
     update_date = models.DateTimeField(blank=True, null=True, verbose_name='Дата изменения')
 
@@ -165,7 +171,6 @@ class AdditionalDataTransaction(models.Model):
 
 class TransactionLog(models.Model):
 
-    import_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='id импортированной транзакции')
     transaction_id = models.IntegerField(verbose_name='ID транзакции')
     transaction_name = models.TextField(blank=True, null=True, verbose_name='Имя транзакции')
     changed = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
@@ -195,6 +200,7 @@ class BdrFond(models.Model):
 
 
 class ImportData(models.Model):
+
     bank = models.CharField(max_length=30, blank=True, null=True, verbose_name='Банк')
     key = models.CharField(max_length=100, blank=True, null=True, verbose_name='Ключ авторизации')
     account = models.IntegerField(blank=True, null=True, verbose_name='Номер счета')
@@ -203,4 +209,5 @@ class ImportData(models.Model):
     date_end = models.DateTimeField(blank=True, null=True, verbose_name='Дата по')
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='importdata_balanceholder', verbose_name='Балансодержатель')
-
+    status_import = models.CharField(max_length=25, choices=IMPORT_STATUS,
+                                     null=True, blank=True, verbose_name='Статус импорта')

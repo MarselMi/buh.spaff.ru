@@ -17,7 +17,13 @@ from mainapp.models import (
 
 
 def transactions_import(request):
-    data = {'title': 'Иморт данных'}
+
+    if request.user.is_superuser:
+        balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
+    else:
+        balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=True)
+
+    data = {'title': 'Иморт данных', 'balance_holders': balance_holders}
     return render(request, 'mainapp/transactions_import.html', data)
 
 
