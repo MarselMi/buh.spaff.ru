@@ -11,6 +11,10 @@ urlpatterns = [
     path('fond/', login_required(fond_view,  login_url='login'),
          name='fond_page'),
 
+    # Импорт транзакций
+    path('import/', login_required(transactions_import,  login_url='login'),
+         name='import_page'),
+
     # Закрепление telegram_id партнера
     path('lock-page/', login_required(lock_page, login_url='login'),
          name='lock_page'),

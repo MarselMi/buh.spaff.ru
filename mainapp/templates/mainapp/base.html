@@ -177,6 +177,19 @@
 
 				</ul> <!-- /nav -->
 
+				<ul class="nav nav-fill flex-column">
+
+					<li class="nav-item">
+						<a class="{% if request.resolver_match.url_name == 'import_page' %}
+						active
+						{% endif %}
+						nav-link d-inline-flex align-items-center" href="{% url 'import_page' %}">
+							<i class="fa-regular fa-newspaper anim-opacity me-3"></i>
+							Импорт транзакций
+						</a>
+					</li>
+
+				</ul> <!-- /nav -->
 
 				<ul class="nav nav-fill flex-column">
 

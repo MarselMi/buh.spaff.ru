@@ -16,6 +16,11 @@ from mainapp.models import (
 )
 
 
+def transactions_import(request):
+    data = {'title': 'Иморт данных'}
+    return render(request, 'mainapp/transactions_import.html', data)
+
+
 def fond_view(request):
 
     pdr_fond_show = None

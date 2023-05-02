@@ -1,0 +1,103 @@
+{% extends 'mainapp/base.html' %}
+{% load static %}
+{% block content %}
+
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					<div id="accordion">
+						<div id="collapse-1" class="row accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordion">
+
+							<form action="" method="POST">
+								{% csrf_token %}
+								<div class="row">
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="bank_type">Банк</label>
+										<select class="form-select" name="bank_type" id="bank_type">
+											<option value="tinkoff">Tinkoff</option>
+										</select>
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="key">Ключ</label>
+										<input class="form-control" name="key" id="key" placeholder="************************"/>
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="account">Номер счета</label>
+										<input class="form-control" name="account" id="account" placeholder="1111 1111 1111 1111"/>
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="inn">ИНН</label>
+										<input class="form-control" name="inn" id="inn" placeholder="0000000000"/>
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="date_start">Дата с </label>
+										<input class="form-control" name="date_start" id="date_start" placeholder="2023-01-01"/>
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label class="label" for="date_end">Дата по </label>
+										<input class="form-control" name="date_end" id="date_end" placeholder="2023-02-01"/>
+									</div>
+
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="balance_holder">Для балансодержателя</label>
+										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+										<datalist id="balance_holder_list">
+											{% for holder in balance_holders %}
+											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
+											{% endfor %}
+										</datalist>
+									</div>
+
+								</div>
+
+								<div class="card-body">
+									
+									<div class="row">
+										<div class="col-sm-3">
+											<button class="btn btn-primary save_button" type="submit">
+												Создать
+											</button>
+										</div>
+									</div>
+									
+								</div>
+								<div class="border-top mt-1 mb-4"></div>
+							</form>	
+						</div>
+					</div>
+
+					<button onclick="$(this).text($(this).text() == 'Добавить' ? 'Скрыть' : 'Добавить');" type="button" class="mb-1 btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false" aria-controls="collapse-1">Добавить</button>
+
+					<div class="table-responsive mt-4">
+						<table class="text-center table table-bordered text-nowrap mb-0">
+							<thead>
+								<tr>
+									<th>Данные</th>
+									<th>Статус импорта</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>ООО "СПАФФ-ИТ" Тинькофф с 2023-01-01 по 2023-02-01 </td>
+									<td>Выполнен</td>
+								</tr>
+								<tr>
+									<td>ООО "СПАФФ-ИТ" Тинькофф с 2023-05-01 по 2023-06-01 </td>
+									<td>Активен</td>
+								</tr>
+							</tbody>
+						</table> <!-- /table -->
+					</div>
+				</div> <!-- /card-body -->
+			</div> <!-- /card -->
+		</div> <!-- /col -->
+	</div> <!--/row-->
+
+{% endblock content %}
