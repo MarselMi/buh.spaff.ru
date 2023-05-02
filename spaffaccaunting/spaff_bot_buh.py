@@ -108,7 +108,7 @@ def incoming_message(message):
 
 Данные по транзакции могут вводиться через кнопки меню(при наличии), либо через поле ввода информации
 
-Для отмены создания на любом этапе введите команду /break, /crt, /create, /h, /help
+Для отмены создания на любом этапе выберите команду /create, /help
 Данные команды прервут создание транзакции.
 
 Дата вводится в формате: "dd/mm/YYYY" либо "dd-mm-YYYY" либо "dd.mm.YYYY"
@@ -121,7 +121,7 @@ def incoming_message(message):
             bot.send_message(message.chat.id, text="Некорректная ссылка перехода, привязка невозможна")
 
 
-@bot.message_handler(commands=['h', 'help'])
+@bot.message_handler(commands=['help'])
 def send_welcome(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
@@ -135,7 +135,7 @@ def send_welcome(message):
 
 Данные по транзакции могут вводиться через кнопки меню(при наличии), либо через поле ввода информации.
 
-Для отмены создания на любом этапе введите команду /break, /br, /create, /crt, /help, /h
+Для отмены создания на любом этапе выберите команду /create, /help
 Данные команды прервут создание транзакции.
 
 Дата вводится в формате: "dd/mm/YYYY" либо "dd-mm-YYYY" либо "dd.mm.YYYY"
@@ -146,11 +146,11 @@ def send_welcome(message):
         message_not_access(message)
 
 
-@bot.message_handler(commands=['crt', 'create', 'break', 'br'])
+@bot.message_handler(commands=['create'])
 def send_break_create(message):
     try:
-        r = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
-        user_id = r.get('id')
+        user_id = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
+
         data_dict = {
             "transaction_name": "",
             "type_transaction": "",
@@ -181,12 +181,14 @@ def listen_messages(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
-            if message.text.lower() == 'создать транзакцию':
+            if message.text.lower() == 'создать транзакцию' or message.text.find('к загрузке чека') > 0:
 
                 button = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
                 miss_b = types.KeyboardButton('Пропустить')
@@ -198,7 +200,8 @@ def listen_messages(message):
                 '''Перенаправление в следующую функцию для получения имени транзакции'''
                 bot.register_next_step_handler(message, load_check)
             else:
-                message_send = "Неизвестная команда, введите команду /h либо /help, для ознакомления"
+                print('i heare')
+                message_send = "Неизвестная команда, введите команду /help, для ознакомления"
                 bot.send_message(message.chat.id, text=message_send)
     except:
         message_not_access(message)
@@ -208,10 +211,13 @@ def listen_messages(message):
 def load_check(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
-        if message.text == '/h' or message.text == '/help':
+
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             try:
                 fileID = message.photo[-1].file_id
@@ -227,11 +233,16 @@ def load_check(message):
                 data_dict['check_img'] = f'img/{fileID}.{file_format}'
                 requests.patch(f'{PROD_DOMAIN}/api-v1/users/{user_id}/',
                                data={'json_create_transaction': json.dumps(data_dict)})
-
-                bot.send_message(message.chat.id, text="Имя транзакции: ")
+                buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+                button1 = types.KeyboardButton(text='⬅️ к загрузке чека')
+                buttons.add(button1)
+                bot.send_message(message.chat.id, text="Имя транзакции: ", reply_markup=buttons)
                 bot.register_next_step_handler(message, transaction_type)
             except:
-                bot.send_message(message.chat.id, text="Имя транзакции: ")
+                buttons = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+                button1 = types.KeyboardButton(text='⬅️ к загрузке чека')
+                buttons.add(button1)
+                bot.send_message(message.chat.id, text="Имя транзакции: ", reply_markup=buttons)
                 bot.register_next_step_handler(message, transaction_type)
     except:
         message_not_access(message)
@@ -240,10 +251,15 @@ def load_check(message):
 def transaction_type(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
-        if message.text == '/h' or message.text == '/help':
+
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
+        elif message.text.find('к загрузке чека') > 0:
+            listen_messages(message)
         else:
             '''получаю имя транзакции и автора, перенаправляю на выбор типа транзакции с выводом соотв сообщ
             Начало записи данных в словарь имя и пользователь'''
@@ -273,10 +289,12 @@ def transaction_balance_holder(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         elif message.text == 'Приход' or message.text == "Расход":
             '''После типа транзакции выбор на балансодержателя'''
             req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
@@ -327,10 +345,12 @@ def pay_type(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             b_holders = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/bal-holders/').content)
             holders = []
@@ -381,10 +401,12 @@ def transaction_date_or_sub_pay(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             pay_type_list = []
             pay_types = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/pays-type/').content)
@@ -434,10 +456,12 @@ def sub_type(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             sub_type_list = []
             sub_pay_type = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/sub-pay-type/').content)
@@ -468,10 +492,12 @@ def transaction_date(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             '''Добавление Балансодержателя и отправка даты'''
             req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
@@ -492,10 +518,12 @@ def transaction_sum(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             try:
                 date_com = message.text.replace('-', '.').replace('/', '.')
@@ -527,10 +555,12 @@ def transaction_commission_sum(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             try:
                 decimal.Decimal(message.text.replace(',', '.').replace(' ', ''))
@@ -555,10 +585,12 @@ def finally_transaction_create_step(message):
     try:
         json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0].get('id')
 
-        if message.text == '/h' or message.text == '/help':
+        if message.text == '/help' or message.text.lower() == 'помощь':
             send_welcome(message)
-        elif message.text == '/break' or message.text == '/crt' or message.text == '/create' or message.text == '/br':
+        elif message.text == '/create':
             send_break_create(message)
+        elif message.text == '/start':
+            incoming_message(message)
         else:
             req = json.loads(requests.get(f'{PROD_DOMAIN}/api-v1/users/?telegram_id={message.chat.id}').content)[0]
             data_dict = req.get('json_create_transaction')
