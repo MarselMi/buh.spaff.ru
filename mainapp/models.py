@@ -165,6 +165,7 @@ class AdditionalDataTransaction(models.Model):
 
 class TransactionLog(models.Model):
 
+    import_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='id импортированной транзакции')
     transaction_id = models.IntegerField(verbose_name='ID транзакции')
     transaction_name = models.TextField(blank=True, null=True, verbose_name='Имя транзакции')
     changed = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
