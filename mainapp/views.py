@@ -11,7 +11,7 @@ from mainapp.forms import (
     TransactionForm, BalanceHolderForm, TransactionUpdateForm
 )
 from mainapp.models import (
-    CustomUser, Transaction, BalanceHolder, PayType,
+    CustomUser, Transaction, BalanceHolder, PayType, ImportData,
     AdditionalDataTransaction, TransactionLog, SubPayType, BdrFond
 )
 
@@ -23,7 +23,9 @@ def transactions_import(request):
     else:
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=True)
 
-    data = {'title': 'Иморт данных', 'balance_holders': balance_holders}
+    import_data = ImportData.objects.all()
+
+    data = {'title': 'Иморт данных', 'balance_holders': balance_holders, 'import_data': import_data}
     return render(request, 'mainapp/transactions_import.html', data)
 
 
