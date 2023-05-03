@@ -195,7 +195,6 @@ class BdrFond(models.Model):
     balance_holder_id = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
                                           related_name='brdfond_balanceholder', verbose_name='Балансодержатель')
     month_year = models.DateField(max_length=10, null=True, blank=True, verbose_name='Период для БДР')
-
     params_data = models.JSONField(null=True, blank=True, verbose_name='Планируемый расход/расход')
 
 
@@ -203,8 +202,8 @@ class ImportData(models.Model):
 
     bank = models.CharField(max_length=30, blank=True, null=True, verbose_name='Банк')
     key = models.CharField(max_length=100, blank=True, null=True, verbose_name='Ключ авторизации')
-    account = models.IntegerField(blank=True, null=True, verbose_name='Номер счета')
-    inn = models.IntegerField(blank=True, null=True, verbose_name='ИНН')
+    account = models.CharField(max_length=25, blank=True, null=True, verbose_name='Номер счета')
+    inn = models.CharField(max_length=20, blank=True, null=True, verbose_name='ИНН')
     date_start = models.DateTimeField(blank=True, null=True, verbose_name='Дата с')
     date_end = models.DateTimeField(blank=True, null=True, verbose_name='Дата по')
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
