@@ -60,7 +60,7 @@
 										
 										<label for="category_id">Добавить поле категории/подкатегории</label>
 										<select class="form-select" id="category_id">
-											
+											<option selected value="">Выберите категорию</option>
 											{% for type in type_pay_for_final %}
 												{% if type.type_id %}
 												<option value="pay_type&{{ type.type_id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
@@ -73,9 +73,9 @@
 
 									</div>
 
-									<div class="col-12 col-sm-3 mb-1 mt-4 additional_params" hidden>
+									<div class="col-12 col-sm-3 mb-1 mt-4" hidden>
 
-										<a class="btn btn-primary add_category">
+										<a class="btn btn-primary">
 											Добавить
 										</a>
 
@@ -113,7 +113,7 @@
 									
 										<label for="category_profit_id">Добавить поле категории/подкатегории</label>
 										<select class="form-select" id="category_profit_id">
-											
+											<option selected value="">Выберите категорию</option>
 											{% for type in type_pay_for_final %}
 												{% if type.type_id %}
 												<option value="pay_type&{{ type.type_id }}&{{ type.pay_type }}">{{ type.pay_type }}</option>
@@ -126,9 +126,9 @@
 		
 									</div>
 		
-									<div class="col-12 col-sm-3 mb-1 mt-4 profit_params" hidden>
+									<div class="col-12 col-sm-3 mb-1 mt-4" hidden>
 		
-										<a class="btn btn-primary add_profit_category">
+										<a class="btn btn-primary">
 											Добавить
 										</a>
 		
@@ -288,7 +288,7 @@
 						$('#year').val(result.date_year);
 					}else{
 						$('#year').val('2023');
-					}
+					};
 					$('#year').val(result.date_year);
 					if(result.bal_holder.length){
 						$('.additional_params').attr('hidden', 'true');
@@ -316,28 +316,42 @@
 			}
 		})
 
-		$('.add_category').on('click', function(){
+		$('#category_id').on('change', function(){
 			if($('#category_id').val()){
-				var inputEls = $('#category_id').val().split('&')
-				var new_category = `<div class="col-12 col-sm-3 mb-3">
-										<label class="label" for="${inputEls[0]}_${inputEls[1]}_expend">${inputEls[2]}</label>
+				var inputEls = $('#category_id').val().split('&');
+				var new_category = `<div class="col-12 col-sm-3 mb-3 ${inputEls[0]}_${inputEls[1]}_expend">
+										<div class="d-flex justify-content-between">
+											<div class="d-flex justify-content-start">
+												<label class="label" for="${inputEls[0]}_${inputEls[1]}_expend">${inputEls[2]}</label>
+											</div>
+											<div class="d-flex justify-content-end">
+												<a onclick="delete_input(event);" type="button" class="btn-close close_expend" data-type="${inputEls[0]}_${inputEls[1]}_expend"></a>
+											</div>
+										</div>
 										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&expend" id="${inputEls[0]}_${inputEls[1]}_expend" placeholder="3000"/>
-									</div>`
+									</div>`;
 				if(!$('.category_list').find($(`#${inputEls[0]}_${inputEls[1]}_expend`)).length){
-					$('.category_list').append(new_category)
+					$('.category_list').append(new_category);
 				}
 			}
-		})
+		});
 
-		$('.add_profit_category').on('click', function(){
+		$('#category_profit_id').on('change', function(){
 			if($('#category_profit_id').val()){
-				var inputEls = $('#category_profit_id').val().split('&')
-				var new_category = `<div class="col-12 col-sm-3 mb-3">
-										<label class="label" for="${inputEls[0]}_${inputEls[1]}_profit">${inputEls[2]}</label>
+				var inputEls = $('#category_profit_id').val().split('&');
+				var new_category = `<div class="col-12 col-sm-3 mb-3 ${inputEls[0]}_${inputEls[1]}_profit">
+										<div class="d-flex justify-content-between">
+											<div class="d-flex justify-content-start">
+												<label class="label" for="${inputEls[0]}_${inputEls[1]}_expend">${inputEls[2]}</label>
+											</div>
+											<div class="d-flex justify-content-end close_profit">
+												<a onclick="delete_input(event);" type="button" class="btn-close" data-type="${inputEls[0]}_${inputEls[1]}_profit"></a>
+											</div>
+										</div>
 										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&profit" id="${inputEls[0]}_${inputEls[1]}_profit" placeholder="3000"/>
-									</div>`
+									</div>`;
 				if(!$('.profit_params_row').find($(`#${inputEls[0]}_${inputEls[1]}_profit`)).length){
-					$('.profit_params_row').append(new_category)
+					$('.profit_params_row').append(new_category);
 				}
 			}
 		})
@@ -556,6 +570,11 @@
 				var x = 0;
 			})
 		})
+
+		function delete_input(event) {
+			var className = event.target.getAttribute('data-type');
+			$(`.${className}`).remove();
+		};
 
 	</script>
 

@@ -171,7 +171,7 @@ class AdditionalDataTransaction(models.Model):
 
 class TransactionLog(models.Model):
 
-    transaction_id = models.IntegerField(verbose_name='ID транзакции')
+    transaction_id = models.CharField(max_length=20, null=True, blank=True, verbose_name='ID транзакции')
     transaction_name = models.TextField(blank=True, null=True, verbose_name='Имя транзакции')
     changed = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
     author_references = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
