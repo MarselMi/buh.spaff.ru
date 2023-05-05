@@ -975,6 +975,11 @@ def balance_holder_create_view(request):
         'gray': 'Серый'
     }
 
+    type_account = {
+        'CARD': 'Номер Карты',
+        'SCORE': 'Номер Счета',
+        'OTHER': 'Другое'
+    }
     if request.method == 'POST':
 
         if request.POST.get('type') == 'check_holder':
@@ -1017,7 +1022,6 @@ def balance_holder_create_view(request):
             hidden_status=hide_holder,
             color=color
         )
-
         new_balance_holder.available_superuser.set(superusers_available)
         new_balance_holder.save()
 
@@ -1037,7 +1041,7 @@ def balance_holder_create_view(request):
 
         return redirect('balance_holders')
 
-    data = {'title': 'Создание балансодержателя', 'form': form_class, 'users': users,
+    data = {'title': 'Создание балансодержателя', 'form': form_class, 'users': users, 'type_account': type_account,
             'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}, 'color_dict': color_dict}
 
     return render(request, 'mainapp/balance_holder_create.html', data)
@@ -1062,7 +1066,11 @@ def balance_holder_update_view(request, pk):
         'cyan': 'Небесный',
         'gray': 'Серый'
     }
-
+    type_account = {
+        'CARD': 'Номер Карты',
+        'SCORE': 'Номер Счета',
+        'OTHER': 'Другое'
+    }
     if request.method == 'POST':
 
         if request.POST.get('type') == 'check_holder':
@@ -1115,7 +1123,8 @@ def balance_holder_update_view(request, pk):
         return redirect('balance_holders')
 
     data = {'title': 'Редактирование балансодержателя', 'users': users, 'holder': update_balance_holder[0],
-            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}, 'color_dict': color_dict}
+            'inside': {'page_url': 'holders', 'page_title': 'Балансодержатели'}, 'color_dict': color_dict,
+            'type_account': type_account}
 
     return render(request, 'mainapp/balance_holder_update.html', data)
 

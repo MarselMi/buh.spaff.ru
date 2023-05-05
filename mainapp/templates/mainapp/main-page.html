@@ -31,12 +31,16 @@
 											<i class="fa-regular fa-info"></i>
 										</button>
 									</span>
-									<p>
-										{{ holder.account_type|translate_account_type }}
-										<span onclick="copyTextToClipboard( {{ holder.payment_account }} ); return false;" type="button" class="small ms-1" data-bs-toggle="tooltip" data-bs-title="Скопировать {{ holder.payment_account }}">
-											<i class="fa-regular fa-clipboard"></i>
-										</span>
-									</p>
+									{% if holder.account_type == 'OTHER' %}
+										<p>{{ holder.payment_account }}</p>
+									{% else %}
+										<p>
+											{{ holder.account_type|translate_account_type }}
+											<span onclick="copyTextToClipboard( {{ holder.payment_account }} ); return false;" type="button" class="small ms-1" data-bs-toggle="tooltip" data-bs-title="Скопировать {{ holder.payment_account }}">
+												<i class="fa-regular fa-clipboard"></i>
+											</span>
+										</p>
+									{% endif %}
 								</div>
 								<!-- Button trigger modal -->
 								<button type="button" class="btn buttonSelectModal" data-holder-id="{{ holder.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="{{ holder.organization_holder }}">

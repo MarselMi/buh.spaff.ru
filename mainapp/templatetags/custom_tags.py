@@ -30,6 +30,8 @@ def pay_type_decode(obj):
 def translate_account_type(obj):
     if obj == 'CARD':
         return 'Номер карты'
+    elif obj == 'OTHER':
+        return 'Другое'
     else:
         return 'Расчетный счет'
 

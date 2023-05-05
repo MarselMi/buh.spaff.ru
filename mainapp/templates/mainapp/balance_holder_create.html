@@ -31,8 +31,9 @@
 									<label for="account_type">Реквезиты</label>
 									<select autocomplete="off" class="obligatory form-select" name="account_type" id="account_type">
 										<option selected value="">Выберите тип</option>
-										<option value="CARD">Номер карты</option>
-										<option value="SCORE">Номер счета</option>
+										{% for i, k in type_account.items %}
+										<option value="{{ i }}">{{ k }}</option>
+										{% endfor %}
 									</select>
 								</div>
 
@@ -145,17 +146,6 @@
 		}
 	});
 
-	document.querySelector('#payment_account').addEventListener('input', function(){
-		const len = this.value.replace(/\s+/g, '').length
-		if((len) % 4 == 0){
-			if (this.value.slice(-1) != ' '){
-				this.value+=' '
-			}else{
-				this.value+=''
-			}
-		}
-	})
-
 	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
 
 	$('#holder_balance').on('input change', function(){
@@ -172,15 +162,27 @@
 
 	$('#payment_account').on('input change', function(){
 		var paccount = $('#payment_account').val().replace(/\s+/g, '');
-		if (paccount){
-			if (regEx.test(paccount) || ((paccount.length > 20)) || ((paccount.length < 16))){
-				$('#payment_account').addClass('is-invalid');
-				$('#payment_account').removeClass('is-valid');
-			}else{
-				$('#payment_account').removeClass('is-invalid');
-				$('#payment_account').addClass('is-valid');
+		if ($('#account_type').val() == "CARD" || $('#account_type').val() == "SCORE"){
+			var len = this.value.replace(/\s+/g, '').length;
+			if((len) % 4 == 0){
+				if (this.value.slice(-1) != ' '){
+					this.value+=' '
+				}else{
+					this.value+=''
+				}
+			};
+			if (paccount){
+				if (regEx.test(paccount) || ((paccount.length > 20)) || ((paccount.length < 16))){
+					$('#payment_account').addClass('is-invalid');
+					$('#payment_account').removeClass('is-valid');
+				}else{
+					$('#payment_account').removeClass('is-invalid');
+					$('#payment_account').addClass('is-valid');
+				}
 			}
-		}
+		}else{
+			$('#payment_account').removeClass('is-valid');
+		}	
 	});
 
 	$('#organization_holder').on('input', function(){
@@ -231,20 +233,22 @@
 	$('#account_type').on('change', function(){
 		if($('#account_type').val()){
 			$('.payment_account_div').removeAttr('hidden');
-			$('.alias_holder_div').removeAttr('hidden');
-			$('#account_type').removeClass('is-invalid');
-			$('.hide_holder_div').removeAttr('hidden');
 			if ($('#account_type').val() == "CARD"){
-				$('#label_payment_account').text('Номер карты');
-				$('#payment_account').attr('placeholder', '**** **** **** ****');
+				$('#payment_account').val('');
+				$('#label_payment_account').text('Номер карты')
+				$('#payment_account').attr('placeholder', '**** **** **** ****')
 			}else if ($('#account_type').val() == "SCORE"){
-				$('#label_payment_account').text('Номер расчетного счета');
-				$('#payment_account').attr('placeholder', '**** **** **** **** ****');
+				$('#payment_account').val('');
+				$('#label_payment_account').text('Номер расчетного счета')
+				$('#payment_account').attr('placeholder', '**** **** **** **** ****')
+			}else{
+				$('#payment_account').val('');
+				$('#label_payment_account').text('Введите любую информацию')
+				$('#payment_account').attr('placeholder', 'Наличные')
+				$('#payment_account').removeClass('is-invalid');
 			}
-		}else{
-			$('#holder_type').addClass('is-invalid');
 		}
-	});
+	})
 
 	$('#color').on('change', function(){
 		$('#color_example').attr('style', `background: ${$('#color').val()}`)
@@ -301,10 +305,14 @@
 				valid = false;
 			}
 
-			if (validPayment_account || ((payment_account.length > 20)) || ((payment_account.length < 16))){
-				$('#payment_account').addClass('is-invalid');
-				$('#payment_account').after('<span class="error">Введите корректные данные</span>');
-				valid = false;
+			if ($('#account_type').val() == "CARD" || $('#account_type').val() == "SCORE"){
+				if (validPayment_account || ((payment_account.length > 20)) || ((payment_account.length < 16))){
+					$('#payment_account').addClass('is-invalid');
+					$('#payment_account').after('<span class="error">Введите корректные данные</span>');
+					valid = false;
+				}
+			}else{
+				valid = true;
 			}
 
 			if (validHolder_balance) {

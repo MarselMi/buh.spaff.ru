@@ -23,7 +23,8 @@ HOLDER_ROLE = [
 
 ACCAUNTING_ROLE = [
     ('CARD', 'Номер Карты'),
-    ('SCORE', 'Номер Счета')
+    ('SCORE', 'Номер Счета'),
+    ('OTHER', 'Другое')
 ]
 
 IMPORT_STATUS = [

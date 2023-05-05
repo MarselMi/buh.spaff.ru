@@ -56,7 +56,13 @@
 													</div>
 												</td>
 												<td>{{ object.holder_balance|numb_format }}</td>
-												<td>{{ object.payment_account|for_card_step }}</td>
+												<td>
+													{% if object.account_type == 'OTHER' %} 
+														{{ object.payment_account }} 
+													{% else %}
+														{{ object.payment_account|for_card_step }} 
+													{% endif %}
+												</td>
 												<td>{{ object.alias_holder }}</td>
 											</tr>
 										{% endfor %}

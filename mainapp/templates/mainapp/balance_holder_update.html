@@ -43,12 +43,13 @@
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="account_type">Привязка номера карты/счета к балансодержателю</label>
 									<select autocomplete="off" class="obligatory form-select" name="account_type" id="account_type">
-										<option selected value="{{ holder.account_type }}">{{ holder.account_type|translate_account_type }}</option>
-										{% if holder.account_type == "CARD" %}
-											<option value="SCORE">Расчетный счет</option>
-										{% else %}
-											<option value="CARD">Номер карты</option>
-										{% endif %}
+										{% for i, k in type_account.items %}
+											{% if i == holder.account_type %}
+											<option selected value="{{ i }}">{{ k }}</option>
+											{% else %}
+											<option value="{{ i }}">{{ k }}</option>
+											{% endif %}
+										{% endfor %}
 									</select>
 								</div>
 
@@ -56,8 +57,10 @@
 									<label id="label_payment_account" for="payment_account">
 										{% if holder.account_type == 'SCORE' %}
 											Расчетный счет
-										{% else %} 
+										{% elif holder.account_type == 'CARD' %} 
 											Номер карты
+										{% else %}
+											Введите любую информацию
 										{% endif %}
 									</label>
 									<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" value="{{ holder.payment_account|for_card_step }}"/>
@@ -170,16 +173,20 @@
 	})
 
 	$('#payment_account').on('input change', function(){
-		var paccount = $('#payment_account').val().replace(/\s+/g, '')
-		if (paccount){
-			if (regEx.test(paccount) || ((paccount.length > 20)) || ((paccount.length < 16))){
-				$('#payment_account').addClass('is-invalid');
-				$('#payment_account').removeClass('is-valid');
-			}else{
-				$('#payment_account').removeClass('is-invalid');
-				$('#payment_account').addClass('is-valid');
+		var paccount = $('#payment_account').val().replace(/\s+/g, '');
+		if ($('#account_type').val() == "CARD" || $('#account_type').val() == "SCORE"){
+			if (paccount){
+				if (regEx.test(paccount) || ((paccount.length > 20)) || ((paccount.length < 16))){
+					$('#payment_account').addClass('is-invalid');
+					$('#payment_account').removeClass('is-valid');
+				}else{
+					$('#payment_account').removeClass('is-invalid');
+					$('#payment_account').addClass('is-valid');
+				}
 			}
-		}
+		}else{
+			$('#payment_account').removeClass('is-valid');
+		}	
 	})
 
 	$('#organization_holder').on('input', function(){
@@ -229,16 +236,20 @@
 
 	$('#account_type').on('change', function(){
 		if($('#account_type').val()){
-			$('#account_type').removeClass('is-invalid')
 			if ($('#account_type').val() == "CARD"){
+				$('#payment_account').val('');
 				$('#label_payment_account').text('Номер карты')
 				$('#payment_account').attr('placeholder', '**** **** **** ****')
 			}else if ($('#account_type').val() == "SCORE"){
+				$('#payment_account').val('');
 				$('#label_payment_account').text('Номер расчетного счета')
 				$('#payment_account').attr('placeholder', '**** **** **** **** ****')
+			}else{
+				$('#payment_account').val('');
+				$('#label_payment_account').text('Введите любую информацию')
+				$('#payment_account').attr('placeholder', 'Наличные')
+				$('#payment_account').removeClass('is-invalid');
 			}
-		}else{
-			$('#holder_type').addClass('is-invalid')
 		}
 	})
 
@@ -267,13 +278,15 @@
 			var validPayment_account = regEx.test(payment_account);
 
 			$(".error").remove();
-
-			if (validPayment_account || ((payment_account.length > 20)) || ((payment_account.length < 16))){
-				$('#payment_account').addClass('is-invalid');
-				$('#payment_account').after('<span class="error">Введите корректные данные</span>');
-				valid = false;
+			if ($('#account_type').val() == "CARD" || $('#account_type').val() == "SCORE"){
+				if (validPayment_account || ((payment_account.length > 20)) || ((payment_account.length < 16))){
+					$('#payment_account').addClass('is-invalid');
+					$('#payment_account').after('<span class="error">Введите корректные данные</span>');
+					valid = false;
+				}
+			}else{
+				valid = true;
 			}
-
 			if (valid) this.submit();
 		});
 	});
