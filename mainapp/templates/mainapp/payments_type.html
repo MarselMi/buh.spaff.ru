@@ -160,15 +160,31 @@
 								Введите подкатегорию
 							</label>
 						</div> <!-- /form-floating -->
+						{% if sub_pay_types %}
+						<div class="form-floating mb-3">
+							<h5 class="modal-title">
+								Созданные подкатегории: 
+							</h5>
+							<div class="row gx-0">
+								<div class="col-12 modal-body">
+								{% for sub in sub_pay_types %}
+										<li>{{ sub }}</li>
+								{% endfor %}
+								</div>
+							</div>
+						</div>
+						{% endif %}
 					</div> <!-- /modal-body -->
 
 					<div class="modal-footer">
 						<div class="row">
+
 							<div class="col-12 mb-3">
 								<button id="create_sub_pay" onclick="createSubPayType()" type="button" class="btn btn-primary w-100">
 									Сохранить
 								</button> <!-- /btn -->
 							</div>
+
 						</div>
 					</div> <!-- /modal-footer -->
 				</div>
@@ -199,13 +215,14 @@
 							{% endfor %}
 						</div>
 					</div> <!-- /modal-body -->
+
 					<div class="modal-footer">
 						<div class="row">
-							<div class="col-12 mb-3">
-								<button id="subPayTypeAddFunc" type="button" class="btn btn-primary w-100">
-									Сохранить
-								</button> <!-- /btn -->
-							</div>
+
+							<button id="subPayTypeAddFunc" type="button" class="btn btn-primary">
+								Сохранить
+							</button> <!-- /btn -->
+
 						</div>
 					</div> <!-- /modal-footer -->
 

@@ -146,3 +146,17 @@ try:
     from .local_settings import *
 except ImportError:
     from .prod_settings import *
+
+'''REDIS'''
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = '6379'
+
+'''CELERY'''
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BROKER_TRANSPORT_OPTION = {'visibility_timeout': 3600}
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ALWAYS_EAGER = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60

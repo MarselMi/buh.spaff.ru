@@ -210,7 +210,13 @@
 											<td>
 												<div class="d-flex justify-content-between bd-highlight">
 													<div class="d-flex justify-content-start">
-														{{ object.name }}
+														{% if object.description %}
+														<span data-bs-toggle="tooltip" data-bs-title="Подробнее: {{ object.description }}">
+															{{ object.name }}
+														</span>
+														{% else %} 
+															{{ object.name }} 
+														{% endif %}
 													</div>
 													<div class="d-flex justify-content-end">
 														{% if user.is_superuser %}

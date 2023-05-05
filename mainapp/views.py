@@ -25,6 +25,31 @@ def transactions_import(request):
 
     import_data = ImportData.objects.all()
 
+    if request.method == 'POST':
+        bank = request.POST.get('bank_type')
+        key = request.POST.get('key')
+        account = request.POST.get('account')
+        inn = request.POST.get('inn')
+        date_start = dt.strptime(request.POST.get('date_start'), '%d.%m.%Y').date()
+        date_end = dt.strptime(request.POST.get('date_end'), '%d.%m.%Y').date()
+        balance_holder = BalanceHolder.objects.filter(organization_holder=request.POST.get('balance_holder'))[0]
+        status_import = 'ACTIVE'
+
+        new_import = ImportData
+
+        new_data = {
+            'bank': bank,
+            'key': key,
+            'account': account,
+            'inn': inn,
+            'date_start': date_start,
+            'date_end': date_end,
+            'balance_holder': balance_holder,
+            'status_import': status_import,
+
+        }
+        new_import.objects.create(**new_data)
+
     data = {'title': 'Иморт данных', 'balance_holders': balance_holders, 'import_data': import_data}
     return render(request, 'mainapp/transactions_import.html', data)
 
@@ -275,6 +300,7 @@ def fond_view(request):
 
 
 def main_page_view(request):
+    print(len(Transaction.objects.filter(import_id='60878813229_0')) == 0)
     holders = []
     comming_sum = ''
     expenditure_sum = ''
@@ -516,12 +542,13 @@ def transaction_view(request):
     expenditure_amount = 0
     for transaction in transactions:
         if transaction.get('type_transaction') == 'COMING':
-            coming_sum += int(transaction.get('amount'))
+            coming_sum += round(float(transaction.get('amount')), 2)
         if transaction.get('type_transaction') == 'EXPENDITURE':
-            expenditure_amount += int(transaction.get('amount'))
-            expenditure_comission += int(transaction.get('commission'))
-            expenditure_transaction += int(transaction.get('transaction_sum'))
-
+            expenditure_amount += round(float(transaction.get('amount')), 2)
+            expenditure_comission += round(float(transaction.get('commission')), 2)
+            expenditure_transaction += round(float(transaction.get('transaction_sum')), 2)
+        if transaction.get('commission'):
+            transaction['percent'] = round((float(transaction.get('commission')) / float(transaction.get('transaction_sum')) * 100), 2)
     count = math.ceil(int(original_count) / limit)
 
     if request.GET.get('collapse'):
@@ -530,10 +557,6 @@ def transaction_view(request):
             request.session['transaction_collapse'] = 1
         else:
             request.session['transaction_collapse'] = 2
-
-    for transa in transactions:
-        if transa.get('commission'):
-            transa['percent'] = round(float(transa.get('commission')) / float(transa.get('transaction_sum')) * 100)
 
     url_params = str(request).split('/')[-1].rstrip("'>").split('&page=')[0]
 

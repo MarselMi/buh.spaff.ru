@@ -268,7 +268,8 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                             (SELECT `mu`.`username` FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
                             (SELECT `sb`.`sub_type` FROM `mainapp_subpaytype` sb WHERE `sb`.`id`=`mt`.`sub_type_pay_id`) as sub_type_pay_id,
                             `mt`.`status`,
-                            `mt`.`check_img`                
+                            `mt`.`check_img`,
+                            `mt`.`description`                
                         FROM `mainapp_transaction` mt
                         JOIN 
                             `mainapp_balanceholder` mb

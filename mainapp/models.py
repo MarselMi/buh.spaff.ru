@@ -204,9 +204,10 @@ class ImportData(models.Model):
     key = models.CharField(max_length=100, blank=True, null=True, verbose_name='Ключ авторизации')
     account = models.CharField(max_length=25, blank=True, null=True, verbose_name='Номер счета')
     inn = models.CharField(max_length=20, blank=True, null=True, verbose_name='ИНН')
-    date_start = models.DateTimeField(blank=True, null=True, verbose_name='Дата с')
-    date_end = models.DateTimeField(blank=True, null=True, verbose_name='Дата по')
+    date_start = models.DateField(blank=True, null=True, verbose_name='Дата с')
+    date_end = models.DateField(blank=True, null=True, verbose_name='Дата по')
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='importdata_balanceholder', verbose_name='Балансодержатель')
     status_import = models.CharField(max_length=25, choices=IMPORT_STATUS,
                                      null=True, blank=True, verbose_name='Статус импорта')
+    tr_count = models.IntegerField(blank=True, null=True, verbose_name='количество импортированных транзакций')

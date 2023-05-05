@@ -47,7 +47,7 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label for="balance_holder">Для балансодержателя</label>
-										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" name="balance_holder" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
 										<datalist id="balance_holder_list">
 											{% for holder in balance_holders %}
 											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
@@ -84,14 +84,12 @@
 								</tr>
 							</thead>
 							<tbody>
+								{% for i in import_data %}
 								<tr>
-									<td>ООО "СПАФФ-ИТ" Тинькофф с 01.01.2023 по 01.02.2023 </td>
-									<td>Выполнен</td>
+									<td>{{ i.balance_holder }} с {{ i.date_start }} по {{ i.date_end }} </td>
+									<td>{{ i.status_import }}</td>
 								</tr>
-								<tr>
-									<td>ООО "СПАФФ-ИТ" Тинькофф с 01.05.2023 по 01.06.2023 </td>
-									<td>Активен</td>
-								</tr>
+								{% endfor %}
 							</tbody>
 						</table> <!-- /table -->
 					</div>
