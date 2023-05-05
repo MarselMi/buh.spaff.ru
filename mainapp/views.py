@@ -307,7 +307,6 @@ def fond_view(request):
 
 
 def main_page_view(request):
-    print(len(Transaction.objects.filter(import_id='60878813229_0')) == 0)
     holders = []
     comming_sum = ''
     expenditure_sum = ''
