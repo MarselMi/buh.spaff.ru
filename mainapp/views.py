@@ -26,6 +26,13 @@ def transactions_import(request):
     import_data = ImportData.objects.all()
 
     if request.method == 'POST':
+        if request.POST.get('type') == 'check_holder':
+            organization_holder = request.POST.get('balance_holder')
+            if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
+                return JsonResponse({'message': True})
+            else:
+                return JsonResponse({'message': False})
+
         bank = request.POST.get('bank_type')
         key = request.POST.get('key')
         account = request.POST.get('account')

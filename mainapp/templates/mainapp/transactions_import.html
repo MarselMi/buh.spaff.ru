@@ -22,37 +22,67 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="key">Ключ</label>
-										<input class="form-control" name="key" id="key" placeholder="************************"/>
+										<input class="input_validet form-control" name="key" id="key" placeholder="************************"/>
+										
+										<div class="invalid-feedback">
+											Корректный ключ должен быть не менее 87 симовлов
+										</div>
+
 									</div>
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="account">Номер счета</label>
-										<input class="form-control" name="account" id="account" placeholder="1111 1111 1111 1111"/>
+										<input class="input_validet form-control" name="account" id="account" placeholder="1111 1111 1111 1111 1111"/>
+										
+										<div class="invalid-feedback">
+											Номер счета должен состоять из 20 символов
+										</div>
+
 									</div>
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="inn">ИНН</label>
-										<input class="form-control" name="inn" id="inn" placeholder="0000000000"/>
+										<input class="input_validet form-control" name="inn" id="inn" placeholder="0000000000"/>
+										
+										<div class="invalid-feedback">
+											Номер ИНН должен быть 10-12 символов
+										</div>
+
 									</div>
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="date_start">Дата с </label>
-										<input class="form-control" name="date_start" id="date_start" placeholder="01.01.2023"/>
+										<input class="input_validet form-control" name="date_start" id="date_start" placeholder="01.01.2023"/>
+									
+										<div class="invalid-feedback">
+											Поле не может быть пустым
+										</div>
+
 									</div>
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="date_end">Дата по </label>
-										<input class="form-control" name="date_end" id="date_end" placeholder="01.02.2023"/>
+										<input class="input_validet form-control" name="date_end" id="date_end" placeholder="01.02.2023"/>
+									
+										<div class="invalid-feedback">
+											Поле не может быть пустым
+										</div>
+
 									</div>
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label for="balance_holder">Для балансодержателя</label>
-										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" name="balance_holder" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+										<input class="input_validet form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" name="balance_holder" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
 										<datalist id="balance_holder_list">
 											{% for holder in balance_holders %}
 											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
 											{% endfor %}
 										</datalist>
+										
+										<div class="invalid-feedback">
+											Такого балансодержателя нет
+										</div>
+
 									</div>
 
 								</div>
@@ -74,25 +104,26 @@
 					</div>
 
 					<button onclick="$(this).text($(this).text() == 'Добавить' ? 'Скрыть' : 'Добавить');" type="button" class="mb-1 btn btn-secondary text-white collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false" aria-controls="collapse-1">Добавить</button>
-
-					<div class="table-responsive mt-4">
-						<table class="text-center table table-bordered text-nowrap mb-0">
-							<thead>
-								<tr>
-									<th>Данные</th>
-									<th>Статус импорта</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for i in import_data %}
-								<tr>
-									<td>{{ i.balance_holder }} с {{ i.date_start }} по {{ i.date_end }} </td>
-									<td>{{ i.status_import }}</td>
-								</tr>
-								{% endfor %}
-							</tbody>
-						</table> <!-- /table -->
-					</div>
+					{% if import_data %}
+						<div class="table-responsive mt-4">
+							<table class="text-center table table-bordered text-nowrap mb-0">
+								<thead>
+									<tr>
+										<th>Данные</th>
+										<th>Статус импорта</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for i in import_data %}
+									<tr>
+										<td>{{ i.balance_holder }} с {{ i.date_start }} по {{ i.date_end }} </td>
+										<td>{{ i.status_import }}</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table> <!-- /table -->
+						</div>
+					{% endif %}
 				</div> <!-- /card-body -->
 			</div> <!-- /card -->
 		</div> <!-- /col -->
@@ -105,4 +136,73 @@
 		});
 	</script>
 
+	<script>
+
+		var url = document.location.href;
+		var a = document.cookie.split(';');
+		var token = '';
+
+		for (i = 0; i < a.length; i++) {
+			var b = a[i].split('=');
+			b[0] = b[0].replace(/\s+/g, '')
+			if (b[0] == 'csrftoken') {
+				token = b[1];
+			}
+		};
+
+		$('#balance_holder').on('input', function(){
+			$.ajax(
+				{
+					url: url,
+					method: 'POST',
+					data: {
+						csrfmiddlewaretoken: token,
+						type: 'check_holder',
+						balance_holder: $('#balance_holder').val()
+					}
+				}).then(function(result) {
+					if (result.message) {
+						$('#balance_holder').removeClass('is-invalid');
+						$('#balance_holder').addClass('is-valid');
+					} else {
+						$('#balance_holder').removeClass('is-valid');
+						$('#balance_holder').addClass('is-invalid');
+					}
+				}).catch(function(err) {
+					var x = 1;
+				}
+			)
+		})
+
+		$('.save_button').on('click', function(){
+			if($('#key').val().length < 87){
+				$('#key').addClass('is-invalid');
+			}else{
+				$('#key').removeClass('is-invalid');
+			}
+			if($('#account').val().length < 19 && $('#account').val().length > 21){
+				$('#account').addClass('is-invalid');
+			}else{
+				$('#account').removeClass('is-invalid');
+			}
+			if($('#inn').val().length < 9 && $('#inn').val().length > 13){
+				$('#inn').addClass('is-invalid');
+			}else{
+				$('#inn').removeClass('is-invalid');
+			}
+			if($('#date_start').val().length > 9){
+				$('#date_start').addClass('is-invalid');
+			}else{
+				$('#date_start').removeClass('is-invalid');
+			}
+			if($('#date_end').val().length > 9){
+				$('#date_end').addClass('is-invalid');
+			}else{
+				$('#date_end').removeClass('is-invalid');
+			}
+			if($('.input_validet').hasClass('is-invalid')){
+				event.preventDefault();
+			}
+		})
+	</script>
 {% endblock content %}

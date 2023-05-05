@@ -214,9 +214,8 @@
 						$('#balance_holder').removeClass('is-invalid');
 						$('#balance_holder').addClass('is-valid');
 					} else {
-						$('#balance_holder').removeClass('is-valid');
+						$('#balance_holder').removeClass('is-invalid');
 						$('#balance_holder').addClass('is-invalid');
-						$('#balance_holder').after('<div class="invalid-feedback error_holder">Такого балансодержателя нет</div>')
 					}
 				}).catch(function(err) {
 					var x = 1;
