@@ -14,6 +14,8 @@ def import_transactions():
     for obj in objects_active:
         date_start = obj.date_start.strftime('%Y-%m-%d')
         date_end = obj.date_end.strftime('%Y-%m-%d')
+        if obj.date_end < dt.now().date():
+            date_end = dt.now().date().strftime('%Y-%m-%d')
         inn = obj.inn
         transactions_objects = json.loads(requests.get(
             f"https://business.tinkoff.ru/openapi/api/v1/bank-statement?accountNumber={obj.account}&from={date_start}&till={date_end}",
