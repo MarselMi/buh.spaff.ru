@@ -117,7 +117,7 @@
 									{% for i in import_data %}
 									<tr>
 										<td>{{ i.balance_holder }} с {{ i.date_start }} по {{ i.date_end }} </td>
-										<td>{{ i.status_import }}</td>
+										<td>{{ i.status_import|translate_import }}</td>
 									</tr>
 									{% endfor %}
 								</tbody>

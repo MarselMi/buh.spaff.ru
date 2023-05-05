@@ -9,6 +9,14 @@ def for_card_step(obj):
 
 
 @register.filter
+def translate_import(obj):
+    if obj == 'ACTIVE':
+        return f'Производится импорт транзакций'
+    else:
+        return 'Иморт транзакций завершен'
+
+
+@register.filter
 def pay_type_decode(obj):
     if obj:
         slpit_object = obj.split('/')
