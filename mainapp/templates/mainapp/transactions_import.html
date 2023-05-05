@@ -190,12 +190,12 @@
 			}else{
 				$('#inn').removeClass('is-invalid');
 			}
-			if($('#date_start').val().length > 9){
+			if(!$('#date_start').val()){
 				$('#date_start').addClass('is-invalid');
 			}else{
 				$('#date_start').removeClass('is-invalid');
 			}
-			if($('#date_end').val().length > 9){
+			if(!$('#date_end').val().length){
 				$('#date_end').addClass('is-invalid');
 			}else{
 				$('#date_end').removeClass('is-invalid');
