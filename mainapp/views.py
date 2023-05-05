@@ -22,8 +22,16 @@ def transactions_import(request):
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
     else:
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=True)
+    available_holders = []
 
-    import_data = ImportData.objects.all()
+    for i in balance_holders:
+        available_holders.append(i.get('organization_holder'))
+
+    import_all_data = ImportData.objects.all()
+    import_data = []
+    for i in import_all_data:
+        if str(i.balance_holder) in available_holders:
+            import_data.append(i)
 
     if request.method == 'POST':
         if request.POST.get('type') == 'check_holder':
