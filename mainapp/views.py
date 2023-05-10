@@ -66,7 +66,7 @@ def transactions_import(request):
             'date_start': date_start,
             'balance_holder': balance_holder,
             'status_import': status_import,
-            'user_id': request.user.id
+            'author': request.user.id
         }
 
         new_import.objects.create(**new_data)
