@@ -310,6 +310,7 @@ def fond_view(request):
     type_pay_for_final = []
     for i in type_pay:
         if i.subtypes_of_the_type.all():
+            type_pay_for_final.append({'type_id': i.id, 'pay_type': i.pay_type})
             for sub in i.subtypes_of_the_type.all():
                 type_pay_for_final.append({'sub_id': f'{i.id}_{sub.id}', 'sub_type': f'{i.pay_type}_{sub.sub_type}'})
         else:
