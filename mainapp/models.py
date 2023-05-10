@@ -212,4 +212,4 @@ class ImportData(models.Model):
     status_import = models.BooleanField(default=True, blank=True, null=True, verbose_name='Статус импорта')
     tr_count = models.IntegerField(blank=True, null=True, verbose_name='количество импортированных транзакций')
     user_id = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
-                                verbose_name='Пользователь который создал')
+                                related_name='importdata_customuser', verbose_name='Пользователь который создал')
