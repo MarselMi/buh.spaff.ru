@@ -570,9 +570,15 @@
 				var x = 0;
 			})
 		})
-
+		
 		function delete_input(event) {
+			
 			var className = event.target.getAttribute('data-type');
+			if(className.indexOf('profit') > 0){
+				$('#category_profit_id').val('');
+			}else{
+				$('#category_id').val('');
+			}
 			$(`.${className}`).remove();
 		};
 
