@@ -34,6 +34,13 @@ def transactions_import(request):
             import_data.append(i)
 
     if request.method == 'POST':
+
+        if request.POST.get('type') == 'status_import':
+            import_data = ImportData.objects.filter(pk=request.POST.get('import_id'))
+            import_data.update(status_import=request.POST.get('stat'))
+            bal_hol = str(import_data[0].balance_holder)
+            return JsonResponse({'holder': bal_hol})
+
         if request.POST.get('type') == 'check_holder':
             organization_holder = request.POST.get('balance_holder')
             if BalanceHolder.objects.filter(organization_holder=organization_holder).exists():
@@ -46,9 +53,8 @@ def transactions_import(request):
         account = request.POST.get('account')
         inn = request.POST.get('inn')
         date_start = dt.strptime(request.POST.get('date_start'), '%d.%m.%Y').date()
-        date_end = dt.strptime(request.POST.get('date_end'), '%d.%m.%Y').date()
         balance_holder = BalanceHolder.objects.filter(organization_holder=request.POST.get('balance_holder'))[0]
-        status_import = 'ACTIVE'
+        status_import = True
 
         new_import = ImportData
 
@@ -58,11 +64,11 @@ def transactions_import(request):
             'account': account,
             'inn': inn,
             'date_start': date_start,
-            'date_end': date_end,
             'balance_holder': balance_holder,
             'status_import': status_import,
-
+            'user_id': request.user.id
         }
+
         new_import.objects.create(**new_data)
 
     data = {'title': 'Иморт данных', 'balance_holders': balance_holders, 'import_data': import_data}

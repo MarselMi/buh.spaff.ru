@@ -209,6 +209,7 @@ class ImportData(models.Model):
     date_end = models.DateField(blank=True, null=True, verbose_name='Дата по')
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='importdata_balanceholder', verbose_name='Балансодержатель')
-    status_import = models.CharField(max_length=25, choices=IMPORT_STATUS,
-                                     null=True, blank=True, verbose_name='Статус импорта')
+    status_import = models.BooleanField(verbose_name='Статус импорта')
     tr_count = models.IntegerField(blank=True, null=True, verbose_name='количество импортированных транзакций')
+    user_id = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='importdata_customuser', verbose_name='Пользователь который создал')

@@ -9,14 +9,12 @@ from decimal import Decimal
 
 @app.task
 def import_transactions():
-    ImportData.objects.filter(date_end__gt=dt.now()).update(status_import='COMPLETE')
-    objects_active = ImportData.objects.filter(status_import='ACTIVE')
+    objects_active = ImportData.objects.filter(status_import=True)
     for obj in objects_active:
         date_start = obj.date_start.strftime('%Y-%m-%d')
-        date_end = obj.date_end.strftime('%Y-%m-%d')
-        if obj.date_end < dt.now().date():
-            date_end = dt.now().date().strftime('%Y-%m-%d')
+        date_end = dt.now().date()
         inn = obj.inn
+        user_id = obj.user_id
         transactions_objects = json.loads(requests.get(
             f"https://business.tinkoff.ru/openapi/api/v1/bank-statement?accountNumber={obj.account}&from={date_start}&till={date_end}",
             headers={'Authorization': f'Bearer {obj.key}'}
@@ -71,7 +69,6 @@ def import_transactions():
                 if transaction.get('payerInn') == inn:
                     type_transaction = 'EXPENDITURE'
                     import_id = transaction.get('operationId')
-                    author_id = 1
                     balance_holder = BalanceHolder.objects.filter(organization_holder=obj.balance_holder)
                     tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
                     status = 'SUCCESSFULLY'
@@ -82,14 +79,14 @@ def import_transactions():
                         new_data = {
                             'transaction_date': transaction_date, 'type_transaction': type_transaction,
                             'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                            'amount': amount, 'status': status, 'author_id': author_id, 'transaction_sum': amount,
+                            'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
                             'import_id': import_id, 'type_payment': pay_type[0], 'sub_type_pay': sub_type[0]
                         }
                     else:
                         new_data = {
                             'transaction_date': transaction_date, 'type_transaction': type_transaction,
                             'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                            'amount': amount, 'status': status, 'author_id': author_id, 'transaction_sum': amount,
+                            'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
                             'import_id': import_id, 'type_payment': pay_type[0]
                         }
 
@@ -101,7 +98,6 @@ def import_transactions():
                 else:
                     type_transaction = 'COMING'
                     import_id = transaction.get('operationId')
-                    author_id = 1
                     balance_holder = BalanceHolder.objects.filter(
                         organization_holder=obj.balance_holder
                     )
@@ -114,14 +110,14 @@ def import_transactions():
                         new_data = {
                             'transaction_date': transaction_date, 'type_transaction': type_transaction,
                             'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                            'amount': amount, 'status': status, 'author_id': author_id, 'transaction_sum': amount,
+                            'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
                             'import_id': import_id, 'type_payment': pay_type[0], 'sub_type_pay': sub_type[0]
                         }
                     else:
                         new_data = {
                             'transaction_date': transaction_date, 'type_transaction': type_transaction,
                             'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                            'amount': amount, 'status': status, 'author_id': author_id, 'transaction_sum': amount,
+                            'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
                             'import_id': import_id, 'type_payment': pay_type[0]
                         }
                     transaction_new.objects.create(**new_data)

@@ -60,7 +60,7 @@
 
 									</div>
 
-									<div class="col-12 col-sm-3 mb-3">
+									<div class="col-12 col-sm-3 mb-3" hidden>
 										<label class="label" for="date_end">Дата по </label>
 										<input class="input_validet form-control" name="date_end" id="date_end" placeholder="01.02.2023"/>
 									
@@ -116,8 +116,13 @@
 								<tbody>
 									{% for i in import_data %}
 									<tr>
-										<td>{{ i.balance_holder }} с {{ i.date_start }} по {{ i.date_end }} </td>
-										<td>{{ i.status_import|translate_import }}</td>
+										<td>{{ i.balance_holder }} с {{ i.date_start }} </td>
+										<td>
+											<label class="switch">
+												<input attr-import-id="{{ i.id }}" onclick="change_import({{ i.id }}, {{ i.status_import }});" class="import_status_tr" type="checkbox"{% if i.status_import == '1' %} checked{% endif %}/>
+												<span class="slider round"></span>
+											</label>
+										</td>
 									</tr>
 									{% endfor %}
 								</tbody>
@@ -128,6 +133,17 @@
 			</div> <!-- /card -->
 		</div> <!-- /col -->
 	</div> <!--/row-->
+
+	<div class="position-fixed bottom-0 top-5 end-0 p-3" style="z-index: 11">
+		<div id="liveToast" class="toast hide bg-primary" role="alert" aria-live="assertive" aria-atomic="true">
+			 <div class="toast-header">
+				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+			  </div>
+			<div class="toast-body text-white" id="toast_content">
+				
+			</div>
+		</div>
+	</div>
 
 	<script type="text/javascript">
 		$(function(){
@@ -144,10 +160,48 @@
 
 		for (i = 0; i < a.length; i++) {
 			var b = a[i].split('=');
-			b[0] = b[0].replace(/\s+/g, '')
+			b[0] = b[0].replace(/\s+/g, '');
 			if (b[0] == 'csrftoken') {
 				token = b[1];
 			}
+		};
+
+		function change_import(id, status_import){
+			if (status_import){
+				var new_stat = 0;
+			}else{
+				new_stat = 1;
+			};
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'status_import',
+					import_id: id,
+					stat: new_stat
+				}
+			}).then(function(result){
+				if (new_stat){
+					var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+					var toastList = toastElList.map(function(toastEl) {
+						$('#toast_content').text(`Включен импорт для ${result.holder}`);
+						// Creates an array of toasts (it only initializes them)
+						return new bootstrap.Toast(toastEl) // No need for options; use the default options
+					});
+					toastList.forEach(toast => toast.show()); // This show them
+				}else{
+					var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+					var toastList = toastElList.map(function(toastEl) {
+						$('#toast_content').text(`Выключен импорт для ${result.holder}`);
+						// Creates an array of toasts (it only initializes them)
+						return new bootstrap.Toast(toastEl) // No need for options; use the default options
+					});
+					toastList.forEach(toast => toast.show()); // This show them
+				}
+			}).catch(function(err){
+				x = 0;
+			})
 		};
 
 		$('#balance_holder').on('input', function(){
@@ -195,14 +249,10 @@
 			}else{
 				$('#date_start').removeClass('is-invalid');
 			}
-			if(!$('#date_end').val().length){
-				$('#date_end').addClass('is-invalid');
-			}else{
-				$('#date_end').removeClass('is-invalid');
-			}
 			if($('.input_validet').hasClass('is-invalid')){
 				event.preventDefault();
 			}
 		})
+	
 	</script>
 {% endblock content %}
