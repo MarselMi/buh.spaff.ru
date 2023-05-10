@@ -119,7 +119,11 @@
 										<td>{{ i.balance_holder }} с {{ i.date_start }} </td>
 										<td>
 											<label class="switch">
-												<input onclick="change_import({{ i.id }}, {{ i.status_import|change_bool }});" type="checkbox"{% if i.status_import|change_bool == 1 %} checked{% endif %}/>
+												{% if request.user.id == i.author %}
+												<input id-import-data="{{ i.id }}" onclick="change_import(event);" type="checkbox"{% if i.status_import|change_bool == 1 %} checked{% endif %}/>
+												{% else %} 
+												<input type="checkbox"{% if i.status_import|change_bool == 1 %} checked{% endif %} disabled/>
+												{% endif %}
 												<span class="slider round"></span>
 											</label>
 										</td>
@@ -166,9 +170,10 @@
 			}
 		};
 
-		function change_import(id, stat_import){
-			console.log(stat_import);
-			if (stat_import){
+		function change_import(event){
+			var inputEl = event.currentTarget;
+			var id = inputEl.getAttribute('id-import-data');
+			if (!inputEl.checked){
 				var new_stat = false;
 			}else{
 				new_stat = true;

@@ -298,8 +298,6 @@ def fond_view(request):
         '01-12': 'Декабрь'
     }
 
-    balance_holders = []
-
     if request.user.is_superuser:
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
     else:
@@ -318,9 +316,9 @@ def fond_view(request):
 
     year_list = [dt.now().year - 1, dt.now().year, dt.now().year + 1, dt.now().year + 2]
 
-    data = {'title': 'Фонд', 'month_dict': month_dict, 'pdr_fond_show': pdr_fond_show,
-            'balance_holders': balance_holders, 'type_pay': type_pay, 'type_pay_for_final': type_pay_for_final,
-            'bdr_fond_information': bdr_fond_information_for_show, 'year_list': year_list}
+    data = {'title': 'Фонд', 'month_dict': month_dict, 'type_pay_for_final': type_pay_for_final,
+            'balance_holders': balance_holders, 'type_pay': type_pay, 'year_list': year_list,
+            'pdr_fond_show': pdr_fond_show, 'bdr_fond_information': bdr_fond_information_for_show, }
 
     return render(request, 'mainapp/fond.html', data)
 
