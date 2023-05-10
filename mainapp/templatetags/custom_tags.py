@@ -9,6 +9,14 @@ def for_card_step(obj):
 
 
 @register.filter
+def change_bool(obj):
+    if obj:
+        return 1
+    else:
+        return 0
+
+
+@register.filter
 def translate_import(obj):
     if obj == 'ACTIVE':
         return f'Производится импорт транзакций'

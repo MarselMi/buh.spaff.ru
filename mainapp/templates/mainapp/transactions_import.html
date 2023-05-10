@@ -119,7 +119,7 @@
 										<td>{{ i.balance_holder }} с {{ i.date_start }} </td>
 										<td>
 											<label class="switch">
-												<input attr-import-id="{{ i.id }}" onclick="change_import({{ i.id }}, {{ i.status_import }});" class="import_status_tr" type="checkbox"{% if i.status_import == '1' %} checked{% endif %}/>
+												<input onclick="change_import({{ i.id }}, {{ i.status_import|change_bool }});" type="checkbox"{% if i.status_import|change_bool == 1 %} checked{% endif %}/>
 												<span class="slider round"></span>
 											</label>
 										</td>
@@ -166,11 +166,12 @@
 			}
 		};
 
-		function change_import(id, status_import){
-			if (status_import){
-				var new_stat = 0;
+		function change_import(id, stat_import){
+			console.log(stat_import);
+			if (stat_import){
+				var new_stat = false;
 			}else{
-				new_stat = 1;
+				new_stat = true;
 			};
 			$.ajax({
 				url: url,

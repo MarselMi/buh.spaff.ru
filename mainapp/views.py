@@ -37,7 +37,11 @@ def transactions_import(request):
 
         if request.POST.get('type') == 'status_import':
             import_data = ImportData.objects.filter(pk=request.POST.get('import_id'))
-            import_data.update(status_import=request.POST.get('stat'))
+            if request.POST.get('stat') == 'false':
+                new_stat = False
+            else:
+                new_stat = True
+            import_data.update(status_import=new_stat)
             bal_hol = str(import_data[0].balance_holder)
             return JsonResponse({'holder': bal_hol})
 

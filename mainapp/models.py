@@ -211,5 +211,4 @@ class ImportData(models.Model):
                                        related_name='importdata_balanceholder', verbose_name='Балансодержатель')
     status_import = models.BooleanField(default=True, blank=True, null=True, verbose_name='Статус импорта')
     tr_count = models.IntegerField(blank=True, null=True, verbose_name='количество импортированных транзакций')
-    author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
-                                related_name='importdata_customuser', verbose_name='Пользователь который создал')
+    author = models.IntegerField(null=True, blank=True, verbose_name='Пользователь который создал')
