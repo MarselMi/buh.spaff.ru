@@ -15,10 +15,12 @@ def import_transactions():
         date_end = dt.now().date()
         inn = obj.inn
         user_id = int(obj.author)
+
         transactions_objects = json.loads(requests.get(
             f"https://business.tinkoff.ru/openapi/api/v1/bank-statement?accountNumber={obj.account}&from={date_start}&till={date_end}",
             headers={'Authorization': f'Bearer {obj.key}'}
         ).content).get('operation')
+
         for transaction in transactions_objects:
             transaction_new = Transaction
             sub_type = None
