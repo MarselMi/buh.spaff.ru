@@ -150,7 +150,6 @@ def fond_view(request):
 
             filters_transaction = {'start': start_date, 'end': req_end_date, 'balance_holder_id': bal_req_id}
             fact_transactions = get_for_bdr_transaction(filter_data=filters_transaction)
-
             data_tr_fact_elementary = {
                 'доход': {},
                 'расход': {}
@@ -168,32 +167,34 @@ def fond_view(request):
                 'доход': {},
                 'diff': {}
             }
-
             '''Все фактические транзакции'''
             for tr in fact_transactions:
                 for key, val in tr.items():
                     if val == 'COMING':
-                        if tr.get('sub_type_pay_id'):
-                            type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
-                        else:
-                            type_sub = tr.get('type_payment')
+                        type_sub = tr.get('type_payment')
+                        # if tr.get('sub_type_pay_id'):
+                        #     type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
+                        # else:
+                        #     type_sub = tr.get('type_payment')
 
                         if data_tr_fact_elementary['доход'].get(type_sub):
                             data_tr_fact_elementary['доход'][type_sub] += tr.get('amount')
                         else:
                             data_tr_fact_elementary['доход'].setdefault(type_sub, tr.get('amount'))
+
                     elif val == 'EXPENDITURE':
-                        if tr.get('sub_type_pay_id'):
-                            type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
-                        else:
-                            type_sub = tr.get('type_payment')
+                        type_sub = tr.get('type_payment')
+                        # if tr.get('sub_type_pay_id'):
+                        #     type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
+                        # else:
+                        #     type_sub = tr.get('type_payment')
 
                         if data_tr_fact_elementary['расход'].get(type_sub):
                             data_tr_fact_elementary['расход'][type_sub] += tr.get('amount')
                         else:
                             data_tr_fact_elementary['расход'].setdefault(type_sub, tr.get('amount'))
 
-            '''Параметры по запланированным данным'''
+            '''Параметры по запланированным данным Декодирую запланированный ФОНД с JSON'''
             for i in bdr_fond_show:
                 di_encode = json.loads(i.get('params_data'))
                 for key, val in di_encode.items():
@@ -226,25 +227,29 @@ def fond_view(request):
             for i, k in data_for_table.items():
                 if i == 'доход':
                     for key, val in k.items():
-                        all_data_plane_fact['доход'].setdefault(key, {'plan': val, 'fact': data_tr_ready['доход'].get(key),
-                                                        'raznica': data_tr_ready['доход'].get(key) - val,
-                                                        'proc': proc(data_tr_ready['доход'].get(key) - val, val)})
+                        all_data_plane_fact['доход'].setdefault(
+                            key, {'plan': val, 'fact': data_tr_ready['доход'].get(key),
+                            'raznica': float(data_tr_ready['доход'].get(key)) - float(val),
+                            'proc': proc(float(data_tr_ready['доход'].get(key)) - float(val), float(val))}
+                        )
                 elif i == 'расход':
                     for key, val in k.items():
-                        all_data_plane_fact['расход'].setdefault(key, {'plan': val, 'fact': data_tr_ready['расход'].get(key),
-                                                         'raznica': val - data_tr_ready['расход'].get(key),
-                                                         'proc': proc(val - data_tr_ready['расход'].get(key), val)})
+                        all_data_plane_fact['расход'].setdefault(
+                            key, {'plan': float(val), 'fact': data_tr_ready['расход'].get(key),
+                            'raznica': float(val) - float(data_tr_ready['расход'].get(key)),
+                            'proc': proc(float(val) - float(data_tr_ready['расход'].get(key)), float(val))}
+                        )
 
             all_data_plane_fact['diff'].setdefault('plan',
-                all_data_plane_fact['доход']['final'].get('plan') - all_data_plane_fact['расход']['final'].get('plan')
+                float(all_data_plane_fact['доход']['final'].get('plan')) - float(all_data_plane_fact['расход']['final'].get('plan'))
             )
 
             all_data_plane_fact['diff'].setdefault('fact',
-                all_data_plane_fact['доход']['final'].get('fact') - all_data_plane_fact['расход']['final'].get('fact')
+                float(all_data_plane_fact['доход']['final'].get('fact')) - float(all_data_plane_fact['расход']['final'].get('fact'))
             )
 
             all_data_plane_fact['diff'].setdefault('raznica',
-                all_data_plane_fact['diff'].get('fact') - all_data_plane_fact['diff'].get('plan')
+                float(all_data_plane_fact['diff'].get('fact')) - float(all_data_plane_fact['diff'].get('plan'))
             )
 
             return JsonResponse({'res': all_data_plane_fact})
