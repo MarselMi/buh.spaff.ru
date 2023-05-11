@@ -9,13 +9,13 @@
 					<div id="accordion">
 						<div id="collapse-1" class="row accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordion">
 
-							<form action="" method="POST" type="add_pdr">
+							<form action="" method="POST" type="add_pdr" class="needs-validation" novalidate>
 								{% csrf_token %}
 								<div class="row">
 									<div class="col-12 col-sm-3 mb-3">
 
 										<label for="balance_holder">Для балансодержателя</label>
-										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;" required/>
 										<datalist id="balance_holder_list">
 											{% for holder in balance_holders %}
 											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
@@ -73,13 +73,6 @@
 
 									</div>
 
-									<div class="col-12 col-sm-3 mb-1 mt-4" hidden>
-
-										<a class="btn btn-primary">
-											Добавить
-										</a>
-
-									</div>
 								</div>	
 								
 								<div class="card-body add_new_bdr" hidden>
@@ -123,14 +116,6 @@
 											{% endfor %}
 		
 										</select>
-		
-									</div>
-		
-									<div class="col-12 col-sm-3 mb-1 mt-4" hidden>
-		
-										<a class="btn btn-primary">
-											Добавить
-										</a>
 		
 									</div>
 
@@ -279,25 +264,29 @@
 					$('.add_new_bdr').removeAttr('hidden');
 					$('.category_list').empty();
 					$('.profit_params_row').empty();
+					
 					if (result.date_month){
 						$('#month').val(result.date_month);
-					}else{
-						$('#month').val('01-01');
-					};
-					if (result.date_year){
 						$('#year').val(result.date_year);
 					}else{
+						$('#month').val('01-01');
 						$('#year').val('2023');
 					};
-					$('#year').val(result.date_year);
+					
 					if(result.bal_holder.length){
 						$('.additional_params').attr('hidden', 'true');
 						$('.profit_params').attr('hidden', 'true');
 						var list_el = result.bal_holder;
 						for (let i=0; list_el.length > i; i++){
-							var new_category = `<div class="col-12 col-sm-3 mb-3 input_elems">
+							var new_category = `
+									<div class="col-12 col-sm-3 mb-3 input_elems">
 										<label class="label" for="${list_el[i][1].html_el_id}">${list_el[i][1].label}</label>
-										<input class="form-control" autocomplete="off" name="${list_el[i][0]}" id="${list_el[i][1].html_el_id}" placeholder="${list_el[i][1].value}"/>
+										<input class="form-control obligatory" autocomplete="off" name="${list_el[i][0]}" id="${list_el[i][1].html_el_id}" placeholder="${list_el[i][1].value}" required/>
+									
+										<div class="invalid-feedback">
+											Пожалуйста, введите сумму
+										</div>
+										
 									</div>`;
 							if(list_el[i][1].type == 'expend'){
 								$('.category_list').append(new_category);
@@ -328,7 +317,12 @@
 												<a onclick="delete_input(event);" type="button" class="btn-close close_expend" data-type="${inputEls[0]}_${inputEls[1]}_expend"></a>
 											</div>
 										</div>
-										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&expend" id="${inputEls[0]}_${inputEls[1]}_expend" placeholder="3000"/>
+										<input class="form-control obligatory" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&expend" id="${inputEls[0]}_${inputEls[1]}_expend" placeholder="3000" required/>
+									
+										<div class="invalid-feedback">
+											Пожалуйста, введите сумму
+										</div>
+										
 									</div>`;
 				if(!$('.category_list').find($(`#${inputEls[0]}_${inputEls[1]}_expend`)).length){
 					$('.category_list').append(new_category);
@@ -348,7 +342,12 @@
 												<a onclick="delete_input(event);" type="button" class="btn-close" data-type="${inputEls[0]}_${inputEls[1]}_profit"></a>
 											</div>
 										</div>
-										<input class="form-control" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&profit" id="${inputEls[0]}_${inputEls[1]}_profit" placeholder="3000"/>
+										<input class="form-control obligatory" autocomplete="off" name="${inputEls[0]}&${inputEls[1]}&${inputEls[2]}&profit" id="${inputEls[0]}_${inputEls[1]}_profit" placeholder="3000" required/>
+									
+										<div class="invalid-feedback">
+											Пожалуйста, введите сумму
+										</div>
+										
 									</div>`;
 				if(!$('.profit_params_row').find($(`#${inputEls[0]}_${inputEls[1]}_profit`)).length){
 					$('.profit_params_row').append(new_category);
@@ -581,6 +580,36 @@
 			}
 			$(`.${className}`).remove();
 		};
+
+		var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+		(function () {
+			// Получите все формы, к которым мы хотим применить пользовательские стили проверки Bootstrap
+			var forms = document.querySelectorAll('.needs-validation');
+			// Зацикливайтесь на них и предотвращайте отправку
+			Array.prototype.slice.call(forms).forEach(function (form) {
+				form.addEventListener('submit', function (event) {
+					$.each($('.obligatory'), function(index, obj){
+						if(obj.value){
+							if(regEx.test(obj.value)){
+								event.preventDefault();
+								event.stopPropagation();
+								obj.classList.remove('is-valid');
+								obj.classList.add('is-invalid');
+							}else{
+								obj.classList.remove('is-invalid');
+								obj.classList.add('is-valid');
+							}
+						}else{
+							obj.classList.remove('is-valid');
+							obj.classList.add('is-invalid');
+							event.preventDefault();
+							event.stopPropagation();
+						}
+					});
+				}, false)
+			})
+		})()
 
 	</script>
 

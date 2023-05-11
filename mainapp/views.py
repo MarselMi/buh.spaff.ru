@@ -108,7 +108,7 @@ def fond_view(request):
                 if (i.find('pay_type')) == 0:
                     new_dict['params_data'].setdefault(i,
                                                        {
-                                                           'value': didi[i][0],
+                                                           'value': round(float(didi[i][0].replace(',', '.').replace(' ', '')), 2),
                                                            'type_id': (i.split('&'))[1],
                                                            'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
                                                            'label': (i.split('&'))[2],
@@ -118,7 +118,7 @@ def fond_view(request):
                 elif (i.find('pay_sub_type')) == 0:
                     new_dict['params_data'].setdefault(i,
                                                        {
-                                                           'value': didi[i][0],
+                                                           'value': round(float(didi[i][0].replace(',', '.').replace(' ', '')), 2),
                                                            'sub_id': (i.split('&'))[1],
                                                            'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
                                                            'label': (i.split('&'))[2],
@@ -200,11 +200,11 @@ def fond_view(request):
                 di_encode = json.loads(i.get('params_data'))
                 for key, val in di_encode.items():
                     if key.find('expend') > 0:
-                        data_for_table['расход'].setdefault(val.get('label'), int())
-                        data_for_table['расход'][val.get('label')] += int(val.get('value'))
+                        data_for_table['расход'].setdefault(val.get('label'), float())
+                        data_for_table['расход'][val.get('label')] += float(val.get('value'))
                     else:
-                        data_for_table['доход'].setdefault(val.get('label'), int())
-                        data_for_table['доход'][val.get('label')] += int(val.get('value'))
+                        data_for_table['доход'].setdefault(val.get('label'), float())
+                        data_for_table['доход'][val.get('label')] += float(val.get('value'))
 
             for va, kr in data_for_table.items():
                 fact_finaly = 0
@@ -324,9 +324,6 @@ def fond_view(request):
 
 
 def main_page_view(request):
-    holders = []
-    comming_sum = ''
-    expenditure_sum = ''
     all_coming = 0
     all_expenditure = 0
     if request.user.is_superuser:
@@ -477,8 +474,6 @@ def main_page_view(request):
 
 
 def transaction_view(request):
-    balance_holders = []
-    transactions = []
     authors = CustomUser.objects.all()
     type_payments = PayType.objects.all()
     sub_type = SubPayType.objects.all()
@@ -598,7 +593,6 @@ def create_transaction_view(request):
     transaction = Transaction
     form = TransactionForm
     type_payments = PayType.objects.all()
-    balance_holders = []
     if request.user.is_superuser:
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
     else:
@@ -1004,7 +998,7 @@ def balance_holder_create_view(request):
         payment_account = request.POST.get('payment_account').replace(' ', '')
         color = request.POST.get('color')
 
-        alias_holder = None
+        alias_holder = ''
         if request.POST.get('alias_holder'):
             alias_holder = request.POST.get('alias_holder')
 
