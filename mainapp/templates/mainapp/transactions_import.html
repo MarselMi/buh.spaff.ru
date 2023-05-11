@@ -9,7 +9,7 @@
 					<div id="accordion">
 						<div id="collapse-1" class="row accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordion">
 
-							<form action="" method="POST">
+							<form action="" method="POST" class="needs-validation" novalidate>
 								{% csrf_token %}
 								<div class="row">
 
@@ -22,7 +22,7 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="key">Ключ</label>
-										<input class="input_validet form-control" name="key" id="key" placeholder="************************"/>
+										<input class="input_validet form-control" name="key" id="key" placeholder="************************" required/>
 										
 										<div class="invalid-feedback">
 											Корректный ключ должен быть не менее 87 симовлов
@@ -32,7 +32,7 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="account">Номер счета</label>
-										<input class="input_validet form-control" name="account" id="account" placeholder="1111 1111 1111 1111 1111"/>
+										<input class="input_validet form-control" name="account" id="account" placeholder="1111 1111 1111 1111 1111" required/>
 										
 										<div class="invalid-feedback">
 											Номер счета должен состоять из 20 символов
@@ -42,7 +42,7 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="inn">ИНН</label>
-										<input class="input_validet form-control" name="inn" id="inn" placeholder="0000000000"/>
+										<input class="input_validet form-control" name="inn" id="inn" placeholder="0000000000" required/>
 										
 										<div class="invalid-feedback">
 											Номер ИНН должен быть 10-12 символов
@@ -52,17 +52,7 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label class="label" for="date_start">Дата с </label>
-										<input class="input_validet form-control" name="date_start" id="date_start" placeholder="01.01.2023"/>
-									
-										<div class="invalid-feedback">
-											Поле не может быть пустым
-										</div>
-
-									</div>
-
-									<div class="col-12 col-sm-3 mb-3" hidden>
-										<label class="label" for="date_end">Дата по </label>
-										<input class="input_validet form-control" name="date_end" id="date_end" placeholder="01.02.2023"/>
+										<input class="input_validet form-control" name="date_start" id="date_start" placeholder="01.01.2023" required/>
 									
 										<div class="invalid-feedback">
 											Поле не может быть пустым
@@ -72,7 +62,7 @@
 
 									<div class="col-12 col-sm-3 mb-3">
 										<label for="balance_holder">Для балансодержателя</label>
-										<input class="input_validet form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" name="balance_holder" placeholder="OOO &quot;СПАФФ ИТ&quot;"/>
+										<input class="input_validet form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" name="balance_holder" placeholder="OOO &quot;СПАФФ ИТ&quot;" required/>
 										<datalist id="balance_holder_list">
 											{% for holder in balance_holders %}
 											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
@@ -149,18 +139,17 @@
 		</div>
 	</div>
 
-	<script type="text/javascript">
-		$(function(){
-			$("#date_end").datepicker();
-			$("#date_start").datepicker();
-		});
-	</script>
-
 	<script>
 
 		var url = document.location.href;
 		var a = document.cookie.split(';');
 		var token = '';
+		var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
+
+		$(function(){
+			$("#date_end").datepicker();
+			$("#date_start").datepicker();
+		});
 
 		for (i = 0; i < a.length; i++) {
 			var b = a[i].split('=');
@@ -232,33 +221,92 @@
 					var x = 1;
 				}
 			)
-		})
+		});
 
-		$('.save_button').on('click', function(){
+		$('#key').on('input', function(){
 			if($('#key').val().length < 87){
 				$('#key').addClass('is-invalid');
 			}else{
 				$('#key').removeClass('is-invalid');
 			}
-			if($('#account').val().length < 19 && $('#account').val().length > 21){
+		});
+
+		$('#account').on('input', function(){
+			if($('#account').val()){
+				if(!regEx.test($('#account').val())){
+					if(($('#account').val().length > 19 && $('#account').val().length < 21)){
+						$('#account').removeClass('is-invalid');
+						$('#account').addClass('is-valid');
+					}else{
+						$('#account').removeClass('is-valid');
+						$('#account').addClass('is-invalid');
+					}
+				}else{
+					$('#account').removeClass('is-valid');
+					$('#account').addClass('is-invalid');
+				}
+			}else{
+				$('#account').removeClass('is-valid');
 				$('#account').addClass('is-invalid');
-			}else{
-				$('#account').removeClass('is-invalid');
 			}
-			if($('#inn').val().length < 9 && $('#inn').val().length > 13){
+		});
+
+		$('#inn').on('input', function(){
+			if($('#inn').val()){
+				if(!regEx.test($('#inn').val())){
+					if(($('#inn').val().length > 9 && $('#inn').val().length < 13)){
+						$('#inn').removeClass('is-invalid');
+						$('#inn').addClass('is-valid');
+					}else{
+						$('#inn').removeClass('is-valid');
+						$('#inn').addClass('is-invalid');
+					}
+				}else{
+					$('#inn').removeClass('is-valid');
+					$('#inn').addClass('is-invalid');
+				}
+			}else{
+				$('#inn').removeClass('is-valid');
 				$('#inn').addClass('is-invalid');
-			}else{
-				$('#inn').removeClass('is-invalid');
 			}
+		});
+
+		$('#accordion').on('change input', function(){
 			if(!$('#date_start').val()){
+				$('#date_start').removeClass('is-valid');
 				$('#date_start').addClass('is-invalid');
 			}else{
 				$('#date_start').removeClass('is-invalid');
+				$('#date_start').addClass('is-valid');
 			}
-			if($('.input_validet').hasClass('is-invalid')){
-				event.preventDefault();
-			}
-		})
+		});
+
+		(function () {
+			// Получите все формы, к которым мы хотим применить пользовательские стили проверки Bootstrap
+			var forms = document.querySelectorAll('.needs-validation');
+			// Зацикливайтесь на них и предотвращайте отправку
+			Array.prototype.slice.call(forms).forEach(function (form) {
+				form.addEventListener('submit', function (event) {
+					$.each($('.input_validet'), function(index, obj){
+						if(!obj.value){
+							obj.classList.remove('is-valid');
+							obj.classList.add('is-invalid');
+							event.preventDefault();
+							event.stopPropagation();
+						}else{
+							if(obj.classList.contains('is-invalid')){
+								obj.classList.remove('is-valid');
+								event.preventDefault();
+								event.stopPropagation();
+							}else{
+								obj.classList.remove('is-invalid');
+								obj.classList.add('is-valid');
+							}
+						}
+					});
+				}, false)
+			})
+		})()
 	
 	</script>
 {% endblock content %}

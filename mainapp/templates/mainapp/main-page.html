@@ -366,17 +366,17 @@
 
 		var url = document.location.href;
 		var a = document.cookie.split(';');
-		var token = ''
+		var token = '';
 
 		for (i = 0; i < a.length; i++) {
-			var b = a[i].split('=')
-			b[0] = b[0].replace(/\s+/g, '')
+			var b = a[i].split('=');
+			b[0] = b[0].replace(/\s+/g, '');
 			if (b[0] == 'csrftoken') {
-			token = b[1]
+				token = b[1];
 			}
 		}
 
-		var exampleModal = document.getElementById('exampleModal')
+		var exampleModal = document.getElementById('exampleModal');
 
 		var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
 
@@ -396,9 +396,9 @@
 					$('#transaction_sum_post').removeClass('is-valid');
 					$('#transaction_sum_post').addClass('is-invalid');
 					$('#liveToastBtn').removeAttr('data-bs-dismiss')
-					$('#liveToastBtn').removeAttr('aria-label')
+					$('#liveToastBtn').removeAttr('aria-label');
 				}
-			})
+			});
 			$('#commission_post').on('input', function(){
 				if ($('#commission_post').val() && (!regEx.test($('#commission_post').val()))){
 					$('#commission_post').removeClass('is-invalid');
@@ -406,10 +406,10 @@
 				}else{
 					$('#commission_post').removeClass('is-valid');
 					$('#commission_post').addClass('is-invalid');
-					$('#liveToastBtn').removeAttr('data-bs-dismiss')
-					$('#liveToastBtn').removeAttr('aria-label')
+					$('#liveToastBtn').removeAttr('data-bs-dismiss');
+					$('#liveToastBtn').removeAttr('aria-label');
 				}
-			})
+			});
 
 			$('#type_payment').on('input change', function(){
 				$.ajax(
@@ -431,15 +431,15 @@
 							var options = result.message;
 
 							if (options.length){
-								var value = ''
+								var value = '';
 
 								for(let q = 0; options.length > q; q++){
 									if(q==0){
-										value += ` <option value="${options[q]}" selected>${options[q]}</option> `
+										value += ` <option value="${options[q]}" selected>${options[q]}</option> `;
 									}else{
-										value += ` <option value="${options[q]}">${options[q]}</option> `
+										value += ` <option value="${options[q]}">${options[q]}</option> `;
 									}
-								}
+								};
 
 								var sub_type_input = `
 									<div class="form-floating mb-3 sub_type_payment_select">
@@ -450,68 +450,68 @@
 										<label for="type_transaction">
 											Подтип платежа
 										</label>
-									</div>`
+									</div>`;
 
 								$('.type_payment_input').after(sub_type_input);
 							}
 						} else {
 							$('#type_payment').removeClass('is-valid');
 							$('#type_payment').addClass('is-invalid');
-							$('#liveToastBtn').removeAttr('data-bs-dismiss')
-							$('#liveToastBtn').removeAttr('aria-label')
+							$('#liveToastBtn').removeAttr('data-bs-dismiss');
+							$('#liveToastBtn').removeAttr('aria-label');
 						}
 					}).catch(function(err) {
 						var x = 1;
 					}
 				)
-			})
+			});
 
 			// Зацикливайтесь на них и предотвращайте отправку
 			Array.prototype.slice.call(forms).forEach(function (form) {
 				form.addEventListener('submit', function (event) {
 					if ($('#transaction_sum_post').val() && (!regEx.test($('#transaction_sum_post').val()))) {
-						event.preventDefault()
-						event.stopPropagation()
+						event.preventDefault();
+						event.stopPropagation();
 					}else if ($('#commission_post').val() && (!regEx.test($('#commission_post').val()))) {
-						event.preventDefault()
-						event.stopPropagation()
+						event.preventDefault();
+						event.stopPropagation();
 					}else if (!((date_value.length == 10) && (!regEx.test($('#datepicker').val())))){
-						event.preventDefault()
-						event.stopPropagation()
+						event.preventDefault();
+						event.stopPropagation();
 					}else if (!(($('#type_transaction').val() == 'Приход') || ($('#type_transaction').val() == 'Расход'))){
-						event.preventDefault()
-						event.stopPropagation()
+						event.preventDefault();
+						event.stopPropagation();
 					}else if (!$('#type_payment').val()){
 						$('#type_payment').removeClass('is-valid');
 						$('#type_payment').addClass('is-invalid');
-						event.preventDefault()
-						event.stopPropagation()
+						event.preventDefault();
+						event.stopPropagation();
 					}else if (!form.checkValidity()) {
-						event.preventDefault()
-						event.stopPropagation()
+						event.preventDefault();
+						event.stopPropagation();
 					}
 					form.classList.add('was-validated')
 				}, false)
 			})
 		})()
 
-		var buttonSelectModal = $('.buttonSelectModal')
-		var modalTitle = exampleModal.querySelector('.modal-title')
-		var holder_link = exampleModal.querySelector('.holder_link')
+		var buttonSelectModal = $('.buttonSelectModal');
+		var modalTitle = exampleModal.querySelector('.modal-title');
+		var holder_link = exampleModal.querySelector('.holder_link');
 
 		if(buttonSelectModal){
 			for (let i=0;  buttonSelectModal.length > i; i++){
 				buttonSelectModal[i].addEventListener('click', function(event){
 					if (event.currentTarget == buttonSelectModal[i]){
-						var holder = exampleModal.querySelector('#balance_holder')
-						var id_holder = buttonSelectModal[i].getAttribute('data-holder-id')
-						holder.value = buttonSelectModal[i].getAttribute('data-bs-whatever')
-						modalTitle.textContent = 'Создать транзакцию для ' + buttonSelectModal[i].getAttribute('data-bs-whatever')
-						holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`)
+						var holder = exampleModal.querySelector('#balance_holder');
+						var id_holder = buttonSelectModal[i].getAttribute('data-holder-id');
+						holder.value = buttonSelectModal[i].getAttribute('data-bs-whatever');
+						modalTitle.textContent = 'Создать транзакцию для ' + buttonSelectModal[i].getAttribute('data-bs-whatever');
+						holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`);
 					}
 				})
 			}
-		}
+		};
 
 		$('#type_transaction').on('change', function(){
 			if($('#type_transaction').val() == 'Расход'){
@@ -552,8 +552,7 @@
 			fd.append('type', 'create_transaction');
 			fd.append('csrfmiddlewaretoken', token);
 
-			$.ajax(
-			{
+			$.ajax({
 				url: url,
 				method: 'POST',			
 				contentType: false,
@@ -665,7 +664,7 @@
 						var incom = `
 							<div class="col-12 col-md-6 mainInformation">
 								<div class="h3 text-center">Нет входящих транзакций</div>
-							</div>`
+							</div>`;
 						if (holder_profit_coming.length){
 							let sumComming = holder_profit_coming.reduce(add, 0);
 							sumComming = parseFloat(sumComming).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1 ").replace('.', ',');
@@ -673,13 +672,13 @@
 								<div class="col-12 col-md-6 mainInformation">
 									<div class="h3 text-center">Входящие транзакции - ${sumComming}</div>
 									<div id="ChartStatsPartIncomeHolder"></div>
-								</div>`
+								</div>`;
 						}
 
 						var expend = `
 							<div class="col-12 col-md-6 mainInformation">
 								<div class="h3 text-center">Нет исходящих транзакций</div>
-							</div>`
+							</div>`;
 						if (holder_profit_expenditure.length){
 							let sumEpend = holder_profit_expenditure.reduce(add, 0);
 							sumEpend = parseFloat(sumEpend).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1 ").replace('.', ',');
@@ -687,7 +686,7 @@
 								<div class="col-12 col-md-6 mainInformation">
 									<div class="h3 text-center">Исходящие транзакции - ${sumEpend}</div>
 									<div id="ChartStatsPartExpenditureHolder"></div>
-								</div>`
+								</div>`;
 						}
 						
 						graphElement.prepend(informationTable, incom, expend);
@@ -699,13 +698,12 @@
 						chart_exp_holder.render();
 
 					}).catch(function(err){
-						var x = 1
+						var x = 1;
 					})}
 					}
 				)
 			}
-
-		}
+		};
 		
 		// for (let i = 0; i < holders_id.length; i++){
 			

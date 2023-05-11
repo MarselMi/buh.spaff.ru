@@ -17,7 +17,6 @@ from mainapp.models import (
 
 
 def transactions_import(request):
-
     if request.user.is_superuser:
         balance_holders = get_allow_and_hide_balance_holders(request.user.id, simple_user=False)
     else:
@@ -34,7 +33,6 @@ def transactions_import(request):
             import_data.append(i)
 
     if request.method == 'POST':
-
         if request.POST.get('type') == 'status_import':
             import_data = ImportData.objects.filter(pk=request.POST.get('import_id'))
             if request.POST.get('stat') == 'false':
@@ -1200,7 +1198,6 @@ def payment_type_view(request):
 
 
 def additional_data_transaction_view(request):
-    additional = ''
     if request.user.is_superuser:
         additional = get_allow_additional_transactions(request.user.id)
     else:
@@ -1212,8 +1209,6 @@ def additional_data_transaction_view(request):
 
 
 def additional_transaction_data_create_view(request):
-    transactions = ''
-
     if request.user.is_superuser:
         transactions = get_allow_transaction_filter(request.user.id)
     else:
@@ -1317,7 +1312,6 @@ def transactions_log_view(request):
 
 
 def lock_page(request):
-
     '''Для подтверждения Telegram_id'''
     md5_hash = md5(f'{request.user.id}_fv3353rv23v3ve_vsfvdfvdfvdf53f3_e1fj43d'.encode()).hexdigest()
     user_info = CustomUser.objects.filter(pk=request.user.id)
