@@ -167,15 +167,16 @@ def fond_view(request):
                 'доход': {},
                 'diff': {}
             }
-            '''Все фактические транзакции'''
+
+            '''Все фактические транзакции с записью категории и подкатегории при наличии'''
             for tr in fact_transactions:
                 for key, val in tr.items():
                     if val == 'COMING':
-                        type_sub = tr.get('type_payment')
-                        # if tr.get('sub_type_pay_id'):
-                        #     type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
-                        # else:
-                        #     type_sub = tr.get('type_payment')
+                        # type_sub = tr.get('type_payment')
+                        if tr.get('sub_type_pay_id'):
+                            type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
+                        else:
+                            type_sub = tr.get('type_payment')
 
                         if data_tr_fact_elementary['доход'].get(type_sub):
                             data_tr_fact_elementary['доход'][type_sub] += tr.get('amount')
@@ -183,18 +184,19 @@ def fond_view(request):
                             data_tr_fact_elementary['доход'].setdefault(type_sub, tr.get('amount'))
 
                     elif val == 'EXPENDITURE':
-                        type_sub = tr.get('type_payment')
-                        # if tr.get('sub_type_pay_id'):
-                        #     type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
-                        # else:
-                        #     type_sub = tr.get('type_payment')
+                        # type_sub = tr.get('type_payment')
+                        if tr.get('sub_type_pay_id'):
+                            type_sub = f"{tr.get('type_payment')}_{tr.get('sub_type_pay_id')}"
+                        else:
+                            type_sub = tr.get('type_payment')
 
                         if data_tr_fact_elementary['расход'].get(type_sub):
                             data_tr_fact_elementary['расход'][type_sub] += tr.get('amount')
                         else:
                             data_tr_fact_elementary['расход'].setdefault(type_sub, tr.get('amount'))
 
-            '''Параметры по запланированным данным Декодирую запланированный ФОНД с JSON'''
+            print()
+            '''Цифры по запланированному ФОНДУ. Декодирую с JSON, суммирую данные при нескольких месяцев'''
             for i in bdr_fond_show:
                 di_encode = json.loads(i.get('params_data'))
                 for key, val in di_encode.items():
@@ -205,18 +207,23 @@ def fond_view(request):
                         data_for_table['доход'].setdefault(val.get('label'), float())
                         data_for_table['доход'][val.get('label')] += float(val.get('value'))
 
-            for va, kr in data_for_table.items():
+            '''Отбираются категории платежей от всех транзакции согласно данным ФОНДА'''
+            for tr_type, tr_values in data_for_table.items():
                 fact_finaly = 0
                 plane_finaly = 0
-                for key, val in data_for_table.get(va).items():
-                    plane_finaly += data_for_table.get(va).get(key)
-                    if data_tr_fact_elementary.get(va).get(key):
-                        fact_finaly += data_tr_fact_elementary.get(va).get(key)
-                        data_tr_ready[va].setdefault(key, data_tr_fact_elementary.get(va).get(key))
+                for tr_fond_category, category_val in data_for_table.get(tr_type).items():
+                    plane_finaly += data_for_table.get(tr_type).get(tr_fond_category)
+                    category_fact_tr_list = [i for i in data_tr_fact_elementary.get(tr_type).keys() if i.find(tr_fond_category) > -1]
+                    if len(category_fact_tr_list):
+                        cat_sum = 0
+                        for catigory_fact in category_fact_tr_list:
+                            fact_finaly += data_tr_fact_elementary.get(tr_type).get(catigory_fact)
+                            cat_sum += data_tr_fact_elementary.get(tr_type).get(catigory_fact)
+                        data_tr_ready[tr_type].setdefault(tr_fond_category, cat_sum)
                     else:
-                        data_tr_ready[va].setdefault(key, 0)
-                data_tr_ready[va].setdefault('final', fact_finaly)
-                data_for_table[va].setdefault('final', plane_finaly)
+                        data_tr_ready[tr_type].setdefault(tr_fond_category, 0)
+                data_tr_ready[tr_type].setdefault('final', fact_finaly)
+                data_for_table[tr_type].setdefault('final', plane_finaly)
 
             def proc(first, second):
                 if second == 0:
@@ -234,6 +241,7 @@ def fond_view(request):
                         )
                 elif i == 'расход':
                     for key, val in k.items():
+                        # print(key, val, data_tr_ready['расход'])
                         all_data_plane_fact['расход'].setdefault(
                             key, {'plan': float(val), 'fact': data_tr_ready['расход'].get(key),
                             'raznica': float(val) - float(data_tr_ready['расход'].get(key)),
