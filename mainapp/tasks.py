@@ -1,7 +1,5 @@
 from __future__ import absolute_import, unicode_literals
-
 import decimal
-
 from spaffaccaunting.celery import app
 from datetime import datetime as dt
 import datetime
