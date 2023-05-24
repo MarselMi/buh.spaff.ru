@@ -67,7 +67,7 @@ class BalanceHolder(models.Model):
                                     verbose_name='Псевдоним')
     holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0,
                                          verbose_name='Баланс Держателя')
-    payment_account = models.CharField(max_length=20, verbose_name='Расчетный счет')
+    payment_account = models.CharField(max_length=50, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
     available_superuser = models.ManyToManyField('CustomUser', related_name='Разрешить доступ для+')
     hide_for_me = models.ManyToManyField('CustomUser', related_name='Скрыть транзакции для пользователей+')
@@ -131,6 +131,10 @@ class Transaction(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES,
                               default=STATUS_CHOICES[2][0], verbose_name='Статус')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
+
+    current_transaction = models.CharField(blank=True, null=True, max_length=65, verbose_name='Валюта')
+    current_sum = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2, verbose_name='Сумма транзакции в валюте')
+    current_amount = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2, verbose_name='Транзакция + комиссия в валюте')
 
     def __str__(self):
         return f'{self.pk}'
@@ -205,10 +209,11 @@ class ImportData(models.Model):
     key = models.CharField(max_length=100, blank=True, null=True, verbose_name='Ключ авторизации')
     account = models.CharField(max_length=25, blank=True, null=True, verbose_name='Номер счета')
     inn = models.CharField(max_length=20, blank=True, null=True, verbose_name='ИНН')
-    date_start = models.DateField(blank=True, null=True, verbose_name='Дата с')
-    date_end = models.DateField(blank=True, null=True, verbose_name='Дата по')
+    date_start = models.DateField(blank=True, null=True, verbose_name='Дата с ')
+    date_end = models.DateField(blank=True, null=True, verbose_name='Дата по ')
     balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='importdata_balanceholder', verbose_name='Балансодержатель')
     status_import = models.BooleanField(default=True, blank=True, null=True, verbose_name='Статус импорта')
     tr_count = models.IntegerField(blank=True, null=True, verbose_name='количество импортированных транзакций')
     author = models.IntegerField(null=True, blank=True, verbose_name='Пользователь который создал')
+    repyt_start_date = models.DateField(blank=True, null=True, verbose_name='Повторная дата с ')

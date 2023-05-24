@@ -13,24 +13,25 @@
 								{% csrf_token %}
 								<div class="row">
 
-									<div class="col-12 col-sm-3 mb-3">
+									<div class="col-12 col-sm-3 mb-3" id="bank_el">
 										<label class="label" for="bank_type">Банк</label>
 										<select class="form-select" name="bank_type" id="bank_type">
 											<option value="tinkoff">Tinkoff</option>
+											<option value="capitalist">Capitalist</option>
 										</select>
 									</div>
 
-									<div class="col-12 col-sm-3 mb-3">
+									<div class="col-12 col-sm-3 mb-3" id="key_el">
 										<label class="label" for="key">Ключ</label>
 										<input class="input_validet form-control" name="key" id="key" placeholder="************************" required/>
-										
+
 										<div class="invalid-feedback">
 											Корректный ключ должен быть не менее 87 симовлов
 										</div>
 
 									</div>
 
-									<div class="col-12 col-sm-3 mb-3">
+									<div class="col-12 col-sm-3 mb-3" id="account_el">
 										<label class="label" for="account">Номер счета</label>
 										<input class="input_validet form-control" name="account" id="account" placeholder="1111 1111 1111 1111 1111" required/>
 										
@@ -40,7 +41,7 @@
 
 									</div>
 
-									<div class="col-12 col-sm-3 mb-3">
+									<div class="col-12 col-sm-3 mb-3" id="inn_el">
 										<label class="label" for="inn">ИНН</label>
 										<input class="input_validet form-control" name="inn" id="inn" placeholder="0000000000" required/>
 										
@@ -146,6 +147,7 @@
 		var token = '';
 		var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
 
+		//datepicker
 		$(function(){
 			$("#date_end").datepicker();
 			$("#date_start").datepicker();
@@ -159,6 +161,7 @@
 			}
 		};
 
+		//включение-отключение импорта транзакций
 		function change_import(event){
 			var inputEl = event.currentTarget;
 			var id = inputEl.getAttribute('id-import-data');
@@ -198,6 +201,69 @@
 				x = 0;
 			})
 		};
+
+		$("#bank_type").on('change', function(){
+			if($("#bank_type").val() == 'capitalist'){
+				$('#key_el').remove();
+				$('#account_el').remove();
+				$('#inn_el').remove();
+				var login = `
+					<div class="col-12 col-sm-3 mb-3" id="login_el">
+						<label class="label" for="login">Имя пользователя:</label>
+						<input class="input_validet form-control" name="login" id="login" placeholder="mylogin" required/>
+
+						<div class="invalid-feedback">
+							Поле не может быть пустым
+						</div>
+
+					</div>`;
+				var password = `
+					<div class="col-12 col-sm-3 mb-3" id="pwd_el">
+						<label class="label" for="pwd">Пароль для входа в систему Capitalist:</label>
+						<input class="input_validet form-control" name="pwd" id="pwd" placeholder="mypassword" required/>
+
+						<div class="invalid-feedback">
+							Поле не может быть пустым
+						</div>
+
+					</div>`;
+				$('#bank_el').after(login, password);
+			}else if($("#bank_type").val() == 'tinkoff'){
+				$('#login_el').remove();
+				$('#pwd_el').remove();
+				var key = `
+					<div class="col-12 col-sm-3 mb-3" id="key_el">
+						<label class="label" for="key">Ключ</label>
+						<input class="input_validet form-control" name="key" id="key" placeholder="************************" required/>
+
+						<div class="invalid-feedback">
+							Корректный ключ должен быть не менее 87 симовлов
+						</div>
+
+					</div>`;
+				var account = `
+					<div class="col-12 col-sm-3 mb-3" id="account_el">
+						<label class="label" for="account">Номер счета</label>
+						<input class="input_validet form-control" name="account" id="account" placeholder="1111 1111 1111 1111 1111" required/>
+						
+						<div class="invalid-feedback">
+							Номер счета должен состоять из 20 символов
+						</div>
+
+					</div>`;
+				var inn = `
+					<div class="col-12 col-sm-3 mb-3" id="inn_el">
+						<label class="label" for="inn">ИНН</label>
+						<input class="input_validet form-control" name="inn" id="inn" placeholder="0000000000" required/>
+						
+						<div class="invalid-feedback">
+							Номер ИНН должен быть 10-12 символов
+						</div>
+
+					</div>`;
+				$('#bank_el').after(key, account, inn);
+			}
+		});
 
 		$('#balance_holder').on('input', function(){
 			$.ajax(
@@ -281,6 +347,7 @@
 			}
 		});
 
+		// сохранение импорта транзакций
 		(function () {
 			// Получите все формы, к которым мы хотим применить пользовательские стили проверки Bootstrap
 			var forms = document.querySelectorAll('.needs-validation');
@@ -307,6 +374,6 @@
 				}, false)
 			})
 		})()
-	
+
 	</script>
 {% endblock content %}

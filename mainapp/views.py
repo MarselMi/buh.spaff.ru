@@ -2,6 +2,7 @@ import json
 import decimal
 import math
 from hashlib import md5
+import requests
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -51,9 +52,22 @@ def transactions_import(request):
                 return JsonResponse({'message': False})
 
         bank = request.POST.get('bank_type')
-        key = request.POST.get('key')
-        account = request.POST.get('account')
-        inn = request.POST.get('inn')
+
+        if request.POST.get('key'):
+            key = request.POST.get('key')
+        else:
+            key = request.POST.get('pwd')
+
+        if request.POST.get('account'):
+            account = request.POST.get('account')
+        else:
+            account = request.POST.get('login')
+
+        if request.POST.get('inn'):
+            inn = request.POST.get('inn')
+        else:
+            inn = None
+
         date_start = dt.strptime(request.POST.get('date_start'), '%d.%m.%Y').date()
         balance_holder = BalanceHolder.objects.filter(organization_holder=request.POST.get('balance_holder'))[0]
         status_import = True
@@ -78,7 +92,6 @@ def transactions_import(request):
 
 
 def fond_view(request):
-
     pdr_fond_show = None
 
     if request.method == 'POST':
