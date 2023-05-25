@@ -213,11 +213,13 @@ def import_transactions():
                                 tr_sum = i.get('amount')
                                 amount = tr_sum + tr_comis
                             new_data = {
-                                'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))), 'type_transaction': 'EXPENDITURE',
-                                'name': f'Capital_{i.get("number")}', 'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': 1, 'transaction_sum': tr_sum,
-                                'import_id': i.get('id'), 'type_payment': type_payment, 'commission': tr_comis, 'current_transaction': current,
-                                'current_sum': current_sum, 'current_amount': i.get('amount') + i.get('tax')
+                                'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
+                                'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
+                                'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
+                                'commission': tr_comis, 'current_transaction': current, 'current_sum': current_sum,
+                                'current_amount': i.get('amount') + i.get('tax')
                             }
                             new_transa.objects.create(**new_data)
                             old_balance_balance_holder -= decimal.Decimal(amount)
@@ -256,13 +258,12 @@ def import_transactions():
                                 amount = tr_sum - tr_com
                             new_data = {
                                 'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
-                                'type_transaction': 'COMING',
-                                'name': f'Capital_{i.get("number")}', 'description': i.get('description'),
-                                'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': 1, 'transaction_sum': tr_sum,
-                                'import_id': i.get('id'), 'type_payment': type_payment, 'commission': tr_com,
-                                'current_transaction': current,
-                                'current_sum': current_sum, 'current_amount': i.get('amount') - i.get('tax')
+                                'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
+                                'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
+                                'commission': tr_com, 'current_transaction': current, 'current_sum': current_sum,
+                                'current_amount': i.get('amount') - i.get('tax')
                             }
                             new_transa.objects.create(**new_data)
                             old_balance_balance_holder += decimal.Decimal(amount)
@@ -329,13 +330,11 @@ def import_transactions():
                                     amount = tr_sum + tr_comis
                                 new_data = {
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
-                                    'type_transaction': 'EXPENDITURE',
-                                    'name': f'Capital_{i.get("number")}', 'description': i.get('description'),
-                                    'balance_holder': balance_holder[0],
-                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': 1,
-                                    'transaction_sum': tr_sum,
-                                    'import_id': i.get('id'), 'type_payment': type_payment, 'commission': tr_comis,
-                                    'current_transaction': current,
+                                    'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
+                                    'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
+                                    'commission': tr_comis, 'current_transaction': current,
                                     'current_sum': current_sum, 'current_amount': i.get('amount') + i.get('tax')
                                 }
                                 new_transa.objects.create(**new_data)
@@ -375,14 +374,13 @@ def import_transactions():
                                     amount = tr_sum - tr_com
                                 new_data = {
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
-                                    'type_transaction': 'COMING',
-                                    'name': f'Capital_{i.get("number")}', 'description': i.get('description'),
-                                    'balance_holder': balance_holder[0],
-                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': 1,
-                                    'transaction_sum': tr_sum,
-                                    'import_id': i.get('id'), 'type_payment': type_payment, 'commission': tr_com,
-                                    'current_transaction': current,
-                                    'current_sum': current_sum, 'current_amount': i.get('amount') - i.get('tax')
+                                    'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
+                                    'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                    'transaction_sum': tr_sum, 'import_id': i.get('id'),
+                                    'type_payment': type_payment, 'commission': tr_com,
+                                    'current_transaction': current, 'current_sum': current_sum,
+                                    'current_amount': i.get('amount') - i.get('tax')
                                 }
                                 new_transa.objects.create(**new_data)
                                 old_balance_balance_holder += decimal.Decimal(amount)
