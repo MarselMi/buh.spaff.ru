@@ -2,11 +2,6 @@
 {% load static %}
 {% block content %}
 
-<style type="text/css">
-	option.red {background-color: #cc0000; font-weight: bold; font-size: 12px;}
-	option.pink {background-color: #ffcccc;}
-</style>
-
 	<div class="row mb-4">
 		<div class="col-12">
 			<div class="card">
@@ -63,7 +58,11 @@
 											Введите любую информацию
 										{% endif %}
 									</label>
-									<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" value="{{ holder.payment_account|for_card_step }}"/>
+									{% if holder.account_type == 'SCORE' or holder.account_type == 'CARD' %}
+										<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" value="{{ holder.payment_account|for_card_step }}"/>
+									{% else %}
+									<input autocomplete="off" class="obligatory form-control" name="payment_account" id="payment_account" value="{{ holder.payment_account }}"/>
+									{% endif %}
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -135,15 +134,15 @@
 
 	var url = document.location.href;
 	var a = document.cookie.split(';');
-	var token = ''
+	var token = '';
 
 	for (i = 0; i < a.length; i++) {
-		var b = a[i].split('=')
-		b[0] = b[0].replace(/\s+/g, '')
+		var b = a[i].split('=');
+		b[0] = b[0].replace(/\s+/g, '');
 		if (b[0] == 'csrftoken') {
-		token = b[1]
+			token = b[1];
 		}
-	}
+	};
 
 	var regEx = /[\\><\|\/a-zA-Z\/\+~\=`\]!\[@\{#\}$%\^&:;*\?\(\)_\-а-яА-Я]/;
 
@@ -157,20 +156,10 @@
 	})
 
 	$('#color').on('change', function(){
-		$('#color_example').attr('style', `background: ${$('#color').val()}`)
+		$('#color_example').attr('style', `background: ${$('#color').val()}`);
 	});
 
-	$('#holder_balance').on('input change', function(){
-		if($('#holder_balance').val()){
-			if (regEx.test($('#holder_balance').val())){
-				$('#holder_balance').addClass('is-invalid')
-			}else{
-				$('#holder_balance').removeClass('is-invalid')
-			}
-		}else{
-			$('#holder_balance').removeClass('is-invalid')
-		}
-	})
+	
 
 	$('#payment_account').on('input change', function(){
 		var paccount = $('#payment_account').val().replace(/\s+/g, '');
@@ -261,8 +250,6 @@
 			$('.create_holder').attr('disabled', 'true');
 		}else if ($('#alias_holder').hasClass('is-invalid')){
 			$('.create_holder').attr('disabled', 'true');
-		}else if ($('#holder_balance').hasClass('is-invalid')){
-			$('.create_holder').attr('disabled', 'true');
 		}else{
 			$('.create_holder').removeAttr('disabled');
 		}
@@ -274,7 +261,6 @@
 			var valid = true;
 
 			var payment_account = $('#payment_account').val().replace(/\s+/g, '');
-			var holder_balance = $('#holder_balance').val();
 			var validPayment_account = regEx.test(payment_account);
 
 			$(".error").remove();

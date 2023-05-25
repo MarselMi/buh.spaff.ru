@@ -1112,7 +1112,10 @@ def balance_holder_update_view(request, pk):
         holder_type = request.POST.get('holder_type')
         account_type = request.POST.get('account_type')
         organization_holder = request.POST.get('organization_holder')
-        payment_account = request.POST.get('payment_account').replace(' ', '')
+        if account_type == 'CARD' or account_type == 'SCORE':
+            payment_account = request.POST.get('payment_account').replace(' ', '')
+        else:
+            payment_account = request.POST.get('payment_account')
         color = request.POST.get('color')
 
         alias_holder = None
