@@ -15,7 +15,7 @@
 									<div class="col-12 col-sm-3 mb-3">
 
 										<label for="balance_holder">Для балансодержателя</label>
-										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" value="{{ domain_href }}" placeholder="OOO &quot;СПАФФ ИТ&quot;" required/>
+										<input class="form-control" autocomplete="off" id="balance_holder" list="balance_holder_list" placeholder="OOO &quot;СПАФФ ИТ&quot;" required/>
 										<datalist id="balance_holder_list">
 											{% for holder in balance_holders %}
 											<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>

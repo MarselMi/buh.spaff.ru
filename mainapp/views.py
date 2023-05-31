@@ -92,8 +92,7 @@ def transactions_import(request):
 
 
 def fond_view(request):
-    domain_href = request.build_absolute_uri('/').strip("/")
-    print(domain_href)
+
     pdr_fond_show = None
 
     if request.method == 'POST':
@@ -342,7 +341,7 @@ def fond_view(request):
 
     year_list = [dt.now().year - 1, dt.now().year, dt.now().year + 1, dt.now().year + 2]
 
-    data = {'title': 'Фонд', 'domain_href': domain_href, 'month_dict': month_dict, 'type_pay_for_final': type_pay_for_final,
+    data = {'title': 'Фонд', 'month_dict': month_dict, 'type_pay_for_final': type_pay_for_final,
             'balance_holders': balance_holders, 'type_pay': type_pay, 'year_list': year_list,
             'pdr_fond_show': pdr_fond_show, 'bdr_fond_information': bdr_fond_information_for_show, }
 
