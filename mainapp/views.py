@@ -92,6 +92,8 @@ def transactions_import(request):
 
 
 def fond_view(request):
+    domain_href = request.build_absolute_uri('/').strip("/")
+    print(domain_href)
     pdr_fond_show = None
 
     if request.method == 'POST':
