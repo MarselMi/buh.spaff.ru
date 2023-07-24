@@ -9,6 +9,15 @@ def for_card_step(obj):
 
 
 @register.filter
+def for_score(obj):
+    try:
+        a = f'{obj[:5]} {obj[5:8]} {obj[8]} {obj[9:13]} {obj[13:]}'
+    except IndexError:
+        a = obj
+    return a
+
+
+@register.filter
 def change_bool(obj):
     if obj:
         return 1
