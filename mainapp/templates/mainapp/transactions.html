@@ -22,7 +22,7 @@
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label class="label" for="filter_name">Наименование транзакии</label>
+									<label class="label" for="filter_name">Название транзакии</label>
 									<input class="form-control filter" autocomplete="off" list="transaction_name" name="name" id="filter_name"
 										   {% if get_param_filter.name.0 %} value="{{ get_param_filter.name.0 }}" {% endif %} placeholder="Имя транзакции"/>
 									<datalist id="transaction_name">
