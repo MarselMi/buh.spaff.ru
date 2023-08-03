@@ -840,7 +840,12 @@ def transaction_update_view(request, pk):
 
         '''Данные через форму'''
         transaction_date = dt.strptime(request.POST.get('transaction_date'), '%d.%m.%Y').date()
-        amount = decimal.Decimal(request.POST.get('amount').replace(',', '.').replace(' ', ''))
+        transaction_sum = decimal.Decimal(request.POST.get('transaction_sum').replace(',', '.').replace(' ', ''))
+        if request.POST.get('commission'):
+            commission = decimal.Decimal(request.POST.get('commission').replace(',', '.').replace(' ', ''))
+        else:
+            commission = 0
+        amount = transaction_sum + commission
         type_payment = PayType.objects.filter(pay_type=request.POST.get('type_payment'))[0].pk
         sub_type = None
         if request.POST.get('sub_type'):
@@ -867,9 +872,11 @@ def transaction_update_view(request, pk):
             tags = request.POST.get('tags')
 
         '''Словарь новых данных по форме'''
-        new_transaction_data = {'status': status, 'transaction_date': transaction_date,
-                                'amount': amount, 'type_payment': type_payment, 'check_img': check_img,
-                                'tags': tags, 'description': description, 'sub_type_pay': sub_type}
+        new_transaction_data = {
+            "status": status, "transaction_date": transaction_date, "commission": commission,
+            "transaction_sum": transaction_sum, 'amount': amount, "type_payment": type_payment,
+            "check_img": check_img, "tags": tags, "description": description, "sub_type_pay": sub_type
+        }
 
         id_balance_holder = transaction[0].balance_holder.id
         balance_hodler = BalanceHolder.objects.filter(pk=id_balance_holder)

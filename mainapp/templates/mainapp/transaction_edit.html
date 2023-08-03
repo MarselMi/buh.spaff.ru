@@ -45,12 +45,15 @@
 
 								<div class="col-12 col-sm-3 mb-3">
 									{{ form.amount.label }}
-									{% if transaction.amount %}
-										<input autocomplete="off" class="form-control" name="amount" value="{{ transaction.amount }}" id="amount"/>
-									{% else %}
-										{{ form.amount }}
-									{% endif %}
+									<input autocomplete="off" class="form-control" name="transaction_sum" value="{{ transaction.transaction_sum }}" id="transaction_sum"/>
 								</div>
+
+								{% if transaction.type_transaction == 'EXPENDITURE' %}
+									<div class="col-12 col-sm-3 mb-3">
+										<label for="commission">Комиссия</label>
+										<input autocomplete="off" class="form-control" name="commission" value="{{ transaction.commission }}" id="commission"/>
+									</div>
+								{% endif %}
 
 								<div class="col-12 col-sm-3 mb-3 type_payment_input">
 									{{ form.type_payment.label }}

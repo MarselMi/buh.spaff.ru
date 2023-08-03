@@ -13,7 +13,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.beat_schedule = {
     'import_transactions': {
         'task': 'mainapp.tasks.import_transactions',
-        'schedule': crontab(minute='*/60'),
+        'schedule': crontab(minute='*/2'),
         'args': ()
     }
 }
