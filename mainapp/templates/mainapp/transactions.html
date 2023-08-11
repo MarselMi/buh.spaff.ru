@@ -192,18 +192,38 @@
 											<th>Балансодержатель</th>
 											<th>Название</th>
 											<th>Категория</th>
-											<th>Создан</th>
-											<th>Изменён</th>
-											<th>Проведен</th>
-											<th>Сумма (RUB)</th>
-											<th>Комиссия (RUB)</th>
+											<th>
+												<a class="order_by_obj" onclick="send_order(event);" type="button" id="`mt`.`create_date` DESC" style="color:#00087cfa;">
+													Создан
+												</a>
+											</th>
+											<th>
+												<a class="order_by_obj" onclick="send_order(event);" type="button" id="`mt`.`update_date` DESC" style="color:#00087cfa;">
+													Изменён
+												</a>
+											</th>
+											<th>
+												<a class="order_by_obj" onclick="send_order(event);" type="button" id="`mt`.`transaction_date` DESC" style="color:#00087cfa;">
+													Проведен
+												</a>
+											</th>
+											<th>
+												<a class="order_by_obj" onclick="send_order(event);" type="button" id="`mt`.`transaction_sum` DESC" style="color:#00087cfa;">
+													Сумма (RUB)
+												</a>
+											</th>
+											<th>
+												<a class="order_by_obj" onclick="send_order(event);" type="button" id="`mt`.`commission` DESC" style="color:#00087cfa;">
+													Комиссия (RUB)
+												</a>
+											</th>
 											<th>Транзакция</th>
 											<th>Статус</th>
 											<th>Чек</th>
 											<th>Автор</th>
 										</tr>
 									</thead>
-									<tbody class="text-center">
+									<tbody class="text-center resutl_table">
 									{% for object in transactions %}
 										<tr class="align-middle">
 											<td>{{ object.balance_holder }}</td>
@@ -349,18 +369,19 @@
 									</tbody>
 									<tfoot>
 										<tr>
-											<th rowspan="2">Входящие транзакции: {{ coming_sum|numb_format }}
+											<th id="coming_sum" rowspan="2">
+												Входящие транзакции: {{ coming_sum|numb_format }}
 											</th>
-
-											<th rowspan="2">
+											<th id="expenditure_amount" rowspan="2">
 												Исходящие транзакции: {{ expenditure_amount|numb_format }}
 											</th>
-											<th>
+											<th id="expenditure_transaction">
 												Сумма перевода - {{ expenditure_transaction|numb_format }}
 											</th>
 										</tr>
 										<tr>
-											<th>Комиссия - {{ expenditure_comission|numb_format }}
+											<th id="expenditure_comission">
+												Комиссия - {{ expenditure_comission|numb_format }}
 											</th>
 										</tr>
 									</tfoot>
@@ -473,15 +494,16 @@
 								{% endif %}
 
 							</div> <!-- /btn-select-rows -->
-							
+							<input id="session_order" value="{{request.session.order_by}}" hidden>
+							<input id="superuser" value="{{user.is_superuser}}" hidden>
 						</div>
 						{% else %}
-						<div class="alert alert-warning" role="alert">
-							<h5 class="alert-heading text-center">
-								<i class="fa-regular fa-octagon-exclamation me-2"></i>
-								Нет доступных транзакций
-							</h5>
-						</div>
+							<div class="alert alert-warning" role="alert">
+								<h5 class="alert-heading text-center">
+									<i class="fa-regular fa-octagon-exclamation me-2"></i>
+									Нет доступных транзакций
+								</h5>
+							</div>
 						{% endif %}
 					</div> <!-- /table-responsive -->
 				</div> <!-- /card-body -->
@@ -510,46 +532,354 @@
 
 	<script>
 
+		const formatter = new Intl.NumberFormat('ru-RU', {
+			style: 'currency',
+			currency: 'RUB',
+			// These options are needed to round to whole numbers if that's what you want.
+			//minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+			//maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+		});
+
 		var url = document.location.href;
 		var a = document.cookie.split(';');
-		var token = ''
+		var token = '';
 
 		for (i = 0; i < a.length; i++) {
-			var b = a[i].split('=')
-			b[0] = b[0].replace(/\s+/g, '')
+			var b = a[i].split('=');
+			b[0] = b[0].replace(/\s+/g, '');
 			if (b[0] == 'csrftoken') {
-			token = b[1]
+				token = b[1];
 			}
-		}
+		};
 
-		var filters = document.querySelectorAll('.filter')
+		function lines_append(tr_line){
+			var name = `${tr_line.name}`;
+			if(tr_line.description && $('#superuser').val() == 'True'){
+				name = `<div class="d-flex justify-content-between bd-highlight">
+							<div class="d-flex justify-content-start">
+								<span data-bs-toggle="tooltip" data-bs-title="Подробнее: ${tr_line.description}">
+									${tr_line.name}
+								</span>
+							</div>
+							<div class="d-flex justify-content-end">
+								<a href="/transaction-edit/${tr_line.id}/" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+									<i class="fa-regular fa-pen-to-square"></i>
+								</a>
+							</div>
+						</div>`;
+			}else if(tr_line.description && $('#superuser').val() == 'False'){
+				name = `<div class="d-flex justify-content-between bd-highlight">
+							<div class="d-flex justify-content-start">
+								<span data-bs-toggle="tooltip" data-bs-title="Подробнее: ${tr_line.description}">
+									${tr_line.name}
+								</span>
+							</div>
+						</div>`;
+			}else if(!tr_line.description && $('#superuser').val() == 'True'){
+				name = `<div class="d-flex justify-content-between bd-highlight">
+							<div class="d-flex justify-content-start">
+								${tr_line.name}
+							</div>
+							<div class="d-flex justify-content-end">
+								<a href="/transaction-edit/${tr_line.id}/" class="btn btn-light btn-sm" data-bs-toggle="tooltip" data-bs-title="Редактировать">
+									<i class="fa-regular fa-pen-to-square"></i>
+								</a>
+							</div>
+						</div>`;
+			}else if(!tr_line.description && $('#superuser').val() == 'False'){
+				name = `<div class="d-flex justify-content-between bd-highlight">
+							<div class="d-flex justify-content-start">
+								${tr_line.name}
+							</div>
+						</div>`;
+			};
 
-		function check_filter(){
-			let check_val = 0
-			for (let i = 0; i < filters.length; i++){
-				if (filters[i].value){
-					check_val += 1
+			var pay_type = '';
+			if(tr_line.sub_type_pay_id){
+				pay_type = `${tr_line.type_payment} &ensp; 
+							<span data-bs-toggle="tooltip" data-bs-title="Подкатегория: {{ tr_line.sub_type_pay_id }}">
+								<i class="fa-regular fa-info"></i>
+							</span>`;
+			}else{
+				pay_type = `${tr_line.type_payment}`;
+			}
+
+			var update_date = '&ndash;';
+			if(tr_line.update_date){
+				update_date = `<span data-bs-toggle="tooltip" data-bs-title="${tr_line.update_date_js_s}">
+									${tr_line.update_date_js}
+								</span>`;
+			}
+			
+			// Для бирки валюты
+			var current_element = '';
+			if(tr_line.current_transaction == 'USD'){
+				current_element = `<span data-bs-toggle="tooltip" data-bs-title="${tr_line.current_transaction}: ${tr_line.current_sum}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-dollar" viewBox="0 0 16 16">
+											<path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z"/>
+										</svg>
+									</span>`;
+			}else if(tr_line.current_transaction == 'USDT' || tr_line.current_transaction == 'ETH'){
+				current_element = `<span data-bs-toggle="tooltip" data-bs-title="${tr_line.current_transaction}: ${tr_line.current_sum}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-bitcoin" viewBox="0 0 16 16">
+											<path d="M5.5 13v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.5v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.084c1.992 0 3.416-1.033 3.416-2.82 0-1.502-1.007-2.323-2.186-2.44v-.088c.97-.242 1.683-.974 1.683-2.19C11.997 3.93 10.847 3 9.092 3H9V1.75a.25.25 0 0 0-.25-.25h-1a.25.25 0 0 0-.25.25V3h-.573V1.75a.25.25 0 0 0-.25-.25H5.75a.25.25 0 0 0-.25.25V3l-1.998.011a.25.25 0 0 0-.25.25v.989c0 .137.11.25.248.25l.755-.005a.75.75 0 0 1 .745.75v5.505a.75.75 0 0 1-.75.75l-.748.011a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25L5.5 13zm1.427-8.513h1.719c.906 0 1.438.498 1.438 1.312 0 .871-.575 1.362-1.877 1.362h-1.28V4.487zm0 4.051h1.84c1.137 0 1.756.58 1.756 1.524 0 .953-.626 1.45-2.158 1.45H6.927V8.539z"/>
+										</svg>
+									</span>`;
+			}else if(tr_line.current_transaction == 'EUR'){
+				current_element = `<span data-bs-toggle="tooltip" data-bs-title="${tr_line.current_transaction}: ${tr_line.current_sum}"> 
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-euro" viewBox="0 0 16 16">
+											<path d="M4 9.42h1.063C5.4 12.323 7.317 14 10.34 14c.622 0 1.167-.068 1.659-.185v-1.3c-.484.119-1.045.17-1.659.17-2.1 0-3.455-1.198-3.775-3.264h4.017v-.928H6.497v-.936c0-.11 0-.219.008-.329h4.078v-.927H6.618c.388-1.898 1.719-2.985 3.723-2.985.614 0 1.175.05 1.659.177V2.194A6.617 6.617 0 0 0 10.341 2c-2.928 0-4.82 1.569-5.244 4.3H4v.928h1.01v1.265H4v.928z"/>
+										</svg>
+									</span>`;
+			}
+			// Для вывода суммы и бирки валюты
+			
+			var tr_sum
+			if(tr_line.commission){
+				if(tr_line.current_transaction){
+					tr_sum = `<span data-bs-toggle="tooltip" data-bs-title="RUB: ${tr_line.amount}; ${tr_line.current_transaction}: ${tr_line.current_amount}">
+								${tr_line.transaction_sum_js}
+							</span>`;
+				}else{
+					tr_sum = `<span data-bs-toggle="tooltip" data-bs-title="${tr_line.amount}">
+								${tr_line.transaction_sum_js}
+							</span>`;
 				}
 			}
-			return check_val
-		}
+			tr_sum = tr_sum + current_element;
+			var comission = `&ndash;`;
+			if(tr_line.commission != '0.00'){
+				console.log(tr_line);
+				var percent = ((+tr_line.commission / +tr_line.transaction_sum) * 100).toFixed(1);
+				comission = `<span data-bs-toggle="tooltip" data-bs-title="${percent}%">
+								${tr_line.commission_js}
+							</span>`;
+			}
 
-		if (check_filter()){
-			$('.clear').removeAttr('hidden')
+			if(tr_line.type_transaction == 'COMING'){
+				var tr_type_transaction = `<span class="badge text-bg-outline-success d-flex align-items-center justify-content-center rounded-pill">
+												Приход
+											</span>`;
+			}else{
+				var tr_type_transaction = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+												Расход
+											</span>`;
+			}
+
+			var status = ''
+			if(tr_line.status == 'INPROCESS'){
+				status = `<span class="badge text-bg-outline-info d-flex align-items-center justify-content-center rounded-pill">
+							В процессе
+						</span>`;
+			}else if(tr_line.status == 'SUCCESSFULLY'){
+				status = `<span class="badge bg-warning d-flex align-items-center justify-content-center rounded-pill ms-auto my-auto">
+							Успешно
+						</span>`;
+			}else{
+				status = `<span class="badge text-bg-outline-danger d-flex align-items-center justify-content-center rounded-pill">
+							Отклонено
+						</span>`;
+			};
+
+			var check = '&ndash;';
+			if(tr_line.check_img){
+				check = `<button data-bs-whatever="/media/${tr_line.check_img}"
+								type="button" 
+								class="btn CheckPhotoModal"
+								data-bs-transaction-name="${tr_line.name}"
+								data-bs-toggle="modal"
+								data-bs-target="#exampleModal">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-image" viewBox="0 0 16 16">
+								<path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+								<path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+							</svg>
+						</button>`;
+			}
+			
+			var line_table = `
+				<td>${tr_line.balance_holder}</td>
+				<td>${name}</td>
+				<td>${pay_type}</td>
+				<td>
+					<span data-bs-toggle="tooltip" data-bs-title="${tr_line.create_date_js_s}">
+						${tr_line.create_date_js}
+					</span>
+				</td>
+				<td>${update_date}</td>
+				<td>${tr_line.transaction_date_js}</td>
+				<td>${tr_sum}</td>
+				<td>${comission}</td>
+				<td>${tr_type_transaction}</td>
+				<td>${status}</td>
+				<td>${check}</td>
+				<td>${tr_line.author}</td>
+				`;
+			return line_table;
+		};
+
+		// Для постановки направления сортировки при загрузки страницы
+		var session_info_val = $('#session_order').val();
+		var filters = document.querySelectorAll('.filter');
+		var loader_page;
+		if(session_info_val.includes('DESC')){
+			loader_page = `<a id="order">
+								<i onclick="selector_change(event);" type="button" style="padding-left: 5%;" class="fa-regular fa-arrow-down"></i>
+							</a>`;
 		}else{
-			$('.clear').attr('hidden', 'true')
+			loader_page = `<a id="order">
+								<i onclick="selector_change(event);" type="button" style="padding-left: 5%;" class="fa-regular fa-arrow-up"></i>
+							</a>`;
+		};
+		$('.order_by_obj').each(function(el, ef){
+			if(ef.id.includes(session_info_val)){
+				ef.insertAdjacentHTML('afterend', loader_page);
+			}
+		});
+
+		// Для смена типа сртировки по полю
+		function send_order(event){
+			var order_obj = event.currentTarget.id;
+			var order_el = event.currentTarget;
+			var new_direction = `<a id="order">
+									<i onclick="selector_change(event);" type="button" style="padding-left: 5%;" class="fa-regular fa-arrow-down"></i>
+								</a>`;
+			if(!order_el.nextElementSibling){
+				$('#order').remove();
+				order_el.insertAdjacentHTML('afterend', new_direction);
+				$.ajax({
+					url: url,
+					method: 'POST',
+					data: {
+						csrfmiddlewaretoken: token,
+						type: 'order_by',
+						name: order_obj
+					}
+				}).then(function(result) {
+					$('.resutl_table').empty();
+					var transactions = result.res;
+					var trans_incom = 0;
+					var expenditure_trans = 0;
+					var trans_comission = 0;
+					var trans_amount = 0;
+
+					for(let i = 0; transactions.length > i; i++){
+						var table_lines = '';
+						table_lines += lines_append(transactions[i]);
+						var new_table = `<tr class="align-middle">
+											${table_lines}
+										</tr>`;
+						if(transactions[i].type_transaction == 'EXPENDITURE'){
+							trans_amount += +transactions[i].transaction_sum;
+							expenditure_trans += +transactions[i].amount;
+							trans_comission += +transactions[i].commission;
+						}else{
+							trans_incom += +transactions[i].amount;
+						}
+						$('.resutl_table').append(new_table);
+					};
+
+					$('#coming_sum').text(`Входящие транзакции: ${formatter.format(trans_incom)}`);
+					$('#expenditure_amount').text(`Исходящие транзакции: ${formatter.format(expenditure_trans)}`);
+					$('#expenditure_transaction').text(`Сумма перевода - ${formatter.format(trans_amount)}`);
+					$('#expenditure_comission').text(`Комиссия - ${formatter.format(trans_comission)}`);
+
+					var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+					var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+						return new bootstrap.Tooltip(tooltipTriggerEl);
+					});
+					const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+					const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+				}).catch(function(err) {
+					var x = 1;
+				});
+			};
+		};
+
+		// Смена направления сортировки
+		function selector_change(event){
+			var order_obj = event.currentTarget;
+			var desc
+			if(order_obj.classList.contains('fa-arrow-up')){
+				order_obj.classList.remove('fa-arrow-up');
+				order_obj.classList.add('fa-arrow-down');
+				desc = 'DESC';
+			}else{
+				order_obj.classList.remove('fa-arrow-down');
+				order_obj.classList.add('fa-arrow-up');
+				desc = '';
+			}
+			$.ajax({
+				url: url,
+				method: 'POST',
+				data: {
+					csrfmiddlewaretoken: token,
+					type: 'order_desc',
+					name: desc
+				}
+			}).then(function(result) {
+				$('.resutl_table').empty();
+				var transactions = result.res;
+				var trans_incom = 0;
+				var expenditure_trans = 0;
+				var trans_comission = 0;
+				var trans_amount = 0;
+
+			    for(let i = 0; transactions.length > i; i++){
+					var table_lines = '';
+					table_lines += lines_append(transactions[i]);
+					var new_table = `<tr class="align-middle">
+										${table_lines}
+									</tr>`;
+					if(transactions[i].type_transaction == 'EXPENDITURE'){
+						trans_amount += +transactions[i].transaction_sum;
+						expenditure_trans += +transactions[i].amount;
+						trans_comission += +transactions[i].commission;
+					}else{
+						trans_incom += +transactions[i].amount;
+					}
+					$('.resutl_table').append(new_table);
+				};
+
+				$('#coming_sum').text(`Входящие транзакции: ${formatter.format(trans_incom)}`);
+				$('#expenditure_amount').text(`Исходящие транзакции: ${formatter.format(expenditure_trans)}`);
+				$('#expenditure_transaction').text(`Сумма перевода - ${formatter.format(trans_amount)}`);
+				$('#expenditure_comission').text(`Комиссия - ${formatter.format(trans_comission)}`);
+
+				var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+				var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+					return new bootstrap.Tooltip(tooltipTriggerEl);
+				})
+				const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+				const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+		    }).catch(function(err) {
+				var x = 1;
+		    });
 		}
 
+		// Проверка фильтра и очистка при наличии
+		function check_filter(){
+			let check_val = 0;
+			for (let i = 0; i < filters.length; i++){
+				if (filters[i].value){
+					check_val += 1;
+				}
+			}
+			return check_val;
+		};
+		if (check_filter()){
+			$('.clear').removeAttr('hidden');
+		}else{
+			$('.clear').attr('hidden', 'true');
+		};
 		for (let i = 0; i < filters.length; i++){
 			filters[i].addEventListener('input', function(){
 				if (filters[i].value){
-					$('.clear').removeAttr('hidden')
+					$('.clear').removeAttr('hidden');
 				}else{
-					$('.clear').attr('hidden', 'true')
+					$('.clear').attr('hidden', 'true');
 				}
 			})
 		};
-
 		function cleare_filter(){
 			for (let i=0; i<filters.length; i++){
 				if (filters[i].value){
@@ -557,8 +887,7 @@
 					filters[i].value = '';
 				}
 			};
-		}
-
+		};
 		function checkCollapse() {
 		    $.ajax(
 			    {
@@ -575,25 +904,25 @@
 				var x = 1;
 		    });
 		};
+
 	</script>
 
 	<script type="text/javascript">
+
 		$(function(){
 			$("#datepicker").datepicker();
 			$("#datepicker1").datepicker();
 		});
-	</script>
-
-	<script>
+		
 		var dirtly_url = new URL(location);
 		var dirtly_params = dirtly_url.searchParams;
 		var new_params = '?';
 
 		dirtly_params.forEach((val, key) =>{
 			if (val){
-				new_params += key+'='+val+'&'
+				new_params += key+'='+val+'&';
 			}
-		})
+		});
 
 		new_params = new_params.slice(0, -1);
 
@@ -602,19 +931,20 @@
 		history.pushState(null, null, new_url);
 
 		var btnLimEl = document.querySelectorAll('.checkLimitButton');
+
 		for (let i = 0; i < btnLimEl.length; i++){
 			btnLimEl[i].addEventListener('click', function(event) {
 				if (event.target == btnLimEl[i]){
-					console.log(btnLimEl[i].getAttribute("id"))
+					console.log(btnLimEl[i].getAttribute("id"));
 					$.ajax(
-					{
-						url: url,
-						method: 'POST',
-						data: {
-						csrfmiddlewaretoken: token,
-						type: btnLimEl[i].getAttribute("id")
+						{
+							url: url,
+							method: 'POST',
+							data: {
+							csrfmiddlewaretoken: token,
+							type: btnLimEl[i].getAttribute("id")
+							}
 						}
-					}
 					).then(function(result) {
 						var x = document.location.search.split('&page')[0];
 						x = x.split('?page')[0];
@@ -626,9 +956,6 @@
 			})
 		};
 
-	</script>
-
-	<script>
 		// Модалка для просмотра чеков
 		var exampleModal = document.getElementById('exampleModal')
 		var modalTitle = exampleModal.querySelector('.modal-header')
@@ -639,10 +966,10 @@
 		for(let i=0; i<exampleModalsBtn.length; i++){
 			exampleModalsBtn[i].addEventListener('click', function(event){
 				if(event.currentTarget == exampleModalsBtn[i]){
-					var linkData = exampleModalsBtn[i].getAttribute('data-bs-whatever')
-					var transactionName = exampleModalsBtn[i].getAttribute('data-bs-transaction-name')
-					modalTitle.textContent = `Чек транзакции - ${transactionName}`
-					modalBody.innerHTML = `<div class="row"><img src=${linkData}></div>`
+					var linkData = exampleModalsBtn[i].getAttribute('data-bs-whatever');
+					var transactionName = exampleModalsBtn[i].getAttribute('data-bs-transaction-name');
+					modalTitle.textContent = `Чек транзакции - ${transactionName}`;
+					modalBody.innerHTML = `<div class="row"><img src=${linkData}></div>`;
 				}
 			})
 		}

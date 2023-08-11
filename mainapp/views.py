@@ -540,8 +540,9 @@ def transaction_view(request):
         offset = limit * (page - 1)
     request.session['offset_transactions'] = offset
     ''' Заполенние словаря для SQL-запроса '''
+    dismiss_list = ['page', 'page', 'name', 'type']
     for element in get_param_filter:
-        if element != 'page':
+        if element not in dismiss_list:
             if get_param_filter.get(element) != [''] and element != 'collapse' and element != 'csrfmiddlewaretoken':
                 dict_for_sql_filter.setdefault(element, get_param_filter[element][0])
 
@@ -570,13 +571,90 @@ def transaction_view(request):
     if dict_for_sql_filter.get('end'):
         dict_for_sql_filter['end'] = dt.strptime(dict_for_sql_filter.get('end'), '%d.%m.%Y').strftime('%Y-%m-%d')
 
+    if request.session.get('order_by'):
+        order_by = request.session.get('order_by')
+    else:
+        order_by = '`mt`.`transaction_date` DESC'
+        request.session['order_by'] = order_by
+
+    '''AJAX-для смены сортировки по полям'''
+    if request.POST.get('type') == 'order_by':
+        request.session['order_by'] = request.POST.get('name')
+
+        if request.user.is_superuser:
+            transactions = get_allow_transaction_filter(
+                request.user.id,
+                filter_data=dict_for_sql_filter,
+                limit=limit, offset=offset,
+                order_by=request.POST.get('name')
+            )
+        else:
+            transactions = get_allow_transaction_filter(
+                request.user.id,
+                filter_data=dict_for_sql_filter,
+                author_res=True,
+                limit=limit,
+                offset=offset,
+                order_by=request.POST.get('name')
+            )
+        for tr in transactions:
+            tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M')
+            tr['create_date_js_s'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M:%S')
+            if tr.get('update_date'):
+                tr['update_date_js'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M')
+                tr['update_date_js_s'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M:%S')
+            tr['transaction_date_js'] = tr.get('transaction_date').strftime('%d.%m.%Y')
+            tr['transaction_sum_js'] = numb_format(tr.get('transaction_sum'))
+            if tr.get('commission'):
+                tr['commission_js'] = numb_format(tr.get('commission'))
+        return JsonResponse({'res': transactions})
+
+    '''AJAX-для смены сортировки по направлению'''
+    if request.POST.get('type') == 'order_desc':
+        if request.POST.get("name") == 'DESC':
+            if order_by.find('DESC') > -1:
+                split_order_by = order_by
+            else:
+                split_order_by = f'{order_by}DESC'
+        else:
+            split_order_by = order_by.split('DESC')[0]
+        request.session['order_by'] = split_order_by
+
+        if request.user.is_superuser:
+            transactions = get_allow_transaction_filter(
+                request.user.id,
+                filter_data=dict_for_sql_filter,
+                limit=limit, offset=offset,
+                order_by=split_order_by
+            )
+        else:
+            transactions = get_allow_transaction_filter(
+                request.user.id,
+                filter_data=dict_for_sql_filter,
+                author_res=True,
+                limit=limit,
+                offset=offset,
+                order_by=split_order_by
+            )
+        for tr in transactions:
+            tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M')
+            tr['create_date_js_s'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M:%S')
+            if tr.get('update_date'):
+                tr['update_date_js'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M')
+                tr['update_date_js_s'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M:%S')
+            tr['transaction_date_js'] = tr.get('transaction_date').strftime('%d.%m.%Y')
+            tr['transaction_sum_js'] = numb_format(tr.get('transaction_sum'))
+            if tr.get('commission'):
+                tr['commission_js'] = numb_format(tr.get('commission'))
+        return JsonResponse({'res': transactions})
+
     if request.user.is_superuser:
         balance_holders = get_allow_balance_holders(request.user.id, simple_user=False)
-        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, limit=limit, offset=offset)
+        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, limit=limit, offset=offset, order_by=order_by)
         original_count = get_count_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter)[0].get('COUNT(`mt`.`id`)')
     else:
         balance_holders = get_allow_balance_holders(request.user.id, simple_user=True)
-        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True, limit=limit, offset=offset)
+        transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True, limit=limit, offset=offset, order_by=order_by)
         original_count = get_count_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True)[0].get('COUNT(`mt`.`id`)')
 
     coming_sum = 0

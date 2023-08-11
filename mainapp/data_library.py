@@ -193,7 +193,7 @@ def get_allow_and_hide_balance_holders(pk, simple_user=True):
     return response
 
 
-def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit='', offset=None):
+def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit='', offset=None, order_by=''):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -280,7 +280,7 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                         WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
                         {author_req} {filters}
                         AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
-                        ORDER BY `mt`.`id` DESC
+                        ORDER BY {order_by}
                         {limit}
                         {offset}
                         '''
