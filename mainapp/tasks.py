@@ -144,6 +144,26 @@ def import_transactions():
 
             token = json.loads(token_request.content).get('data').get('token')
 
+            currency_rates_req = json.loads(requests.post(
+                'https://api.capitalist.net/',
+                json={"operation": "currency_rates", "login": login, "token": token, "plain_password": password},
+                headers={"x-response-format": "json"}
+            ).content).get('data').get('rates')
+            currency_btc = 0
+            currency_usd = 0
+            currency_eur = 0
+            currency_eth_usd = 0
+            for i in currency_rates_req.get('sell'):
+                if i.get('target') == 'BTC' and i.get('amountCur') == 'RUR':
+                    currency_btc = i.get('amount')
+                if i.get('target') == 'USD' and i.get('amountCur') == 'RUR':
+                    currency_usd = i.get('amount')
+                if i.get('target') == 'EUR' and i.get('amountCur') == 'RUR':
+                    currency_eur = i.get('amount')
+                if i.get('target') == 'ETH' and i.get('amountCur') == 'USD':
+                    currency_eth_usd = i.get('amount')
+            currency_eth = currency_eth_usd * currency_usd
+
             transactions_history = requests.post(
                 'https://api.capitalist.net/',
                 json={
@@ -157,22 +177,7 @@ def import_transactions():
                 },
                 headers={"x-response-format": "json"}
             )
-            currency_rates_req = json.loads(requests.post(
-                'https://api.capitalist.net/',
-                json={"operation": "currency_rates", "login": login, "token": token, "plain_password": password},
-                headers={"x-response-format": "json"}
-            ).content).get('data').get('rates')
-            currency_usd = 0
-            currency_eur = 0
-            currency_eth_usd = 0
-            for i in currency_rates_req.get('sell'):
-                if i.get('target') == 'EUR' and i.get('amountCur') == 'RUR':
-                    currency_eur = i.get('amount')
-                if i.get('target') == 'USD' and i.get('amountCur') == 'RUR':
-                    currency_usd = i.get('amount')
-                if i.get('target') == 'ETH' and i.get('amountCur') == 'USD':
-                    currency_eth_usd = i.get('amount')
-            currency_eth = currency_eth_usd * currency_usd
+
             page_count = int(json.loads(transactions_history.content).get('data').get('pages').get('pageCount'))
             if page_count == 1:
                 transactions = json.loads(transactions_history.content).get('data').get('history')
@@ -181,33 +186,39 @@ def import_transactions():
                         old_balance_balance_holder = balance_holder[0].holder_balance
                         new_transa = Transaction
                         if i.get('outgoing') and i.get('selfExchange') is False:
-                            current = None
-                            current_sum = None
                             type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
                             tr_comis = i.get('tax')
-                            if i.get('account')[0] == 'H':
+                            current = None
+                            current_sum = None
+                            if 'H' in i.get('account'):
                                 current_sum = i.get('amount')
                                 current = 'ETH'
                                 tr_comis *= currency_eth
                                 tr_sum = i.get('amount') * currency_eth
                                 amount = tr_sum + tr_comis
-                            elif i.get('account')[0] == 'U':
+                            elif 'U' in i.get('account')[0]:
                                 current_sum = i.get('amount')
                                 current = 'USD'
                                 tr_comis *= currency_usd
                                 tr_sum = i.get('amount') * currency_usd
                                 amount = tr_sum + tr_comis
-                            elif i.get('account')[0] == 'T':
+                            elif i.get('account')[0] in ['T', 'Y', 'W']:
                                 current_sum = i.get('amount')
                                 current = 'USDT'
                                 tr_comis *= currency_usd
                                 tr_sum = i.get('amount') * currency_usd
                                 amount = tr_sum + tr_comis
-                            elif i.get('account')[0] == 'E':
+                            elif 'E' in i.get('account'):
                                 current_sum = i.get('amount')
                                 current = 'EUR'
                                 tr_comis *= currency_eur
                                 tr_sum = i.get('amount') * currency_eur
+                                amount = tr_sum + tr_comis
+                            elif 'B' in i.get('account'):
+                                current_sum = i.get('amount')
+                                current = 'BTC'
+                                tr_comis *= currency_btc
+                                tr_sum = i.get('amount') * currency_btc
                                 amount = tr_sum + tr_comis
                             else:
                                 tr_sum = i.get('amount')
@@ -225,32 +236,38 @@ def import_transactions():
                             old_balance_balance_holder -= decimal.Decimal(amount)
                             balance_holder.update(holder_balance=old_balance_balance_holder)
                         elif i.get('outgoing') is False and i.get('selfExchange') is False:
+                            type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                             current = None
                             current_sum = None
-                            type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                            if i.get('account')[0] == 'H':
+                            if 'H' in i.get('account'):
                                 current_sum = i.get('amount')
                                 current = 'ETH'
                                 tr_com = i.get('tax') * currency_eth
                                 tr_sum = i.get('amount') * currency_eth
                                 amount = tr_sum - tr_com
-                            elif i.get('account')[0] == 'U':
+                            elif 'U' in i.get('account'):
                                 current_sum = i.get('amount')
                                 current = 'USD'
                                 tr_com = i.get('tax') * currency_usd
                                 tr_sum = i.get('amount') * currency_usd
                                 amount = tr_sum - tr_com
-                            elif i.get('account')[0] == 'T':
+                            elif i.get('account')[0] in ['T', 'Y', 'W']:
                                 current_sum = i.get('amount')
                                 current = 'USDT'
                                 tr_com = i.get('tax') * currency_usd
                                 tr_sum = i.get('amount') * currency_usd
                                 amount = tr_sum - tr_com
-                            elif i.get('account')[0] == 'E':
+                            elif 'E' in i.get('account'):
                                 current_sum = i.get('amount')
                                 current = 'EUR'
                                 tr_com = i.get('tax') * currency_eur
                                 tr_sum = i.get('amount') * currency_eur
+                                amount = tr_sum - tr_com
+                            elif 'B' in i.get('account'):
+                                current_sum = i.get('amount')
+                                current = 'BTC'
+                                tr_com = i.get('tax') * currency_btc
+                                tr_sum = current_sum * currency_btc
                                 amount = tr_sum - tr_com
                             else:
                                 tr_com = i.get('tax')
@@ -301,29 +318,35 @@ def import_transactions():
                                 if i.get('tax'):
                                     tr_comis = i.get('tax')
 
-                                if i.get('account')[0] == 'H':
+                                if 'H' in i.get('account'):
                                     current = 'ETH'
                                     current_sum = i.get('amount')
                                     tr_comis = tr_comis * currency_eth
                                     tr_sum = i.get('amount') * currency_eth
                                     amount = tr_sum + tr_comis
-                                elif i.get('account')[0] == 'U':
+                                elif 'U' in i.get('account'):
                                     current = 'USD'
                                     current_sum = i.get('amount')
                                     tr_comis = tr_comis * currency_usd
                                     tr_sum = i.get('amount') * currency_usd
                                     amount = tr_sum + tr_comis
-                                elif i.get('account')[0] == 'T':
+                                elif i.get('account')[0] in ['T', 'Y', 'W']:
                                     current = 'USDT'
                                     current_sum = i.get('amount')
                                     tr_comis = tr_comis * currency_usd
                                     tr_sum = i.get('amount') * currency_usd
                                     amount = tr_sum + tr_comis
-                                elif i.get('account')[0] == 'E':
+                                elif 'E' in i.get('account'):
                                     current = 'EUR'
                                     current_sum = i.get('amount')
                                     tr_comis = tr_comis * currency_eur
                                     tr_sum = i.get('amount') * currency_eur
+                                    amount = tr_sum + tr_comis
+                                elif 'B' in i.get('account'):
+                                    current = 'BTC'
+                                    current_sum = i.get('amount')
+                                    tr_comis *= currency_btc
+                                    tr_sum = current_sum * currency_btc
                                     amount = tr_sum + tr_comis
                                 else:
                                     tr_sum = i.get('amount')
@@ -344,30 +367,36 @@ def import_transactions():
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                                 current = None
                                 current_sum = None
-                                if i.get('account')[0] == 'H':
+                                tr_com = i.get('tax')
+                                if 'H' in i.get('account'):
                                     current = 'ETH'
                                     current_sum = i.get('amount')
                                     tr_com = i.get('tax') * currency_eth
                                     tr_sum = i.get('amount') * currency_eth
                                     amount = tr_sum - tr_com
-                                elif i.get('account')[0] == 'U':
+                                elif 'U' in i.get('account'):
                                     current = 'USD'
                                     current_sum = i.get('amount')
                                     tr_com = i.get('tax') * currency_usd
                                     tr_sum = i.get('amount') * currency_usd
                                     amount = tr_sum - tr_com
-                                elif i.get('account')[0] == 'T':
+                                elif i.get('account')[0] in ['T', 'Y', 'W']:
                                     current = 'USDT'
                                     current_sum = i.get('amount')
                                     tr_com = i.get('tax') * currency_usd
                                     tr_sum = i.get('amount') * currency_usd
                                     amount = tr_sum - tr_com
-                                elif i.get('account')[0] == 'E':
+                                elif 'E' in i.get('account'):
                                     current = 'EUR'
                                     current_sum = i.get('amount')
                                     tr_com = i.get('tax') * currency_eur
                                     tr_sum = i.get('amount') * currency_eur
                                     amount = tr_sum - tr_com
+                                elif 'B' in i.get('account'):
+                                    current_sum = i.get('amount')
+                                    current = 'BTC'
+                                    tr_sum = current_sum * currency_btc
+                                    amount = tr_sum
                                 else:
                                     tr_com = i.get('tax')
                                     tr_sum = i.get('amount')
