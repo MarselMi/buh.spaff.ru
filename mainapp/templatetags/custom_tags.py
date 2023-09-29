@@ -219,3 +219,14 @@ def decrement_page(num):
 @register.filter
 def multiply(num1, num2):
     return num1 * num2
+
+
+@register.filter
+def sum_calculate(array):
+    summ = 0
+    try:
+        for numb in array:
+            summ += numb.get('coming')
+    except:
+        summ = 0
+    return summ

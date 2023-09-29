@@ -65,8 +65,6 @@ class BalanceHolder(models.Model):
                                            verbose_name='Наименование организации')
     alias_holder = models.CharField(blank=True, null=True, default=None, max_length=35,
                                     verbose_name='Псевдоним')
-    holder_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0,
-                                         verbose_name='Баланс Держателя')
     payment_account = models.CharField(max_length=50, verbose_name='Расчетный счет')
     deleted = models.BooleanField(default=False, verbose_name='Удалено')
     available_superuser = models.ManyToManyField('CustomUser', related_name='Разрешить доступ для+')
@@ -109,32 +107,31 @@ class Transaction(models.Model):
     update_date = models.DateTimeField(blank=True, null=True, verbose_name='Дата изменения')
 
     type_transaction = models.CharField(max_length=15, choices=TRANSACTION_CHOICE, verbose_name='Тип транзакции')
-    transaction_date = models.DateField(verbose_name='Дата Транзакции')
+    transaction_date = models.DateTimeField(verbose_name='Время Транзакции')
 
     name = models.CharField(max_length=65, verbose_name='Наименование')
     description = models.TextField(blank=True, null=True, default=None, verbose_name='Подробнее')
-    balance_holder = models.ForeignKey(BalanceHolder, on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name='transaction_balanceholder', verbose_name='Балансодержатель')
+    balance_holder = models.ForeignKey('BalanceHolder', on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='transaction_balance_holder', verbose_name='Балансодержатель')
 
     transaction_sum = models.DecimalField(default=0, max_digits=10, decimal_places=2, verbose_name='Сумма транзакции')
     commission = models.DecimalField(default=0, max_digits=10, decimal_places=2, verbose_name='Сумма комиссии')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма')
 
     type_payment = models.ForeignKey(PayType, on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name='transaction_paytype', verbose_name='Тип')
+                                     related_name='transaction_pay_type', verbose_name='Тип')
     sub_type_pay = models.ForeignKey(SubPayType, on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name='transaction_sub_paytype', verbose_name='Подтип')
+                                     related_name='transaction_sub_pay_type', verbose_name='Подтип')
     tags = models.TextField(blank=True, null=True, default=None, verbose_name='Теги')
     author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
-                               related_name='transaction_customuser', verbose_name='Автор')
+                               related_name='transaction_custom_user', verbose_name='Автор')
     check_img = models.TextField(blank=True, null=True, verbose_name='Чек')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES,
                               default=STATUS_CHOICES[2][0], verbose_name='Статус')
     deleted = models.BooleanField(default=False, verbose_name='Удален')
 
-    current_transaction = models.CharField(blank=True, null=True, max_length=65, verbose_name='Валюта')
-    current_sum = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2, verbose_name='Сумма транзакции в валюте')
-    current_amount = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2, verbose_name='Транзакция + комиссия в валюте')
+    current_id = models.ForeignKey('Current', on_delete=models.SET_NULL,
+                                               null=True, blank=True, verbose_name='Валюта')
 
     def __str__(self):
         return f'{self.pk}'
@@ -146,6 +143,35 @@ class Transaction(models.Model):
     class Meta:
         verbose_name = 'Транзакцию'
         verbose_name_plural = 'Транзакции'
+
+
+class Current(models.Model):
+    current_name = models.CharField(blank=True, null=True, max_length=65, verbose_name='Валюта')
+
+
+class CurrentBalanceHolderBalance(models.Model):
+
+    current_id = models.ForeignKey(
+        'Current', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Валюта'
+    )
+    balance_holder_id = models.ForeignKey(
+        'BalanceHolder', on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='Балансодержатель'
+    )
+    holder_current_balance = models.DecimalField(
+        max_digits=18, decimal_places=2, default=0, verbose_name='Баланс Держателя'
+    )
+
+    def __str__(self):
+        return f'{self.pk}'
+
+    def delete(self, *args, **kwargs):
+        self.deleted = True
+        self.save()
+
+    class Meta:
+        verbose_name = 'Валюту'
+        verbose_name_plural = 'Валюты'
 
 
 class AdditionalDataTransaction(models.Model):

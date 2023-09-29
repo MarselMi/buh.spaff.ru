@@ -22,9 +22,19 @@
 									 style="border-radius: 15px; background: lightblue"
 								 {% endif %}>
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
-									<h1>
-										{{ holder.holder_balance|numb_format }}
-									</h1>
+									<h5>
+										{% for curr in currents %}
+												{% for curlist in curr %}
+													{% if curlist.balance_holder_id_id == holder.id %}
+														{% if curlist.holder_current_balance %}
+															<option>
+																{{ curlist.name }} - {{ curlist.holder_current_balance|numb_format }}
+															</option>
+														{% endif %}
+													{% endif %}
+												{% endfor %}
+										{% endfor %}
+									</h5>
 									{{ holder.organization_holder }}
 									<span data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="Нажмите для получения детальной информации">
 										<button type="button" class="btn btn-sm ms-1 holders_id" id="{{ holder.id }}" data-holder-name="{{ holder.organization_holder }}">
@@ -71,13 +81,35 @@
 						</div>
 
 						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Входящие транзакции - {{ all_coming|numb_format }}</div>
-							<div id="ChartStatsPartIncome"></div>
+							<div class="h3 text-center">
+								Входящие транзакции:
+							</div>
+							{% for key in all_coming %}
+								{% for i, k in key.items %}
+									{% if k %}
+										<div class="h3 text-center">
+											{{ i }} - {{ k|sum_calculate|numb_format }}
+										</div>
+										<div id="ChartStatsPartIncome{{ i }}"></div>
+									{% endif %}
+								{% endfor %}
+							{% endfor %}
 						</div>
 
 						<div class="col-12 col-md-6 mainInformation">
-							<div class="h3 text-center">Исходящие транзакции - {{ all_expenditure|numb_format }}</div>
-							<div id="ChartStatsPartExpenditure"></div>
+							<div class="h3 text-center">
+								Исходящие транзакции:
+							</div>
+							{% for key in all_expenditure %}
+								{% for i, k in key.items %}
+									{% if k %}
+										<div class="h3 text-center">
+											{{ i }} - {{ k|sum_calculate|numb_format }}
+										</div>
+										<div id="ChartStatsPartExpenditure{{ i }}"></div>
+									{% endif %}
+								{% endfor %}
+							{% endfor %}
 						</div>
 
 					</div>
@@ -177,7 +209,7 @@
 							<input class="form-control" autocomplete="off" onfocus="this.value=''" list="list_pay" name="type_payment" id="type_payment" placeholder="Категория" required/>
 							<datalist id="list_pay">
 								{% for type in type_payments %}
-								<option value="{{ type }}">{{ type }}</option>
+									<option value="{{ type }}">{{ type }}</option>
 								{% endfor %}
 							</datalist>
 
@@ -287,13 +319,28 @@
 
 	<script>
 
-		var profit_sum = {{ profit_coming|safe }};
-		var label_comming = {{ label_coming|safe }};
+		var coming_array = {{ all_coming|safe }};
 
-		if (profit_sum){
+		var all_currents = {{ all_currents|safe }};
+
+		coming_array.forEach(function(item, index, array){
+			var label_object = Object.getOwnPropertyNames(item)[0];
+			var comming_array = item[label_object];
+
+			var lables = [];
+			var coming_sum = [];
+			if(comming_array.length > 1){
+				for(let i=0; comming_array.length > i; i++){
+					lables.push(comming_array[i].type);
+					coming_sum.push(+comming_array[i].coming);
+				}
+			}else{
+				lables.push(comming_array[0].type);
+				coming_sum.push(+comming_array[0].coming);
+			}
 			var option_comming = {
-				series: profit_sum,
-				labels: label_comming,
+				series: coming_sum,
+				labels: lables,
 				chart: {
 					type: 'donut',
 				},
@@ -319,18 +366,31 @@
 					}
 				}
 			};
-
-			var chart_comming = new ApexCharts(document.querySelector("#ChartStatsPartIncome"), option_comming);
+			var chart_comming = new ApexCharts(document.querySelector(`#ChartStatsPartIncome${label_object}`), option_comming);
 			chart_comming.render();
-		}
+		});
 
-		var expenditure_sum = {{ profit_expenditure|safe }}
-		var expenditure_label = {{ label_expenditure|safe }}
+		var expenditure_sum = {{ all_expenditure|safe }}
 
-		if(expenditure_sum){
+		expenditure_sum.forEach(function(item, index, array){
+			var label_object = Object.getOwnPropertyNames(item)[0];
+			var comming_array = item[label_object];
+
+			var lables = [];
+			var coming_sum = [];
+			if(comming_array.length > 1){
+				for(let i=0; comming_array.length > i; i++){
+					lables.push(comming_array[i].type);
+					coming_sum.push(+comming_array[i].coming);
+				}
+			}else{
+				lables.push(comming_array[0].type);
+				coming_sum.push(+comming_array[0].coming);
+			}
+			
 			var option_expenditure = {
-				series: expenditure_sum,
-				labels: expenditure_label,
+				series: coming_sum,
+				labels: lables,
 				chart: {
 					type: 'donut',
 				},
@@ -356,10 +416,10 @@
 					}
 				}
 			}
-			var chart_expenditure = new ApexCharts(document.querySelector("#ChartStatsPartExpenditure"), option_expenditure);
+			var chart_expenditure = new ApexCharts(document.querySelector(`#ChartStatsPartExpenditure${label_object}`), option_expenditure);
 			chart_expenditure.render();
-		}
-
+		})
+		
 	</script>
 
 	<script>

@@ -12,7 +12,10 @@ def numb_format(balance):
         return '{0:,}'.format(balance).replace(',', ' ').replace('.', ',')
 
 
-def get_all_coming_transactions_sum(pk, simpleuser=None, holder=None):
+# готов
+def get_sum_transactions(pk, current=None, type_transaction=None, simpleuser=None, holder=None):
+    '''Функция возвращает сумму всех успешных транзакций в
+    зависимости от направления транзакции и валюты'''
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -41,15 +44,12 @@ def get_all_coming_transactions_sum(pk, simpleuser=None, holder=None):
                 SUM(`amount`) as `coming`,
                 (SELECT `pt`.`pay_type` FROM `mainapp_paytype` pt WHERE `pt`.`id` = `t`.`type_payment_id`) as `type`
             FROM `mainapp_transaction` t 
-            JOIN 
-                `mainapp_balanceholder` mb
-            ON 
-                `t`.`balance_holder_id`=`mb`.`id`
+            JOIN `mainapp_balanceholder` mb
+            ON `t`.`balance_holder_id`=`mb`.`id`
             WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
-            AND 
-                `t`.`status`="SUCCESSFULLY" 
-            AND 
-                `t`.`type_transaction`="COMING"
+            AND `t`.`current_id_id`=(SELECT `mcc`.`id` FROM `mainapp_current` mcc WHERE `mcc`.`current_name`='{current}')
+            AND `t`.`status`="SUCCESSFULLY" 
+            AND `t`.`type_transaction`='{type_transaction}'
                 {allow_data_user}
             AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
             GROUP BY `t`.`type_payment_id`
@@ -62,55 +62,7 @@ def get_all_coming_transactions_sum(pk, simpleuser=None, holder=None):
     return response
 
 
-def get_all_expenditure_transactions_sum(pk, simpleuser=None, holder=None):
-    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
-                           user=settings.DATABASES.get('default').get('USER'),
-                           password=settings.DATABASES.get('default').get('PASSWORD'),
-                           db=settings.DATABASES.get('default').get('NAME'),
-                           port=int(settings.DATABASES.get('default').get('PORT')),
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-    try:
-        allow_data_user = ''
-        if simpleuser:
-            allow_data_user = f'''
-                AND `t`.`balance_holder_id` IN 
-                    (
-                        SELECT `mah`.`balanceholder_id` 
-                        FROM `mainapp_customuser_available_holders` mah 
-                        WHERE `mah`.`customuser_id`={pk}
-                    )
-                '''
-        if holder:
-            allow_data_user += f'''
-                AND `t`.`balance_holder_id`={holder}
-            '''
-        with conn.cursor() as cursor:
-            response = f'''
-                SELECT SUM(`amount`) as `expenditure`,
-                (SELECT `pt`.`pay_type` FROM `mainapp_paytype` pt WHERE `pt`.`id` = `t`.`type_payment_id`) as `type`
-                FROM `mainapp_transaction` t 
-                JOIN 
-                    `mainapp_balanceholder` mb
-                ON 
-                    `t`.`balance_holder_id`=`mb`.`id`
-                WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
-                AND 
-                    `t`.`status`="SUCCESSFULLY" 
-                AND 
-                    `t`.`type_transaction`="EXPENDITURE"
-                AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
-                {allow_data_user}
-                GROUP BY `t`.`type_payment_id`
-            '''
-            cursor.execute(response)
-            response = cursor.fetchall()
-    finally:
-        conn.close()
-
-    return response
-
-
+# готов
 def get_allow_balance_holders(pk, simple_user=True):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
@@ -133,7 +85,6 @@ def get_allow_balance_holders(pk, simple_user=True):
                         `mb`.`id`,
                         `mb`.`organization_holder`,
                         `mb`.`alias_holder`,
-                        `mb`.`holder_balance`,
                         `mb`.`payment_account`,
                         `mb`.`account_type`,
                         `mb`.`hidden_status`,
@@ -153,6 +104,7 @@ def get_allow_balance_holders(pk, simple_user=True):
     return response
 
 
+# предварительно готов
 def get_allow_and_hide_balance_holders(pk, simple_user=True):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
@@ -175,7 +127,6 @@ def get_allow_and_hide_balance_holders(pk, simple_user=True):
                         `mb`.`id`,
                         `mb`.`organization_holder`,
                         `mb`.`alias_holder`,
-                        `mb`.`holder_balance`,
                         `mb`.`payment_account`,
                         `mb`.`account_type`,
                         `mb`.`hidden_status`
@@ -269,9 +220,7 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                             (SELECT `sb`.`sub_type` FROM `mainapp_subpaytype` sb WHERE `sb`.`id`=`mt`.`sub_type_pay_id`) as sub_type_pay_id,
                             `mt`.`status`,
                             `mt`.`check_img`,
-                            `mt`.`current_transaction`,
-                            `mt`.`current_sum`,
-                            `mt`.`current_amount`,
+                            (SELECT `mcc`.`current_name` FROM mainapp_current mcc WHERE `mt`.`current_id_id`=`mcc`.`id`) as 'current_transaction',
                             `mt`.`description`
                         FROM `mainapp_transaction` mt
                         JOIN 
@@ -625,7 +574,131 @@ def get_for_bdr_transaction(filter_data):
     return response
 
 
+def get_current_balance_balance_holders(balance_holder_id=None):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                SELECT 
+                    (SELECT `mcc`.`current_name` FROM `mainapp_current` mcc WHERE `mc`.`current_id_id`=`mcc`.`id` ) as 'name',
+                    `mc`.`balance_holder_id_id`,
+                    `mc`.`holder_current_balance`
+                FROM `mainapp_currentbalanceholderbalance` mc
+                WHERE `mc`.`balance_holder_id_id`={balance_holder_id}
+                AND `mc`.`holder_current_balance`!=0
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
 
+    return response
+
+
+def get_currents():
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                SELECT 
+                    `mc`.`id`,
+                    `mc`.`current_name`
+                FROM `mainapp_current` mc
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+def get_currents_holder(balance_holder_id=None):
+    conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+                           user=settings.DATABASES.get('default').get('USER'),
+                           password=settings.DATABASES.get('default').get('PASSWORD'),
+                           db=settings.DATABASES.get('default').get('NAME'),
+                           port=int(settings.DATABASES.get('default').get('PORT')),
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with conn.cursor() as cursor:
+            response = f'''
+                SELECT 
+                    `mc`.`balance_holder_id_id`,
+                    `mc`.`current_id_id`
+                FROM `mainapp_currentbalanceholderbalance` mc
+                WHERE `mc`.`balance_holder_id_id`={balance_holder_id}
+            '''
+            cursor.execute(response)
+            response = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return response
+
+
+# def get_all_expenditure_transactions_sum(pk, simpleuser=None, holder=None):
+#     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
+#                            user=settings.DATABASES.get('default').get('USER'),
+#                            password=settings.DATABASES.get('default').get('PASSWORD'),
+#                            db=settings.DATABASES.get('default').get('NAME'),
+#                            port=int(settings.DATABASES.get('default').get('PORT')),
+#                            charset='utf8mb4',
+#                            cursorclass=pymysql.cursors.DictCursor)
+#     try:
+#         allow_data_user = ''
+#         if simpleuser:
+#             allow_data_user = f'''
+#                 AND `t`.`balance_holder_id` IN
+#                     (
+#                         SELECT `mah`.`balanceholder_id`
+#                         FROM `mainapp_customuser_available_holders` mah
+#                         WHERE `mah`.`customuser_id`={pk}
+#                     )
+#                 '''
+#         if holder:
+#             allow_data_user += f'''
+#                 AND `t`.`balance_holder_id`={holder}
+#             '''
+#         with conn.cursor() as cursor:
+#             response = f'''
+#                 SELECT SUM(`amount`) as `expenditure`,
+#                 (SELECT `pt`.`pay_type` FROM `mainapp_paytype` pt WHERE `pt`.`id` = `t`.`type_payment_id`) as `type`
+#                 FROM `mainapp_transaction` t
+#                 JOIN
+#                     `mainapp_balanceholder` mb
+#                 ON
+#                     `t`.`balance_holder_id`=`mb`.`id`
+#                 WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+#                 AND
+#                     `t`.`status`="SUCCESSFULLY"
+#                 AND
+#                     `t`.`type_transaction`="EXPENDITURE"
+#                 AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
+#                 {allow_data_user}
+#                 GROUP BY `t`.`type_payment_id`
+#             '''
+#             cursor.execute(response)
+#             response = cursor.fetchall()
+#     finally:
+#         conn.close()
+#
+#     return response
+#
+#
 # def filtered_transactions():
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),
@@ -648,7 +721,7 @@ def get_for_bdr_transaction(filter_data):
 #         conn.close()
 #
 #     return response
-
+#
 # def get_allow_transaction(pk):
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),
@@ -685,8 +758,7 @@ def get_for_bdr_transaction(filter_data):
 #
 #     return response
 #
-
-
+#
 # def get_allow_transactions_by_balance_holder(pk, superuser_role=False):
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),
@@ -721,7 +793,7 @@ def get_for_bdr_transaction(filter_data):
 #
 #     return response
 #
-
+#
 # def get_all_transactions_by_holder(pk):
 #
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
@@ -761,19 +833,19 @@ def get_for_bdr_transaction(filter_data):
 #
 #     return response
 #
-'''
-SELECT
-    `mb`.`id`,
-    `mb`.`organization_holder`,
-    `mb`.`alias_holder`,
-    `mb`.`holder_balance`,
-    `mb`.`payment_account`,
-    `mb`.`hidden_status`
-FROM `mainapp_balanceholder` mb
-WHERE 
-    IF(`mb`.`hidden_status` = 1, `mb`.`hidden_status` = 1 AND (1 IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
-ORDER BY `mb`.`id` DESC
-'''
+# '''
+# SELECT
+#     `mb`.`id`,
+#     `mb`.`organization_holder`,
+#     `mb`.`alias_holder`,
+#     `mb`.`holder_balance`,
+#     `mb`.`payment_account`,
+#     `mb`.`hidden_status`
+# FROM `mainapp_balanceholder` mb
+# WHERE
+#     IF(`mb`.`hidden_status` = 1, `mb`.`hidden_status` = 1 AND (1 IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
+# ORDER BY `mb`.`id` DESC
+# '''
 # def get_coming_sum(pk):
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),
@@ -800,8 +872,6 @@ ORDER BY `mb`.`id` DESC
 #         conn.close()
 #
 #     return response
-
-
 # def get_expenditure_sum(pk):
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),
@@ -819,8 +889,6 @@ ORDER BY `mb`.`id` DESC
 #         conn.close()
 #
 #     return response
-
-
 # def get_all_transactions():
 #     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
 #                            user=settings.DATABASES.get('default').get('USER'),

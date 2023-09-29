@@ -66,6 +66,19 @@
 									<label for="alias_holder">Псевдоним реквизита</label>
 									<input autocomplete="off" class="obligatory form-control" name="alias_holder" id="alias_holder" placeholder="Tinkoff"/>
 								</div>
+
+								<div class="col-12 col-sm-3 mb-3">
+									
+									<span data-bs-toggle="tooltip" data-bs-title="Для выбора нескольких зажмите Ctrl">
+										<label for="current">Выберите курсы валют:</label>
+									</span>
+									<select class="form-select" aria-label="multiple select example" name="current" id="current" multiple>
+										{% for i in all_currents_dict %}
+											<option value="{{ i.id }}">{{ i.current_name }}</option>
+										{% endfor %}
+									</select>
+
+								</div>
 								
 								{% if user.is_superuser %}
 									<div class="hide_holder_div col-12 col-sm-3 mb-3" hidden>

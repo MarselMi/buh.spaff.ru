@@ -3,7 +3,9 @@ import decimal
 from spaffaccaunting.celery import app
 from datetime import datetime as dt
 import datetime
-from mainapp.models import ImportData, BalanceHolder, Transaction, PayType, SubPayType
+from mainapp.models import (
+    Current, ImportData, BalanceHolder, Transaction, PayType, CurrentBalanceHolderBalance, SubPayType,
+)
 import requests
 import json
 from decimal import Decimal
@@ -13,7 +15,6 @@ from decimal import Decimal
 def import_transactions():
     objects_active = ImportData.objects.filter(status_import=True)
     for obj in objects_active:
-        user_id = int(obj.author)
         balance_holder = BalanceHolder.objects.filter(organization_holder=obj.balance_holder)
         if obj.bank == 'tinkoff':
             date_start = obj.date_start.strftime('%Y-%m-%d')
@@ -81,26 +82,33 @@ def import_transactions():
                         transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d').date()
                         amount = Decimal(transaction.get('amount'))
                         description = transaction.get('paymentPurpose')
+
+                        current = Current.objects.filter(current_name="RUR")[0]
+                        current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                            current_id=current,
+                            balance_holder_id=balance_holder[0]
+                        )
+                        old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                        old_balance_balance_holder -= decimal.Decimal(amount)
+                        current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
                         if sub_type:
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
-                                'import_id': import_id, 'type_payment': pay_type[0], 'sub_type_pay': sub_type[0]
+                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
+                                'sub_type_pay': sub_type[0], 'current_id': current,
                             }
                         else:
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
-                                'import_id': import_id, 'type_payment': pay_type[0]
+                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
+                                'current_id': current,
                             }
-
                         transaction_new.objects.create(**new_data)
-
-                        old_balance_balance_holder = balance_holder[0].holder_balance
-                        old_balance_balance_holder -= amount
-                        balance_holder.update(holder_balance=old_balance_balance_holder)
                     else:
                         type_transaction = 'COMING'
                         import_id = transaction.get('operationId')
@@ -109,32 +117,52 @@ def import_transactions():
                         transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d').date()
                         amount = Decimal(transaction.get('amount'))
                         description = transaction.get('paymentPurpose')
+
+                        current = Current.objects.filter(current_name="RUR")[0]
+                        current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                            current_id=current,
+                            balance_holder_id=balance_holder[0]
+                        )
+                        old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                        old_balance_balance_holder += decimal.Decimal(amount)
+                        current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
                         if sub_type:
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
-                                'import_id': import_id, 'type_payment': pay_type[0], 'sub_type_pay': sub_type[0]
+                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
+                                'sub_type_pay': sub_type[0], 'current_id': current,
                             }
                         else:
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': user_id, 'transaction_sum': amount,
-                                'import_id': import_id, 'type_payment': pay_type[0]
+                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
+                                'current_id': current,
                             }
                         transaction_new.objects.create(**new_data)
-
-                        old_balance_balance_holder = balance_holder[0].holder_balance
-
-                        old_balance_balance_holder += amount
-                        balance_holder.update(holder_balance=old_balance_balance_holder)
                 else:
                     pass
-        elif obj.bank == 'capitalist':
+        if obj.bank.lower() == 'capitalist':
+            our_correspondent = [
+                'U12650092',
+                'E12650094',
+                'R12650090',
+                'B12650096',
+                'H12650100',
+                'T12650098',
+                'W13217740000',
+                'Y12650102',
+                'I12650104',
+            ]
             date_start = obj.date_start.strftime('%d.%m.%Y')
             if obj.repyt_start_date:
                 date_start = obj.repyt_start_date.strftime('%d.%m.%Y')
+
+            '''Авторизация и получение токена'''
             password = obj.key
             login = obj.account
             token_request = (requests.post(
@@ -145,26 +173,7 @@ def import_transactions():
 
             token = json.loads(token_request.content).get('data').get('token')
 
-            currency_rates_req = json.loads(requests.post(
-                'https://api.capitalist.net/',
-                json={"operation": "currency_rates", "login": login, "token": token, "plain_password": password},
-                headers={"x-response-format": "json"}
-            ).content).get('data').get('rates')
-            currency_btc = 0
-            currency_usd = 0
-            currency_eur = 0
-            currency_eth_usd = 0
-            for i in currency_rates_req.get('sell'):
-                if i.get('target') == 'BTC' and i.get('amountCur') == 'RUR':
-                    currency_btc = i.get('amount')
-                if i.get('target') == 'USD' and i.get('amountCur') == 'RUR':
-                    currency_usd = i.get('amount')
-                if i.get('target') == 'EUR' and i.get('amountCur') == 'RUR':
-                    currency_eur = i.get('amount')
-                if i.get('target') == 'ETH' and i.get('amountCur') == 'USD':
-                    currency_eth_usd = i.get('amount')
-            currency_eth = currency_eth_usd * currency_usd
-
+            '''Запрос на историю транзакций'''
             transactions_history = requests.post(
                 'https://api.capitalist.net/',
                 json={
@@ -178,118 +187,83 @@ def import_transactions():
                 },
                 headers={"x-response-format": "json"}
             )
-
+            '''Проверяю сколько страниц в ответе'''
             page_count = int(json.loads(transactions_history.content).get('data').get('pages').get('pageCount'))
+
             if page_count == 1:
                 transactions = json.loads(transactions_history.content).get('data').get('history')
                 for i in transactions:
                     if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
-                        old_balance_balance_holder = balance_holder[0].holder_balance
+
                         new_transa = Transaction
-                        if i.get('outgoing') and i.get('selfExchange') is False:
+
+                        if i.get('outgoing'):
                             type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
                             tr_comis = i.get('tax')
-                            current = None
-                            current_sum = None
-                            if 'H' in i.get('account'):
-                                current_sum = i.get('amount')
-                                current = 'ETH'
-                                tr_comis *= currency_eth
-                                tr_sum = i.get('amount') * currency_eth
-                                amount = tr_sum + tr_comis
-                            elif 'U' in i.get('account')[0]:
-                                current_sum = i.get('amount')
-                                current = 'USD'
-                                tr_comis *= currency_usd
-                                tr_sum = i.get('amount') * currency_usd
-                                amount = tr_sum + tr_comis
-                            elif i.get('account')[0] in ['T', 'Y', 'W']:
-                                current_sum = i.get('amount')
-                                current = 'USDT'
-                                tr_comis *= currency_usd
-                                tr_sum = i.get('amount') * currency_usd
-                                amount = tr_sum + tr_comis
-                            elif 'E' in i.get('account'):
-                                current_sum = i.get('amount')
-                                current = 'EUR'
-                                tr_comis *= currency_eur
-                                tr_sum = i.get('amount') * currency_eur
-                                amount = tr_sum + tr_comis
-                            elif 'B' in i.get('account'):
-                                current_sum = i.get('amount')
-                                current = 'BTC'
-                                tr_comis *= currency_btc
-                                tr_sum = i.get('amount') * currency_btc
-                                amount = tr_sum + tr_comis
-                            else:
-                                tr_sum = i.get('amount')
-                                amount = tr_sum + tr_comis
+                            tr_sum = i.get('amount')
+                            amount = tr_sum + tr_comis
+                            current = Current.objects.filter(current_name=i.get('currency'))[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder -= decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
                             new_data = {
                                 'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                 'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
                                 'description': i.get('description'), 'balance_holder': balance_holder[0],
                                 'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
                                 'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
-                                'commission': tr_comis, 'current_transaction': current, 'current_sum': current_sum,
-                                'current_amount': i.get('amount') + i.get('tax')
+                                'commission': tr_comis, 'current_id': current,
                             }
                             new_transa.objects.create(**new_data)
-                            old_balance_balance_holder -= decimal.Decimal(amount)
-                            balance_holder.update(holder_balance=old_balance_balance_holder)
-                        elif i.get('outgoing') is False and i.get('selfExchange') is False:
+                        else:
                             type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                            current = None
-                            current_sum = None
-                            if 'H' in i.get('account'):
-                                current_sum = i.get('amount')
-                                current = 'ETH'
-                                tr_com = i.get('tax') * currency_eth
-                                tr_sum = i.get('amount') * currency_eth
-                                amount = tr_sum - tr_com
-                            elif 'U' in i.get('account'):
-                                current_sum = i.get('amount')
-                                current = 'USD'
-                                tr_com = i.get('tax') * currency_usd
-                                tr_sum = i.get('amount') * currency_usd
-                                amount = tr_sum - tr_com
-                            elif i.get('account')[0] in ['T', 'Y', 'W']:
-                                current_sum = i.get('amount')
-                                current = 'USDT'
-                                tr_com = i.get('tax') * currency_usd
-                                tr_sum = i.get('amount') * currency_usd
-                                amount = tr_sum - tr_com
-                            elif 'E' in i.get('account'):
-                                current_sum = i.get('amount')
-                                current = 'EUR'
-                                tr_com = i.get('tax') * currency_eur
-                                tr_sum = i.get('amount') * currency_eur
-                                amount = tr_sum - tr_com
-                            elif 'B' in i.get('account'):
-                                current_sum = i.get('amount')
-                                current = 'BTC'
-                                tr_com = i.get('tax') * currency_btc
-                                tr_sum = current_sum * currency_btc
-                                amount = tr_sum - tr_com
-                            else:
-                                tr_com = i.get('tax')
-                                tr_sum = i.get('amount')
-                                amount = tr_sum - tr_com
+                            tr_com = i.get('tax')
+                            tr_sum = i.get('amount')
+                            amount = tr_sum - tr_com
+                            current = Current.objects.filter(current_name=i.get('currency'))[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder += decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
                             new_data = {
                                 'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                 'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
                                 'description': i.get('description'), 'balance_holder': balance_holder[0],
                                 'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
                                 'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
-                                'commission': tr_com, 'current_transaction': current, 'current_sum': current_sum,
-                                'current_amount': i.get('amount') - i.get('tax')
+                                'commission': tr_com, 'current_id': current,
                             }
                             new_transa.objects.create(**new_data)
+                        '''Входящие внутренние транзакции'''
+                        if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
+                            type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
+                            tr_com = i.get('tax')
+                            tr_sum = amount = i.get('destAmount')
+                            current = Current.objects.filter(current_name=i.get('destCurrency'))[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
                             old_balance_balance_holder += decimal.Decimal(amount)
-                            balance_holder.update(holder_balance=old_balance_balance_holder)
-                        else:
-                            pass
-                    else:
-                        pass
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                            new_data = {
+                                'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
+                                'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
+                                'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
+                                'type_payment': type_payment, 'current_id': current,
+                            }
+                            new_transa.objects.create(**new_data)
             else:
                 for page in range(page_count):
                     transactions_req = requests.post(
@@ -309,116 +283,81 @@ def import_transactions():
                     transactions = json.loads(transactions_req.content).get('data').get('history')
                     for i in transactions:
                         if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
-                            old_balance_balance_holder = balance_holder[0].holder_balance
-                            new_transa = Transaction
-                            if i.get('outgoing') and i.get('selfExchange') is False:
-                                type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
-                                tr_comis = 0
-                                current = None
-                                current_sum = None
-                                if i.get('tax'):
-                                    tr_comis = i.get('tax')
 
-                                if 'H' in i.get('account'):
-                                    current = 'ETH'
-                                    current_sum = i.get('amount')
-                                    tr_comis = tr_comis * currency_eth
-                                    tr_sum = i.get('amount') * currency_eth
-                                    amount = tr_sum + tr_comis
-                                elif 'U' in i.get('account'):
-                                    current = 'USD'
-                                    current_sum = i.get('amount')
-                                    tr_comis = tr_comis * currency_usd
-                                    tr_sum = i.get('amount') * currency_usd
-                                    amount = tr_sum + tr_comis
-                                elif i.get('account')[0] in ['T', 'Y', 'W']:
-                                    current = 'USDT'
-                                    current_sum = i.get('amount')
-                                    tr_comis = tr_comis * currency_usd
-                                    tr_sum = i.get('amount') * currency_usd
-                                    amount = tr_sum + tr_comis
-                                elif 'E' in i.get('account'):
-                                    current = 'EUR'
-                                    current_sum = i.get('amount')
-                                    tr_comis = tr_comis * currency_eur
-                                    tr_sum = i.get('amount') * currency_eur
-                                    amount = tr_sum + tr_comis
-                                elif 'B' in i.get('account'):
-                                    current = 'BTC'
-                                    current_sum = i.get('amount')
-                                    tr_comis *= currency_btc
-                                    tr_sum = current_sum * currency_btc
-                                    amount = tr_sum + tr_comis
-                                else:
-                                    tr_sum = i.get('amount')
-                                    amount = tr_sum + tr_comis
+                            new_transa = Transaction
+
+                            if i.get('outgoing'):
+                                '''Исходящие транзакции'''
+                                type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
+                                tr_comis = i.get('tax')
+                                tr_sum = i.get('amount')
+                                amount = tr_sum + tr_comis
+                                current = Current.objects.filter(current_name=i.get('currency'))[0]
+                                current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                    current_id=current,
+                                    balance_holder_id=balance_holder[0]
+                                )
+                                old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                                old_balance_balance_holder -= decimal.Decimal(amount)
+                                current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
                                 new_data = {
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                     'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
-                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
-                                    'commission': tr_comis, 'current_transaction': current,
-                                    'current_sum': current_sum, 'current_amount': i.get('amount') + i.get('tax')
+                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_comis,
+                                    'type_payment': type_payment, 'current_id': current,
                                 }
                                 new_transa.objects.create(**new_data)
-                                old_balance_balance_holder -= decimal.Decimal(amount)
-                                balance_holder.update(holder_balance=old_balance_balance_holder)
-                            elif i.get('outgoing') is False and i.get('selfExchange') is False:
+                            else:
+                                '''Входящие транзакции'''
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                                current = None
-                                current_sum = None
                                 tr_com = i.get('tax')
-                                if 'H' in i.get('account'):
-                                    current = 'ETH'
-                                    current_sum = i.get('amount')
-                                    tr_com = i.get('tax') * currency_eth
-                                    tr_sum = i.get('amount') * currency_eth
-                                    amount = tr_sum - tr_com
-                                elif 'U' in i.get('account'):
-                                    current = 'USD'
-                                    current_sum = i.get('amount')
-                                    tr_com = i.get('tax') * currency_usd
-                                    tr_sum = i.get('amount') * currency_usd
-                                    amount = tr_sum - tr_com
-                                elif i.get('account')[0] in ['T', 'Y', 'W']:
-                                    current = 'USDT'
-                                    current_sum = i.get('amount')
-                                    tr_com = i.get('tax') * currency_usd
-                                    tr_sum = i.get('amount') * currency_usd
-                                    amount = tr_sum - tr_com
-                                elif 'E' in i.get('account'):
-                                    current = 'EUR'
-                                    current_sum = i.get('amount')
-                                    tr_com = i.get('tax') * currency_eur
-                                    tr_sum = i.get('amount') * currency_eur
-                                    amount = tr_sum - tr_com
-                                elif 'B' in i.get('account'):
-                                    current_sum = i.get('amount')
-                                    current = 'BTC'
-                                    tr_sum = current_sum * currency_btc
-                                    amount = tr_sum
-                                else:
-                                    tr_com = i.get('tax')
-                                    tr_sum = i.get('amount')
-                                    amount = tr_sum - tr_com
+                                tr_sum = i.get('amount')
+                                amount = tr_sum - tr_com
+                                current = Current.objects.filter(current_name=i.get('currency'))[0]
+                                current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                    current_id=current,
+                                    balance_holder_id=balance_holder[0]
+                                )
+                                old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                                old_balance_balance_holder += decimal.Decimal(amount)
+                                current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
                                 new_data = {
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                     'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
-                                    'transaction_sum': tr_sum, 'import_id': i.get('id'),
-                                    'type_payment': type_payment, 'commission': tr_com,
-                                    'current_transaction': current, 'current_sum': current_sum,
-                                    'current_amount': i.get('amount') - i.get('tax')
+                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
+                                    'type_payment': type_payment, 'current_id': current,
                                 }
                                 new_transa.objects.create(**new_data)
+                            if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
+                                '''Входящие внутренние транзакции'''
+                                type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
+                                tr_com = i.get('tax')
+                                tr_sum = amount = i.get('destAmount')
+                                current = Current.objects.filter(current_name=i.get('destCurrency'))[0]
+                                current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                    current_id=current,
+                                    balance_holder_id=balance_holder[0]
+                                )
+                                old_balance_balance_holder = current_balance_holder[0].holder_current_balance
                                 old_balance_balance_holder += decimal.Decimal(amount)
-                                balance_holder.update(holder_balance=old_balance_balance_holder)
-                            else:
-                                pass
-                        else:
-                            pass
+                                current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                                new_data = {
+                                    'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
+                                    'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
+                                    'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
+                                    'type_payment': type_payment, 'current_id': current,
+                                }
+                                new_transa.objects.create(**new_data)
+
         new_start = dt.now().date() - datetime.timedelta(days=1)
         import_object = ImportData.objects.filter(bank=obj.bank)
         import_object.update(repyt_start_date=new_start)
