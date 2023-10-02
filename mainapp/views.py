@@ -34,7 +34,7 @@ def main_page_view(request):
         for i in get_currents():
             if get_sum_transactions(pk=request.user.id,
                                     current=i.get('current_name'),
-                                    type_transaction="EXPENDITURE",
+                                    type_transaction="COMING",
                                     simpleuser=False):
                 all_currents.append(i.get('current_name'))
                 curr_dict.get('coming').append(
@@ -73,7 +73,7 @@ def main_page_view(request):
             all_currents.append(i.get('current_name'))
             if get_sum_transactions(pk=request.user.id,
                                     current=i.get('current_name'),
-                                    type_transaction="EXPENDITURE",
+                                    type_transaction="COMING",
                                     simpleuser=True):
                 all_currents.append(i.get('current_name'))
                 curr_dict.get('coming').append(
@@ -102,26 +102,7 @@ def main_page_view(request):
                     }
                 )
 
-    type_payments = PayType.objects.all()
-
-    all_coming = curr_dict.get('coming')
-    all_expenditure = curr_dict.get('executed')
-
-    for i in all_coming:
-        for key, val in i.items():
-            try:
-                for v in val:
-                    v['coming'] = float(v.get('coming'))
-            except:
-                del key
-
-    for i in all_expenditure:
-        for key, val in i.items():
-            try:
-                for v in val:
-                    v['coming'] = float(v.get('coming'))
-            except:
-                del key
+    all_currents = list(set(all_currents))
 
     if request.method == 'POST':
 
@@ -203,37 +184,94 @@ def main_page_view(request):
 
         if request.POST.get('type') == 'holder':
             holder_id = request.POST.get('id')
-            holder_transaction_coming = get_sum_transactions(pk=request.user.id, holder=holder_id)
-            holder_transaction_expenditure = get_sum_transactions(pk=request.user.id, holder=holder_id)
+            curr_dict = {
+                'coming': [],
+                'executed': []
+            }
+            for i in get_currents():
+                all_currents.append(i.get('current_name'))
+                if get_sum_transactions(pk=request.user.id,
+                                        current=i.get('current_name'),
+                                        type_transaction="COMING",
+                                        holder=holder_id,
+                                        simpleuser=False):
+                    curr_dict.get('coming').append(
+                        {
+                            i.get('current_name'): get_sum_transactions(
+                                pk=request.user.id,
+                                current=i.get('current_name'),
+                                type_transaction="COMING",
+                                holder=holder_id,
+                                simpleuser=False
+                            )
+                        }
+                    )
+                if get_sum_transactions(pk=request.user.id,
+                                        current=i.get('current_name'),
+                                        type_transaction="EXPENDITURE",
+                                        holder=holder_id,
+                                        simpleuser=False):
+                    curr_dict.get('executed').append(
+                        {
+                            i.get('current_name'): get_sum_transactions(
+                                pk=request.user.id,
+                                current=i.get('current_name'),
+                                type_transaction="EXPENDITURE",
+                                holder=holder_id,
+                                simpleuser=False
+                            )
+                        }
+                    )
 
-            holder_label_expenditure = []
-            holder_profit_expenditure = []
-            holder_label_coming = []
-            holder_profit_coming = []
+            all_coming = curr_dict.get('coming')
+            all_expenditure = curr_dict.get('executed')
 
-            for i in holder_transaction_coming:
-                holder_label_coming.append(i['type'])
-                holder_profit_coming.append(float(i['coming']))
+            for i in all_coming:
+                for key, val in i.items():
+                    try:
+                        for v in val:
+                            v['coming'] = float(v.get('coming'))
+                    except:
+                        del key
 
-            for i in holder_transaction_expenditure:
-                holder_label_expenditure.append(i['type'])
-                holder_profit_expenditure.append(float(i['expenditure']))
+            for i in all_expenditure:
+                for key, val in i.items():
+                    try:
+                        for v in val:
+                            v['coming'] = float(v.get('coming'))
+                    except:
+                        del key
 
             data = {
-                'holder_label_expenditure': holder_label_expenditure,
-                'holder_profit_expenditure': holder_profit_expenditure,
-                'holder_label_coming': holder_label_coming,
-                'holder_profit_coming': holder_profit_coming
+                'all_coming': all_coming, 'all_expenditure': all_expenditure, 'all_currents': all_currents
             }
 
             return HttpResponse(json.dumps(data))
-    all_currents = list(set(all_currents))
+
+    type_payments = PayType.objects.all()
+
+    all_coming = curr_dict.get('coming')
+    all_expenditure = curr_dict.get('executed')
+
+    for i in all_coming:
+        for key, val in i.items():
+            try:
+                for v in val:
+                    v['coming'] = float(v.get('coming'))
+            except:
+                del key
+
+    for i in all_expenditure:
+        for key, val in i.items():
+            try:
+                for v in val:
+                    v['coming'] = float(v.get('coming'))
+            except:
+                del key
 
     data = {
         'title': 'Главная страница', 'holders': holders, 'all_coming': all_coming, 'all_expenditure': all_expenditure,
         'type_payments': type_payments, 'currents': currents, 'all_currents': all_currents
-        # 'label_coming': label_coming, 'profit_coming': profit_coming, 'profit_expenditure': profit_expenditure,
-        # 'label_expenditure': label_expenditure
     }
 
     return render(request, 'mainapp/main-page.html', data)
@@ -339,12 +377,13 @@ def transaction_view(request):
                 order_by=request.POST.get('name')
             )
         for tr in transactions:
-            tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M')
+            tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y')
             tr['create_date_js_s'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M:%S')
             if tr.get('update_date'):
                 tr['update_date_js'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M')
                 tr['update_date_js_s'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M:%S')
-            tr['transaction_date_js'] = tr.get('transaction_date').strftime('%d.%m.%Y')
+            tr['transaction_date_js_s'] = tr.get('transaction_date').strftime('%d.%m.%Y в %H:%M:%S')
+            tr['transaction_date_js'] = tr.get('transaction_date').strftime('%d.%m.%Y в %H:%M')
             tr['transaction_sum_js'] = numb_format(tr.get('transaction_sum'))
             if tr.get('commission'):
                 tr['commission_js'] = numb_format(tr.get('commission'))
@@ -378,12 +417,13 @@ def transaction_view(request):
                 order_by=split_order_by
             )
         for tr in transactions:
-            tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M')
+            tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y')
             tr['create_date_js_s'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M:%S')
             if tr.get('update_date'):
                 tr['update_date_js'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M')
                 tr['update_date_js_s'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M:%S')
-            tr['transaction_date_js'] = tr.get('transaction_date').strftime('%d.%m.%Y')
+            tr['transaction_date_js_s'] = tr.get('transaction_date').strftime('%d.%m.%Y в %H:%M:%S')
+            tr['transaction_date_js'] = tr.get('transaction_date').strftime('%d.%m.%Y в %H:%M')
             tr['transaction_sum_js'] = numb_format(tr.get('transaction_sum'))
             if tr.get('commission'):
                 tr['commission_js'] = numb_format(tr.get('commission'))

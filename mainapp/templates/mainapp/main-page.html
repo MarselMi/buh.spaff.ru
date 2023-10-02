@@ -28,7 +28,7 @@
 													{% if curlist.balance_holder_id_id == holder.id %}
 														{% if curlist.holder_current_balance %}
 															<option>
-																{{ curlist.name }} - {{ curlist.holder_current_balance|numb_format }}
+																{{ curlist.name }}: {{ curlist.holder_current_balance|numb_format }}
 															</option>
 														{% endif %}
 													{% endif %}
@@ -88,7 +88,7 @@
 								{% for i, k in key.items %}
 									{% if k %}
 										<div class="h3 text-center">
-											{{ i }} - {{ k|sum_calculate|numb_format }}
+											{{ i }}: {{ k|sum_calculate|numb_format }}
 										</div>
 										<div id="ChartStatsPartIncome{{ i }}"></div>
 									{% endif %}
@@ -104,7 +104,7 @@
 								{% for i, k in key.items %}
 									{% if k %}
 										<div class="h3 text-center">
-											{{ i }} - {{ k|sum_calculate|numb_format }}
+											{{ i }}: {{ k|sum_calculate|numb_format }}
 										</div>
 										<div id="ChartStatsPartExpenditure{{ i }}"></div>
 									{% endif %}
@@ -423,6 +423,23 @@
 	</script>
 
 	<script>
+		var priceSet;
+
+		priceSet = function(data){
+			/*
+			* В переменной price приводим получаемую переменную в нужный вид:
+			* 1. принудительно приводим тип в число с плавающей точкой,
+			*    учли результат 'NAN' то по умолчанию 0
+			* 2. фиксируем, что после точки только в сотых долях
+			*/
+			var price       = Number.prototype.toFixed.call(parseFloat(data) || 0, 2),
+				//заменяем точку на запятую
+				price_sep   = price.replace(/(\D)/g, ","),
+				//добавляем пробел как разделитель в целых
+				price_sep   = price_sep.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
+
+			return price_sep;
+		};
 
 		var url = document.location.href;
 		var a = document.cookie.split(';');
@@ -434,7 +451,7 @@
 			if (b[0] == 'csrftoken') {
 				token = b[1];
 			}
-		}
+		};
 
 		var exampleModal = document.getElementById('exampleModal');
 
@@ -644,119 +661,182 @@
 						}
 					}).then(function(result){
 
-						function add(accumulator, a) {
-							return accumulator + a;
-						}
+						// function add(accumulator, a) {
+						// 	return accumulator + a;
+						// }
 
 						var graphElement = $('.holderGraph');
 						var result_el = JSON.parse(result);
 
-						var holder_label_coming = result_el.holder_label_coming;
-						var holder_profit_coming = result_el.holder_profit_coming;
-						var holder_label_expenditure = result_el.holder_label_expenditure;
-						var holder_profit_expenditure = result_el.holder_profit_expenditure;
-
-						var option__holder_comming = {
-							series: holder_profit_coming,
-							labels: holder_label_coming,
-							chart: {
-								type: 'donut',
-							},
-							legend: {
-								show: true,
-								position: 'top',
-							},
-							stroke: {
-								width: 4,
-								colors: ['#fff']
-							},
-							dataLabels: {
-								style: {
-									colors: ['#000000', '#000000', '#000000']
-								},
-								dropShadow: {
-									enabled: true,
-									top: 0,
-									left: 0,
-									blur: 1,
-									color: '#ffffff',
-									opacity: 70
-								}
-							}
-						};
-
-						var option__holder_expend = {
-							series: holder_profit_expenditure,
-							labels: holder_label_expenditure,
-							chart: {
-								type: 'donut',
-							},
-							legend: {
-								show: true,
-								position: 'top',
-							},
-							stroke: {
-								width: 4,
-								colors: ['#fff']
-							},
-							dataLabels: {
-								style: {
-									colors: ['#000000', '#000000', '#000000']
-								},
-								dropShadow: {
-									enabled: true,
-									top: 0,
-									left: 0,
-									blur: 1,
-									color: '#ffffff',
-									opacity: 70
-								}
-							}
-						};
+						var coming_array = result_el.all_coming;
+						var all_currents = result_el.all_currents;
+						var expenditure_sum = result_el.all_expenditure;
 
 						graphElement.empty();
-
-						var informationTable = `
-							<div class="h2 text-center">
-								Общая информация по балансодержателю - ${holders_id[i].getAttribute('data-holder-name')}
-							</div>`;
 						
-						var incom = `
-							<div class="col-12 col-md-6 mainInformation">
-								<div class="h3 text-center">Нет входящих транзакций</div>
-							</div>`;
-						if (holder_profit_coming.length){
-							let sumComming = holder_profit_coming.reduce(add, 0);
-							sumComming = parseFloat(sumComming).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1 ").replace('.', ',');
-							var incom = `
-								<div class="col-12 col-md-6 mainInformation">
-									<div class="h3 text-center">Входящие транзакции - ${sumComming}</div>
-									<div id="ChartStatsPartIncomeHolder"></div>
+						var informationTable = `
+								<div class="h2 text-center">
+									Общая информация по балансодержателю - ${holders_id[i].getAttribute('data-holder-name')}
 								</div>`;
+
+						var income = `
+						<div class="col-12 col-md-6 mainInformationIncome">
+							<div class="h3 text-center">
+								Входящие транзакции:
+							</div>
+						</div>`;
+
+						if(!coming_array.length){
+							income = `
+							<div class="col-12 col-md-6 mainInformationIncome">
+								<div class="h3 text-center">
+									Нет входящих транзакций
+								</div>
+							</div>`;
 						}
 
 						var expend = `
-							<div class="col-12 col-md-6 mainInformation">
-								<div class="h3 text-center">Нет исходящих транзакций</div>
+						<div class="col-12 col-md-6 mainInformationExpend">
+							<div class="h3 text-center">
+								Исходящие транзакции:
+							</div>
+						</div>`;
+						if(!expenditure_sum.length){
+							expend = `
+							<div class="col-12 col-md-6 mainInformationExpend">
+								<div class="h3 text-center">
+									Нет исходящих транзакций
+								</div>
 							</div>`;
-						if (holder_profit_expenditure.length){
-							let sumEpend = holder_profit_expenditure.reduce(add, 0);
-							sumEpend = parseFloat(sumEpend).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1 ").replace('.', ',');
-							var expend = `
-								<div class="col-12 col-md-6 mainInformation">
-									<div class="h3 text-center">Исходящие транзакции - ${sumEpend}</div>
-									<div id="ChartStatsPartExpenditureHolder"></div>
-								</div>`;
 						}
+						graphElement.prepend(informationTable, income, expend);
 						
-						graphElement.prepend(informationTable, incom, expend);
+						coming_array.forEach(function(item, index, array){
+							var label_object = Object.getOwnPropertyNames(item)[0];
+							var comming_array = item[label_object];
 
-						var chart_comming_holder = new ApexCharts(document.querySelector("#ChartStatsPartIncomeHolder"), option__holder_comming);						
-						chart_comming_holder.render();
+							var lables = [];
+							var coming_sum = [];
+							var summ_calculate = 0;
 
-						var chart_exp_holder = new ApexCharts(document.querySelector("#ChartStatsPartExpenditureHolder"), option__holder_expend);
-						chart_exp_holder.render();
+							if(comming_array.length > 1){
+								for(let i=0; comming_array.length > i; i++){
+									lables.push(comming_array[i].type);
+									coming_sum.push(+comming_array[i].coming);
+									summ_calculate += +comming_array[i].coming;
+								}
+							}else{
+								lables.push(comming_array[0].type);
+								coming_sum.push(+comming_array[0].coming);
+								summ_calculate += +comming_array[0].coming;
+							}
+							summ_calculate = priceSet(summ_calculate);
 
+							var apexCurr = `
+							<div class="h3 text-center ">
+								${label_object}: ${summ_calculate}
+							</div>
+							<div id="ChartStatsPartIncom${label_object}"></div>`
+
+							$('.mainInformationIncome').append(apexCurr);
+							
+							var option_comming = {
+								series: coming_sum,
+								labels: lables,
+								chart: {
+									type: 'donut',
+								},
+								legend: {
+									show: true,
+									position: 'top',
+								},
+								stroke: {
+									width: 4,
+									colors: ['#fff']
+								},
+								dataLabels: {
+									style: {
+										colors: ['#000000', '#000000', '#000000']
+									},
+									dropShadow: {
+										enabled: true,
+										top: 0,
+										left: 0,
+										blur: 1,
+										color: '#ffffff',
+										opacity: 70
+									}
+								}
+							};
+				
+							var chart_comming = new ApexCharts(document.querySelector(`#ChartStatsPartIncom${label_object}`), option_comming);
+							chart_comming.render();
+						});
+
+						expenditure_sum.forEach(function(item, index, array){
+							var label_object = Object.getOwnPropertyNames(item)[0];
+							var comming_array = item[label_object];
+
+							var lables = [];
+							var coming_sum = [];
+							var summ_calculate = 0;
+
+							if(comming_array.length > 1){
+								for(let i=0; comming_array.length > i; i++){
+									lables.push(comming_array[i].type);
+									coming_sum.push(+comming_array[i].coming);
+									summ_calculate += +comming_array[i].coming;
+								}
+							}else{
+								lables.push(comming_array[0].type);
+								coming_sum.push(+comming_array[0].coming);
+								summ_calculate += +comming_array[0].coming;
+							}
+							
+							summ_calculate = priceSet(summ_calculate);
+
+							var apexCurr = `
+							<div class="h3 text-center ">
+								${label_object}: ${summ_calculate}
+							</div>
+							<div id="ChartStatsPartExed${label_object}"></div>`;
+
+							$('.mainInformationExpend').append(apexCurr);
+
+							var option_expenditure = {
+								series: coming_sum,
+								labels: lables,
+								chart: {
+									type: 'donut',
+								},
+								legend: {
+									show: true,
+									position: 'top',
+								},
+								stroke: {
+									width: 4,
+									colors: ['#fff']
+								},
+								dataLabels: {
+									style: {
+										colors: ['#000000', '#000000', '#000000']
+									},
+									dropShadow: {
+										enabled: true,
+										top: 0,
+										left: 0,
+										blur: 1,
+										color: '#ffffff',
+										opacity: 70
+									}
+								}
+							}
+							
+							var chart_expenditure = new ApexCharts(document.querySelector(`#ChartStatsPartExed${label_object}`), option_expenditure);
+							chart_expenditure.render();
+						});
+						console.log('coming_array', coming_array)
+						console.log('expenditure_sum', expenditure_sum)
 					}).catch(function(err){
 						var x = 1;
 					})}

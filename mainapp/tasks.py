@@ -4,7 +4,7 @@ from spaffaccaunting.celery import app
 from datetime import datetime as dt
 import datetime
 from mainapp.models import (
-    Current, ImportData, BalanceHolder, Transaction, PayType, CurrentBalanceHolderBalance, SubPayType,
+    Current, ImportData, BalanceHolder, Transaction, PayType, CurrentBalanceHolderBalance, SubPayType, CustomUser
 )
 import requests
 import json
@@ -14,9 +14,10 @@ from decimal import Decimal
 @app.task
 def import_transactions():
     objects_active = ImportData.objects.filter(status_import=True)
+    system_author = int(CustomUser.objects.filter(username='ImportTransact')[0].id)
     for obj in objects_active:
         balance_holder = BalanceHolder.objects.filter(organization_holder=obj.balance_holder)
-        if obj.bank == 'tinkoff':
+        if obj.bank.lower() == 'tinkoff':
             date_start = obj.date_start.strftime('%Y-%m-%d')
             if obj.repyt_start_date:
                 date_start = obj.repyt_start_date.strftime('%Y-%m-%d')
@@ -96,7 +97,7 @@ def import_transactions():
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'amount': amount, 'status': status, 'author_id': system_author,
                                 'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
                                 'sub_type_pay': sub_type[0], 'current_id': current,
                             }
@@ -104,7 +105,7 @@ def import_transactions():
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'amount': amount, 'status': status, 'author_id': system_author,
                                 'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
                                 'current_id': current,
                             }
@@ -131,7 +132,7 @@ def import_transactions():
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'amount': amount, 'status': status, 'author_id': system_author,
                                 'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
                                 'sub_type_pay': sub_type[0], 'current_id': current,
                             }
@@ -139,14 +140,14 @@ def import_transactions():
                             new_data = {
                                 'transaction_date': transaction_date, 'type_transaction': type_transaction,
                                 'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': status, 'author_id': int(obj.author),
+                                'amount': amount, 'status': status, 'author_id': system_author,
                                 'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
                                 'current_id': current,
                             }
                         transaction_new.objects.create(**new_data)
                 else:
                     pass
-        if obj.bank.lower() == 'capitalist':
+        elif obj.bank.lower() == 'capitalist':
             our_correspondent = [
                 'U12650092',
                 'E12650094',
@@ -214,7 +215,7 @@ def import_transactions():
                                 'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                 'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
                                 'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                 'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
                                 'commission': tr_comis, 'current_id': current,
                             }
@@ -236,7 +237,7 @@ def import_transactions():
                                 'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                 'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
                                 'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                 'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
                                 'commission': tr_com, 'current_id': current,
                             }
@@ -259,7 +260,7 @@ def import_transactions():
                                 'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                 'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
                                 'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                 'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
                                 'type_payment': type_payment, 'current_id': current,
                             }
@@ -305,7 +306,7 @@ def import_transactions():
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                     'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                     'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_comis,
                                     'type_payment': type_payment, 'current_id': current,
                                 }
@@ -329,7 +330,7 @@ def import_transactions():
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                     'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                     'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
                                     'type_payment': type_payment, 'current_id': current,
                                 }
@@ -352,7 +353,7 @@ def import_transactions():
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                     'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': int(obj.author),
+                                    'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                     'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
                                     'type_payment': type_payment, 'current_id': current,
                                 }

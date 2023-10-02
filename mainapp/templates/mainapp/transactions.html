@@ -258,9 +258,7 @@
 												{% endif %}
 											</td>
 											<td>
-												<span data-bs-toggle="tooltip" data-bs-title="{{ object.create_date|datetime_format }}">
-														{{ object.create_date|datetime_without_sec }}
-												</span>
+												{{ object.create_date|date_format }}
 											</td>
 											<td>
 												{% if object.update_date %}
@@ -271,7 +269,11 @@
 													&ndash;
 												{% endif %}
 											</td>
-											<td>{{ object.transaction_date|date_format }}</td>
+											<td>
+												<span data-bs-toggle="tooltip" data-bs-title="{{ object.transaction_date|datetime_format }}">
+														{{ object.transaction_date|datetime_without_sec }}
+												</span>
+											</td>
 											<td>
 
 												{% if object.commission %}
@@ -712,13 +714,13 @@
 				<td>${tr_line.balance_holder}</td>
 				<td>${name}</td>
 				<td>${pay_type}</td>
+				<td>${tr_line.create_date_js}</td>
+				<td>${update_date}</td>
 				<td>
-					<span data-bs-toggle="tooltip" data-bs-title="${tr_line.create_date_js_s}">
-						${tr_line.create_date_js}
+					<span data-bs-toggle="tooltip" data-bs-title="${tr_line.transaction_date_js_s}">
+						${tr_line.transaction_date_js}
 					</span>
 				</td>
-				<td>${update_date}</td>
-				<td>${tr_line.transaction_date_js}</td>
 				<td>${tr_sum}</td>
 				<td>${comission}</td>
 				<td>${tr_type_transaction}</td>
