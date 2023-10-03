@@ -174,7 +174,9 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
     if filter_data:
         for key, val in filter_data.items():
             if len(filters) == 5:
-                if key == 'amount_start':
+                if key == 'name':
+                    filters += f''' `mt`.`name` LIKE '%{val}%' '''
+                elif key == 'amount_start':
                     filters += f''' `mt`.`amount` >= '{val}' '''
                 elif key == 'amount_end':
                     filters += f''' `mt`.`amount` <= '{val}' '''
@@ -187,7 +189,9 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                 else:
                     filters += f''' `mt`.`{key}` = '{val}' '''
             else:
-                if key == 'amount_start':
+                if key == 'name':
+                    filters += f''' AND `mt`.`name` LIKE '%{val}%' '''
+                elif key == 'amount_start':
                     filters += f''' AND `mt`.`amount` >= '{val}' '''
                 elif key == 'amount_end':
                     filters += f''' AND `mt`.`amount` <= '{val}' '''
@@ -227,7 +231,8 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                             `mainapp_balanceholder` mb
                         ON `mt`.`balance_holder_id`=`mb`.`id`
                         WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
-                        {author_req} {filters}
+                        {author_req} 
+                        {filters}
                         AND {pk} NOT IN (SELECT `mbhm`.`customuser_id` FROM `mainapp_balanceholder_hide_for_me` mbhm WHERE `mb`.`id`=`mbhm`.`balanceholder_id`)
                         ORDER BY {order_by}
                         {limit}
@@ -264,7 +269,9 @@ def get_count_allow_transaction_filter(pk, author_res=None, filter_data=None):
     if filter_data:
         for key, val in filter_data.items():
             if len(filters) == 5:
-                if key == 'amount_start':
+                if key == 'name':
+                    filters += f''' `mt`.`name` LIKE '%{val}%' '''
+                elif key == 'amount_start':
                     filters += f''' `mt`.`amount` >= '{val}' '''
                 elif key == 'amount_end':
                     filters += f''' `mt`.`amount` <= '{val}' '''
@@ -277,7 +284,9 @@ def get_count_allow_transaction_filter(pk, author_res=None, filter_data=None):
                 else:
                     filters += f''' `mt`.`{key}` = '{val}' '''
             else:
-                if key == 'amount_start':
+                if key == 'name':
+                    filters += f''' AND `mt`.`name` LIKE '%{val}%' '''
+                elif key == 'amount_start':
                     filters += f''' AND `mt`.`amount` >= '{val}' '''
                 elif key == 'amount_end':
                     filters += f''' AND `mt`.`amount` <= '{val}' '''

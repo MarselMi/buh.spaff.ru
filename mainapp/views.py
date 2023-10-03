@@ -334,7 +334,7 @@ def transaction_view(request):
         offset = limit * (page - 1)
     request.session['offset_transactions'] = offset
     ''' Заполенние словаря для SQL-запроса '''
-    dismiss_list = ['page', 'page', 'name', 'type']
+    dismiss_list = ['page', 'page', 'type']
     for element in get_param_filter:
         if element not in dismiss_list:
             if get_param_filter.get(element) != [''] and element != 'collapse' and element != 'csrfmiddlewaretoken':
