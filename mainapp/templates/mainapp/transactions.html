@@ -31,16 +31,11 @@
 										{% endfor %}
 									</datalist>
 								</div>
-
+								
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_holder">Балансодержатель</label>
-									<input class="form-control filter" list="balance_holder" onfocus="this.value=''" autocomplete="off" name="balance_holder_id" id="filter_holder"
-										    {% if get_param_filter.balance_holder_id.0 %} value="{{ get_param_filter.balance_holder_id.0 }}" {% endif %} placeholder="Балансодержатель"/>
-									<datalist id="balance_holder">
-										{% for holder in balance_holders %}
-										<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
-										{% endfor %}
-									</datalist>
+									<label for="filter_description">Назначение платежа</label>
+									<input class="form-control filter" autocomplete="off" name="description" id="filter_description"
+									{% if get_param_filter.description.0 %} value="{{ get_param_filter.description.0 }}" {% endif %} placeholder="210Example"/>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -78,6 +73,17 @@
 							<div id="accordionStatsDaysFilter">
 								<div id="collapseStatsDaysFilter-1" class="accordion-collapse collapse{% if collapsed == 2 %}{% else %} show{% endif %}" aria-labelledby="flush-headingOne" data-bs-parent="#accordionStatsDaysFilter" style="">
 									<div class="row">
+
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_holder">Балансодержатель</label>
+											<input class="form-control filter" list="balance_holder" onfocus="this.value=''" autocomplete="off" name="balance_holder_id" id="filter_holder"
+													{% if get_param_filter.balance_holder_id.0 %} value="{{ get_param_filter.balance_holder_id.0 }}" {% endif %} placeholder="Балансодержатель"/>
+											<datalist id="balance_holder">
+												{% for holder in balance_holders %}
+												<option value="{{ holder.organization_holder }}">{{ holder.organization_holder }}</option>
+												{% endfor %}
+											</datalist>
+										</div>
 
 										<div class="col-12 col-sm-3 mb-3">
 

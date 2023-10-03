@@ -186,6 +186,8 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                     filters += f''' `mt`.`transaction_date` <= '{val}' '''
                 elif key == 'tags':
                     filters += f''' `mt`.`tags` LIKE '%{val}%' '''
+                elif key == 'description':
+                    filters += f''' `mt`.`description` LIKE '%{val}%' '''
                 else:
                     filters += f''' `mt`.`{key}` = '{val}' '''
             else:
@@ -201,6 +203,8 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                     filters += f''' AND `mt`.`transaction_date` <= '{val}' '''
                 elif key == 'tags':
                     filters += f''' AND `mt`.`tags` LIKE '%{val}%' '''
+                elif key == 'description':
+                    filters += f''' AND `mt`.`description` LIKE '%{val}%' '''
                 else:
                     filters += f''' AND `mt`.`{key}` = '{val}' '''
 
@@ -281,6 +285,8 @@ def get_count_allow_transaction_filter(pk, author_res=None, filter_data=None):
                     filters += f''' `mt`.`transaction_date` <= '{val}' '''
                 elif key == 'tags':
                     filters += f''' `mt`.`tags` LIKE '%{val}%' '''
+                elif key == 'description':
+                    filters += f''' `mt`.`description` LIKE '%{val}%' '''
                 else:
                     filters += f''' `mt`.`{key}` = '{val}' '''
             else:
@@ -296,6 +302,8 @@ def get_count_allow_transaction_filter(pk, author_res=None, filter_data=None):
                     filters += f''' AND `mt`.`transaction_date` <= '{val}' '''
                 elif key == 'tags':
                     filters += f''' AND `mt`.`tags` LIKE '%{val}%' '''
+                elif key == 'description':
+                    filters += f''' AND `mt`.`description` LIKE '%{val}%' '''
                 else:
                     filters += f''' AND `mt`.`{key}` = '{val}' '''
 
