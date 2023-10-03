@@ -11,9 +11,9 @@
 							Фильтр
 						</div>
 						{% if user.is_superuser or user.is_staff %}
-						<div class="card-options ms-auto">
-							<a href="{% url 'transaction_create' %}" class="btn btn-primary btn-sm">Создать транзакцию</a>
-						</div>
+							<div class="card-options ms-auto">
+								<a href="{% url 'transaction_create' %}" class="btn btn-primary btn-sm">Создать транзакцию</a>
+							</div>
 						{% endif %}
 					</div>
 					<div class="card-body">
@@ -44,26 +44,34 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_payment">Категория</label>
-									<input class="form-control filter" list="pay_type" autocomplete="off" onfocus="this.value=''" name="type_payment_id" id="filter_payment"
-										   {% if get_param_filter.type_payment_id.0 %} value="{{ get_param_filter.type_payment_id.0 }}" {% endif %} placeholder="Офис"/>
-									<datalist id="pay_type">
-										{% for type in type_payments %}
-										<option value="{{ type }}">{{ type }}</option>
-										{% endfor %}
-									</datalist>
-								</div>
+									<label for="filter_type">Тип транзакции</label>
+									<select class="form-select filter" autocomplete="off" name="type_transaction" id="filter_type">
+										{% if get_param_filter.type_transaction.0 %}
+											<option selected value="{{ get_param_filter.type_transaction.0 }}">{{ get_param_filter.type_transaction.0|trans_type }}</option>
+											<option value="">Выберите тип транзакции</option>
+											<option value="COMING">Приход</option>
+											<option value="EXPENDITURE">Расход</option>
+										{% else %}
+											<option value="">Выберите тип транзакции</option>
+											<option value="COMING">Приход</option>
+											<option value="EXPENDITURE">Расход</option>
+										{% endif %}
+									</select>
+								</div> <!-- /col -->
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="filter_sub_payment">Подкатегория</label>
-									<input class="form-control filter" list="sub_type" autocomplete="off" onfocus="this.value=''" name="sub_type_pay_id" id="filter_sub_payment"
-										   {% if get_param_filter.sub_type_pay_id.0 %} value="{{ get_param_filter.sub_type_pay_id.0 }}" {% endif %} placeholder="Аренда"/>
-									<datalist id="sub_type">
-										{% for type in sub_type %}
-											<option value="{{ type }}">{{ type }}</option>
+									<label for="current">Курс</label>
+									<select class="form-select filter" autocomplete="off" name="current_id_id" id="filter_current">
+										<option value="">Выберите курс</option>
+										{% for i in all_cur %}
+											{% if get_param_filter.current_id_id.0|strictic == i.id|strictic %}
+												<option selected value="{{ i.id }}">{{ i.current_name }}</option>
+											{% else %}
+												<option value="{{ i.id }}">{{ i.current_name }}</option>
+											{% endif %}
 										{% endfor %}
-									</datalist>
-								</div>
+									</select>
+								</div> <!-- /col -->
 
 							</div>
 
@@ -89,6 +97,44 @@
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
+
+											<label for="input-amount-group">
+												По сумме
+											</label>
+
+											<div class="input-group" id="input-amount-group">
+												<span class="input-group-text">Мин: </span>
+												<input class="form-control filter" autocomplete="off" name="amount_start" id="filter_amount_higher"
+												{% if get_param_filter.amount_start.0 %} value="{{ get_param_filter.amount_start.0 }}" {% endif %} placeholder="500"/>
+												<span class="input-group-text">Макс: </span>
+												<input class="form-control filter" autocomplete="off" name="amount_end" id="filter_amount_below"
+												{% if get_param_filter.amount_end.0 %} value="{{ get_param_filter.amount_end.0 }}" {% endif %} placeholder="2000"/>
+											</div>
+										</div> <!-- /col -->
+
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_payment">Категория</label>
+											<input class="form-control filter" list="pay_type" autocomplete="off" onfocus="this.value=''" name="type_payment_id" id="filter_payment"
+												   {% if get_param_filter.type_payment_id.0 %} value="{{ get_param_filter.type_payment_id.0 }}" {% endif %} placeholder="Офис"/>
+											<datalist id="pay_type">
+												{% for type in type_payments %}
+												<option value="{{ type }}">{{ type }}</option>
+												{% endfor %}
+											</datalist>
+										</div>
+		
+										<div class="col-12 col-sm-3 mb-3">
+											<label for="filter_sub_payment">Подкатегория</label>
+											<input class="form-control filter" list="sub_type" autocomplete="off" onfocus="this.value=''" name="sub_type_pay_id" id="filter_sub_payment"
+												   {% if get_param_filter.sub_type_pay_id.0 %} value="{{ get_param_filter.sub_type_pay_id.0 }}" {% endif %} placeholder="Аренда"/>
+											<datalist id="sub_type">
+												{% for type in sub_type %}
+													<option value="{{ type }}">{{ type }}</option>
+												{% endfor %}
+											</datalist>
+										</div>
+
+										<div class="col-12 col-sm-3 mb-3">
 											<label for="filter_autor">Автор создания</label>
 											<input class="form-control filter" list="user_filter" autocomplete="off" name="author_id" id="filter_autor"
 												   {% if get_param_filter.author_id.0 %} value="{{ get_param_filter.author_id.0 }}" {% endif %} placeholder="admin"/>
@@ -97,22 +143,6 @@
 													<option value="{{ author }}">{{ author }}</option>
 												{% endfor %}
 											</datalist>
-										</div> <!-- /col -->
-
-										<div class="col-12 col-sm-3 mb-3">
-											<label for="filter_type">Тип транзакции</label>
-											<select class="form-select filter" autocomplete="off" name="type_transaction" id="filter_type">
-												{% if get_param_filter.type_transaction.0 %}
-													<option selected value="{{ get_param_filter.type_transaction.0 }}">{{ get_param_filter.type_transaction.0|trans_type }}</option>
-													<option value="">Выберите тип транзакции</option>
-													<option value="COMING">Приход</option>
-													<option value="EXPENDITURE">Расход</option>
-												{% else %}
-													<option value="">Выберите тип транзакции</option>
-													<option value="COMING">Приход</option>
-													<option value="EXPENDITURE">Расход</option>
-												{% endif %}
-											</select>
 										</div> <!-- /col -->
 
 										<div class="col-12 col-sm-3 mb-3">
@@ -137,22 +167,6 @@
 													<option value="REJECT">Отклонен</option>
 												{% endif %}
 											</select>
-										</div> <!-- /col -->
-
-										<div class="col-12 col-sm-3 mb-3">
-
-											<label for="input-amount-group">
-												По сумме
-											</label>
-
-											<div class="input-group" id="input-amount-group">
-												<span class="input-group-text">Мин: </span>
-												<input class="form-control filter" autocomplete="off" name="amount_start" id="filter_amount_higher"
-												{% if get_param_filter.amount_start.0 %} value="{{ get_param_filter.amount_start.0 }}" {% endif %} placeholder="500"/>
-												<span class="input-group-text">Макс: </span>
-												<input class="form-control filter" autocomplete="off" name="amount_end" id="filter_amount_below"
-												{% if get_param_filter.amount_end.0 %} value="{{ get_param_filter.amount_end.0 }}" {% endif %} placeholder="2000"/>
-											</div>
 										</div> <!-- /col -->
 
 									</div>

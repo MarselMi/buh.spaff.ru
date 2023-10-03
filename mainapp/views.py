@@ -297,6 +297,8 @@ def transaction_view(request):
     dict_for_sql_filter = dict()
     get_param_filter = dict(request.GET)
 
+    current_dict = get_currents()
+
     collapsed = request.session.get('transaction_collapse')
     if collapsed is None:
         request.session['transaction_collapse'] = 2
@@ -481,7 +483,7 @@ def transaction_view(request):
         'collapsed': collapsed, 'sub_type': sub_type, 'count': count, 'page': page, 'limit': limit,
         'url_params': url_params, 'original_count': original_count, 'coming_sum': coming_sum,
         'expenditure_amount': expenditure_amount, 'expenditure_comission': expenditure_comission,
-        'expenditure_transaction': expenditure_transaction
+        'expenditure_transaction': expenditure_transaction, 'all_cur': current_dict
     }
 
     return render(request, 'mainapp/transactions.html', data)
@@ -1283,25 +1285,27 @@ def fond_view(request):
 
             for i in didi:
                 if (i.find('pay_type')) == 0:
-                    new_dict['params_data'].setdefault(i,
-                                                       {
-                                                           'value': round(float(didi[i][0].replace(',', '.').replace(' ', '')), 2),
-                                                           'type_id': (i.split('&'))[1],
-                                                           'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
-                                                           'label': (i.split('&'))[2],
-                                                           'type': (i.split('&'))[-1]
-                                                       }
-                                                       )
+                    new_dict['params_data'].setdefault(
+                        i,
+                        {
+                            'value': round(float(didi[i][0].replace(',', '.').replace(' ', '')), 2),
+                            'type_id': (i.split('&'))[1],
+                            'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
+                            'label': (i.split('&'))[2],
+                            'type': (i.split('&'))[-1]
+                        }
+                    )
                 elif (i.find('pay_sub_type')) == 0:
-                    new_dict['params_data'].setdefault(i,
-                                                       {
-                                                           'value': round(float(didi[i][0].replace(',', '.').replace(' ', '')), 2),
-                                                           'sub_id': (i.split('&'))[1],
-                                                           'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
-                                                           'label': (i.split('&'))[2],
-                                                           'type': (i.split('&'))[-1]
-                                                       }
-                                                       )
+                    new_dict['params_data'].setdefault(
+                        i,
+                        {
+                            'value': round(float(didi[i][0].replace(',', '.').replace(' ', '')), 2),
+                            'sub_id': (i.split('&'))[1],
+                            'html_el_id': f"{(i.split('&'))[0]}_{(i.split('&'))[1]}_{(i.split('&'))[-1]}",
+                            'label': (i.split('&'))[2],
+                            'type': (i.split('&'))[-1]
+                        }
+                    )
 
             new_dict['balance_holder_id'] = bal_hold
             new_dict['month_year'] = dates
@@ -1374,7 +1378,6 @@ def fond_view(request):
                         else:
                             data_tr_fact_elementary['расход'].setdefault(type_sub, tr.get('amount'))
 
-            print()
             '''Цифры по запланированному ФОНДУ. Декодирую с JSON, суммирую данные при нескольких месяцев'''
             for i in bdr_fond_show:
                 di_encode = json.loads(i.get('params_data'))

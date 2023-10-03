@@ -230,3 +230,8 @@ def sum_calculate(array):
     except:
         summ = 0
     return summ
+
+
+@register.filter
+def strictic(obj):
+    return str(obj)
