@@ -60,9 +60,9 @@
 								</div> <!-- /col -->
 
 								<div class="col-12 col-sm-3 mb-3">
-									<label for="current">Курс</label>
+									<label for="current">Валюта</label>
 									<select class="form-select filter" autocomplete="off" name="current_id_id" id="filter_current">
-										<option value="">Выберите курс</option>
+										<option value="">Выберите валюту</option>
 										{% for i in all_cur %}
 											{% if get_param_filter.current_id_id.0|strictic == i.id|strictic %}
 												<option selected value="{{ i.id }}">{{ i.current_name }}</option>
