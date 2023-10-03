@@ -66,7 +66,7 @@
 									</div>
 								</div>
 
-								<div class="col-12 col-sm-3 mb-3">
+								<div class="col-12 col-sm-3 mb-3 trans_sum_amount">
 									<label for="transaction_sum_post">Сумма транзакции</label>
 									<input class="obligatory form-control" autocomplete="off" name="transaction_sum_post" placeholder="1 000" id="transaction_sum_post" required/>
 
@@ -211,10 +211,24 @@
 					}
 				}).then(function(result) {
 					if (result.message) {
+						$('.current_laber').remove();
 						$('#balance_holder').removeClass('is-invalid');
 						$('#balance_holder').addClass('is-valid');
+						var current = `
+						<div class="col-12 col-sm-3 mb-3 current_laber">
+							<label for="current">Выберите валюту</label>
+							<select class="form-select mb-2" name="current" id="current">
+								
+							</select>
+						</div>`;
+						$('.type_payment_input').after(current); 
+						for(let i=0; result.currents.length>i; i++){
+							var options = `<option value="${result.currents[i]}">${result.currents[i]}</option>`;
+							$('#current').append(options);
+						};
 					} else {
-						$('#balance_holder').removeClass('is-invalid');
+						$('.current_laber').remove();
+						$('#balance_holder').removeClass('is-valid');
 						$('#balance_holder').addClass('is-invalid');
 					}
 				}).catch(function(err) {

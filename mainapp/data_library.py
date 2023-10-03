@@ -144,7 +144,7 @@ def get_allow_and_hide_balance_holders(pk, simple_user=True):
     return response
 
 
-def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit='', offset=None, order_by=''):
+def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit='', offset=None, order_by='`mt`.`id`'):
     conn = pymysql.connect(host=settings.DATABASES.get('default').get('HOST'),
                            user=settings.DATABASES.get('default').get('USER'),
                            password=settings.DATABASES.get('default').get('PASSWORD'),
@@ -330,9 +330,9 @@ def get_allow_transactions_log(limit='', offset=None):
             response = f'''
                 SELECT *
                 FROM `mainapp_transactionlog` tl
+                ORDER BY `tl`.`id` DESC
                 {limit}
                 {offset}
-
             '''
             cursor.execute(response)
             response = cursor.fetchall()
@@ -424,6 +424,7 @@ def get_allow_additional_transactions(pk, simple_user=''):
                     ON `mat`.`balance_holder_id_id`=`mb`.`id`
                     WHERE IF(`mb`.`hidden_status` = 1, (`mb`.`hidden_status` = 1) AND ({pk} IN (SELECT `mbas`.`customuser_id` FROM `mainapp_balanceholder_available_superuser` mbas WHERE `mb`.`id`=`mbas`.`balanceholder_id`)), 1)
                     {simple_user}
+                    ORDER BY `mat`.`id` DESC
                     '''
             cursor.execute(response)
             response = cursor.fetchall()
@@ -638,7 +639,8 @@ def get_currents_holder(balance_holder_id=None):
             response = f'''
                 SELECT 
                     `mc`.`balance_holder_id_id`,
-                    `mc`.`current_id_id`
+                    `mc`.`current_id_id`,
+                    (SELECT `c`.`current_name` FROM mainapp_current c WHERE `mc`.`current_id_id`=`c`.`id`) as name
                 FROM `mainapp_currentbalanceholderbalance` mc
                 WHERE `mc`.`balance_holder_id_id`={balance_holder_id}
             '''

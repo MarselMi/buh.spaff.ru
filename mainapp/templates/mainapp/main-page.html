@@ -233,7 +233,7 @@
 							</label>
 						</div> <!-- /form-floating -->
 
-						<div class="form-floating mb-3">
+						<div class="form-floating mb-3 date_transaction_modal">
 							<input class="form-control" autocomplete="off" name="transaction_date" placeholder="Нажмите сюда" id="datepicker" required/>
 							<label for="datepicker">
 								Дата транзакции
@@ -305,7 +305,7 @@
 		</div>
 	</div>
 	
-	<script>
+	<!-- <script>
 		document.querySelector('#transaction_sum_post').addEventListener('input', function(){
 			// const num = this.value.replace(/\s/g, '');
 			this.value=(parseInt(num)).toLocaleString('ru-Ru')
@@ -315,7 +315,7 @@
 			// const num = this.value.replace(/\s/g, '');
 			this.value=(parseInt(num)).toLocaleString('ru-Ru')
 		})
-	</script>
+	</script> -->
 
 	<script>
 
@@ -585,6 +585,36 @@
 						holder.value = buttonSelectModal[i].getAttribute('data-bs-whatever');
 						modalTitle.textContent = 'Создать транзакцию для ' + buttonSelectModal[i].getAttribute('data-bs-whatever');
 						holder_link.setAttribute('href', `transactions-holder-create/${id_holder}`);
+						$('.current_el').remove();
+
+						$.ajax({
+							url: url,
+							method: 'POST',
+							data: {
+								csrfmiddlewaretoken: token,
+								type: 'holder_id_for_curr',
+								id: id_holder
+							}
+						}).then(function(result){
+							var cur_el = `
+							<div class="form-floating mb-3 current_el">
+								<select class="form-select" name="current" id="current">
+									
+								</select>
+
+								<label for="current">
+									Курс
+								</label>
+							</div> <!-- /form-floating -->`;
+							$('.date_transaction_modal').after(cur_el);
+							console.log(result);
+							for(let c=0; result.currents.length > c; c++){
+								var opt = `<option value="${result.currents[c]}">${result.currents[c]}</option>`;
+								$('#current').append(opt);
+							};
+						}).catch(function(err){
+							var s = 0;
+						})
 					}
 				})
 			}
@@ -611,6 +641,7 @@
 			var transaction_date = exampleModal.querySelector('#datepicker').value;
 			var transaction_sum = exampleModal.querySelector('#transaction_sum_post').value;
 			var commission = exampleModal.querySelector('#commission_post').value;
+			var current = exampleModal.querySelector('#current').value;
 			
 			var check_img = $('#id_check_img');
 
@@ -625,6 +656,7 @@
 			fd.append('transaction_date_post', transaction_date);
 			fd.append('transaction_name_post', transaction_name);
 			fd.append('holder_post', holder);
+			fd.append('current_post', current);
 
 			fd.append('type', 'create_transaction');
 			fd.append('csrfmiddlewaretoken', token);

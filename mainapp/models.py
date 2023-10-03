@@ -209,7 +209,7 @@ class TransactionLog(models.Model):
                                           related_name='transactionlog_customuser', verbose_name='Автор изменения')
 
     status = models.CharField(max_length=30, blank=True, null=True, verbose_name='Статус транз до/после')
-    transaction_date = models.CharField(max_length=30, blank=True, null=True, verbose_name='Дата транз до/после')
+    transaction_date = models.CharField(max_length=64, blank=True, null=True, verbose_name='Дата транз до/после')
     amount = models.CharField(max_length=30, blank=True, null=True, verbose_name='Сумма транз до/после')
     description = models.TextField(blank=True, null=True, verbose_name='Описание транз до/после')
     type_payment = models.CharField(max_length=50, blank=True, null=True, verbose_name='Тип платежа до/после')

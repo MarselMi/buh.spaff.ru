@@ -8,7 +8,7 @@
 			<div class="card">
 				<div class="card-body">
 					<div class="card-body">
-						<strong>Изменение транзакции - {{ transaction.name }} <br> Балансодержатель - {{ transaction.balance_holder }}</strong>
+						<strong>Изменение транзакции: {{ transaction.name }} <br> Балансодержатель: {{ transaction.balance_holder }}</strong>
 						<br>
 						<form method="POST" action="" enctype="multipart/form-data">
 							{% csrf_token %}
@@ -16,7 +16,7 @@
 							<div class="row">
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.status.label }}
+									<label for="transaction_status">Статус</label>
 									<select class="obligatory form-select mb-2" name="transaction_status" id="transaction_status">
 										{% if transaction.status == 'INPROCESS' %}
 											<option selected value="INPROCESS">В процессе</option>
@@ -35,7 +35,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.transaction_date.label }}
+									<label for="datepicker">Дата транзакции</label>
 									{% if transaction.transaction_date %}
 										<input autocomplete="off" class="obligatory form-control" name="transaction_date" value="{{ transaction.transaction_date|date_format }}" id="datepicker"/>
 									{% else %}
@@ -44,19 +44,19 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.amount.label }}
+									<label for="transaction_sum">Сумма {{ transaction.current_id.current_name }}</label>
 									<input autocomplete="off" class="form-control" name="transaction_sum" value="{{ transaction.transaction_sum }}" id="transaction_sum"/>
 								</div>
 
 								{% if transaction.type_transaction == 'EXPENDITURE' %}
 									<div class="col-12 col-sm-3 mb-3">
-										<label for="commission">Комиссия</label>
+										<label for="commission">Комиссия {{ transaction.current_id.current_name }}</label>
 										<input autocomplete="off" class="form-control" name="commission" value="{{ transaction.commission }}" id="commission"/>
 									</div>
 								{% endif %}
 
 								<div class="col-12 col-sm-3 mb-3 type_payment_input">
-									{{ form.type_payment.label }}
+									<label for="type_payment">Категория</label>
 									<input autocomplete="off" onfocus="this.value=''" list="list_pay" class="form-control" name="type_payment" id="type_payment" value="{{ transaction.type_payment }}"/>
 									<datalist id="list_pay">
 										{% for type in type_payments %}

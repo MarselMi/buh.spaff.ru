@@ -37,7 +37,7 @@
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
-									{{ form.transaction_date.label }}
+									<label for="transaction_date">Дата транзакции</label>
 									<input autocomplete="off" class="obligatory form-control" name="transaction_date" placeholder="Нажмите сюда" id="datepicker" required/>
 								
 									<div class="invalid-feedback">
@@ -53,6 +53,15 @@
 										<option value="{{ type }}">{{ type }}</option>
 										{% endfor %}
 									</datalist>
+								</div>
+
+								<div class="col-12 col-sm-3 mb-3 current_laber">
+									<label for="current">Выберите валюту</label>
+									<select class="form-select mb-2" name="current" id="current">
+										{% for i in cur_list %}
+											<option value="{{ i }}">{{ i }}</option>
+										{% endfor %}
+									</select>
 								</div>
 
 								<div class="col-12 col-sm-3 mb-3">
@@ -126,7 +135,7 @@
 		</div> <!-- /col -->
 	</div> <!--/row-->
 
-	<script>
+	<!-- <script>
 		document.querySelector('#transaction_sum_post').addEventListener('input', function(){
 			const num = this.value.replace(/\s/g, '');
 			this.value=(parseInt(num)).toLocaleString('ru-Ru')
@@ -136,7 +145,7 @@
 			const num = this.value.replace(/\s/g, '');
 			this.value=(parseInt(num)).toLocaleString('ru-Ru')
 		})
-	</script>
+	</script> -->
 	
 <script type="text/javascript">
 
