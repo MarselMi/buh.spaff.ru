@@ -102,7 +102,7 @@ class CustomUser(AbstractUser, models.Model):
 
 class Transaction(models.Model):
 
-    import_id = models.CharField(max_length=50, blank=True, null=True, verbose_name='id импортированной транзакции')
+    import_id = models.CharField(max_length=127, blank=True, null=True, verbose_name='id импортированной транзакции')
     create_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
     update_date = models.DateTimeField(blank=True, null=True, verbose_name='Дата изменения')
 
