@@ -75,7 +75,7 @@ def import_transactions():
                     else:
                         pay_type = PayType.objects.filter(pay_type='Временная категория')
 
-                    if transaction.get('payerInn') == inn:
+                    if transaction.get('payerAccount') == obj.account:
                         type_transaction = 'EXPENDITURE'
                         import_id = transaction.get('operationId')
                         tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
@@ -145,8 +145,7 @@ def import_transactions():
                                 'current_id': current,
                             }
                         transaction_new.objects.create(**new_data)
-                else:
-                    pass
+
         elif obj.bank.lower() == 'capitalist':
             our_correspondent = [
                 'U12650092',
