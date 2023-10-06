@@ -30,7 +30,7 @@ def import_transactions():
             for transaction in transactions_objects:
                 transaction_new = Transaction
                 sub_type = None
-                if len(Transaction.objects.filter(import_id=transaction.get('operationId'))) == 0:
+                if len(Transaction.objects.filter(import_id=transaction.get('operationId')+f'_{obj.account}')) == 0:
                     pay_type = PayType.objects.filter(pay_type='Временная категория')
                     if transaction.get('paymentPurpose').lower().find('cloudpayments') > -1:
                         pay_type = PayType.objects.filter(pay_type='CloudPayments')
@@ -110,7 +110,7 @@ def import_transactions():
                                 'current_id': current,
                             }
                         transaction_new.objects.create(**new_data)
-                    else:
+                    if transaction.get('recipientAccount') == obj.account:
                         type_transaction = 'COMING'
                         import_id = transaction.get('operationId')
                         tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
@@ -193,7 +193,7 @@ def import_transactions():
             if page_count == 1:
                 transactions = json.loads(transactions_history.content).get('data').get('history')
                 for i in transactions:
-                    if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
+                    if len(Transaction.objects.filter(import_id=i.get('id')+f'_{obj.account}')) == 0:
 
                         new_transa = Transaction
 
@@ -282,7 +282,7 @@ def import_transactions():
                     )
                     transactions = json.loads(transactions_req.content).get('data').get('history')
                     for i in transactions:
-                        if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
+                        if len(Transaction.objects.filter(import_id=i.get('id')+f'_{obj.account}')) == 0:
 
                             new_transa = Transaction
 
