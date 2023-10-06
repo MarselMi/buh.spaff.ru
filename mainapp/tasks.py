@@ -80,7 +80,7 @@ def import_transactions():
                         import_id = transaction.get('operationId')
                         tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
                         status = 'SUCCESSFULLY'
-                        transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d').date()
+                        transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d')
                         amount = Decimal(transaction.get('amount'))
                         description = transaction.get('paymentPurpose')
 
@@ -115,7 +115,7 @@ def import_transactions():
                         import_id = transaction.get('operationId')
                         tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
                         status = 'SUCCESSFULLY'
-                        transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d').date()
+                        transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d')
                         amount = Decimal(transaction.get('amount'))
                         description = transaction.get('paymentPurpose')
 
