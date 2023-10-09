@@ -428,7 +428,7 @@ def import_transactions():
                                 'type_transaction': 'EXPENDITURE', 'current_id': current, 'sub_type_pay': sub_type,
                                 'description': description, 'balance_holder': balance_holder[0],
                                 'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
-                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
                                 'type_payment': type_payment,
                             }
                             transaction_new.objects.create(**new_data)
@@ -456,7 +456,7 @@ def import_transactions():
                                 'type_transaction': 'COMING', 'current_id': current, 'description': description,
                                 'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
                                 'import_id': transaction.get('id'), 'type_payment': type_payment,
-                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
                             }
                             transaction_new.objects.create(**new_data)
             else:
@@ -594,7 +594,7 @@ def import_transactions():
                                 'type_transaction': 'EXPENDITURE', 'current_id': current, 'sub_type_pay': sub_type,
                                 'description': description, 'balance_holder': balance_holder[0],
                                 'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
-                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
                                 'type_payment': type_payment,
                             }
                             transaction_new.objects.create(**new_data)
@@ -622,7 +622,7 @@ def import_transactions():
                                 'type_transaction': 'COMING', 'current_id': current, 'description': description,
                                 'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
                                 'import_id': transaction.get('id'), 'type_payment': type_payment,
-                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
                             }
                             transaction_new.objects.create(**new_data)
 
