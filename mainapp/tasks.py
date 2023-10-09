@@ -81,7 +81,7 @@ def import_transactions():
                         tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
                         status = 'SUCCESSFULLY'
                         transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d')
-                        amount = Decimal(transaction.get('amount'))
+                        amount = decimal.Decimal(transaction.get('amount'))
                         description = transaction.get('paymentPurpose')
 
                         current = Current.objects.filter(current_name="RUR")[0]
@@ -116,7 +116,7 @@ def import_transactions():
                         tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
                         status = 'SUCCESSFULLY'
                         transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d')
-                        amount = Decimal(transaction.get('amount'))
+                        amount = decimal.Decimal(transaction.get('amount'))
                         description = transaction.get('paymentPurpose')
 
                         current = Current.objects.filter(current_name="RUR")[0]
