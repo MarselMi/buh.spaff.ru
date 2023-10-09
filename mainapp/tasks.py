@@ -8,7 +8,7 @@ from mainapp.models import (
 )
 import requests
 import json
-from decimal import Decimal
+import time
 
 
 @app.task
@@ -357,6 +357,274 @@ def import_transactions():
                                     'type_payment': type_payment, 'current_id': current,
                                 }
                                 new_transa.objects.create(**new_data)
+
+        elif obj.bank.lower() == 'modulbank':
+            date_start = obj.date_start.strftime('%Y-%m-%dT00:00:00')+"Z"
+            if obj.repyt_start_date:
+                date_start = obj.repyt_start_date.strftime('%Y-%m-%dT00:00:00')+"Z"
+            date_end = dt.now().date().strftime('%Y-%m-%dT00:00:00')+"Z"
+            accounts_modulbank = json.loads(requests.post(
+                f"https://api.modulbank.ru/v1/account-info/",
+                headers={'Authorization': f'Bearer {obj.key}'}
+            ).content)[0].get('bankAccounts')
+            corr_account_id = list(filter(lambda a: a.get('number') == obj.account, accounts_modulbank))[0].get('id')
+            skip_count = 0
+
+            transactions_history = json.loads(requests.post(
+                f"https://api.modulbank.ru/v1/operation-history/{corr_account_id}",
+                headers={'Authorization': f'Bearer {obj.key}'},
+                data={
+                    "statuses": [
+                        "Executed", "Received", "PayReceived"
+                        ],
+                    "from": date_start,
+                    "till": date_end,
+                    "skip": skip_count,
+                    "records": 50
+                }
+            ).content)
+            transaction_new = Transaction
+
+            if len(transactions_history) < 50:
+                for transaction in transactions_history:
+                    if Transaction.objects.filter(import_id=transaction.get("id")).exists() is False:
+                        if transaction.get('category') == "Credit":
+                            sub_type = None
+                            description = transaction.get('paymentPurpose')
+
+                            if description.lower().find('реклам') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Реклама')[0]
+                            elif description.lower().find('комиссия за') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Услуги Банка')[0]
+                                sub_type = SubPayType.objects.filter(sub_type='Комиссия')[0]
+                            elif description.lower().find('по для эвм') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Использование ПО для ЭВМ')[0]
+                            elif description.lower().find('интернет-услуги') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Интернет')[0]
+                            elif description.lower().find('разраб') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Услуги по разработке')[0]
+                            elif description.lower().find('привлечение пользователей') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
+                            else:
+                                type_payment = PayType.objects.filter(pay_type='Прочие')[0]
+
+                            tr_com = 0
+                            tr_current = 'RUR'
+                            tr_sum = decimal.Decimal(transaction.get('amount'))
+
+                            tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
+                            amount = tr_sum + tr_com
+                            current = Current.objects.filter(current_name=tr_current)[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder -= decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                            new_data = {
+                                'transaction_date': tr_datetime, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                'type_transaction': 'EXPENDITURE', 'current_id': current, 'sub_type_pay': sub_type,
+                                'description': description, 'balance_holder': balance_holder[0],
+                                'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                'type_payment': type_payment,
+                            }
+                            transaction_new.objects.create(**new_data)
+                        else:
+                            type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
+                            description = transaction.get('paymentPurpose')
+
+                            tr_com = 0
+                            tr_current = 'RUR'
+                            tr_sum = decimal.Decimal(transaction.get('amount'))
+
+                            tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
+                            amount = tr_sum + tr_com
+                            current = Current.objects.filter(current_name=tr_current)[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder += decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                            new_data = {
+                                'transaction_date': tr_datetime, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                'type_transaction': 'COMING', 'current_id': current, 'description': description,
+                                'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
+                                'import_id': transaction.get('id'), 'type_payment': type_payment,
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                            }
+                            transaction_new.objects.create(**new_data)
+            else:
+                while len(transactions_history) == 50:
+                    for transaction in transactions_history:
+                        if Transaction.objects.filter(import_id=transaction.get("id")).exists() is False:
+                            if transaction.get('category') == "Credit":
+                                sub_type = None
+                                description = transaction.get('paymentPurpose')
+
+                                if description.lower().find('реклам') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Реклама')[0]
+                                elif description.lower().find('комиссия за') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Услуги Банка')[0]
+                                    sub_type = SubPayType.objects.filter(sub_type='Комиссия')[0]
+                                elif description.lower().find('по для эвм') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Использование ПО для ЭВМ')[0]
+                                elif description.lower().find('интернет-услуги') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Интернет')[0]
+                                elif description.lower().find('разраб') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Услуги по разработке')[0]
+                                elif description.lower().find('привлечение пользователей') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
+                                else:
+                                    type_payment = PayType.objects.filter(pay_type='Прочие')[0]
+
+                                tr_com = 0
+                                tr_current = 'RUR'
+                                tr_sum = decimal.Decimal(transaction.get('amount'))
+
+                                tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
+                                amount = tr_sum + tr_com
+                                current = Current.objects.filter(current_name=tr_current)[0]
+                                current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                    current_id=current,
+                                    balance_holder_id=balance_holder[0]
+                                )
+                                old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                                old_balance_balance_holder -= decimal.Decimal(amount)
+                                current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                                new_data = {
+                                    'transaction_date': tr_datetime, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                    'type_transaction': 'EXPENDITURE', 'current_id': current, 'sub_type_pay': sub_type,
+                                    'description': description, 'balance_holder': balance_holder[0],
+                                    'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
+                                    'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                    'type_payment': type_payment,
+                                }
+                                transaction_new.objects.create(**new_data)
+                            else:
+                                type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
+                                description = transaction.get('paymentPurpose')
+
+                                tr_com = 0
+                                tr_current = 'RUR'
+                                tr_sum = decimal.Decimal(transaction.get('amount'))
+
+                                tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
+                                amount = tr_sum + tr_com
+                                current = Current.objects.filter(current_name=tr_current)[0]
+                                current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                    current_id=current,
+                                    balance_holder_id=balance_holder[0]
+                                )
+                                old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                                old_balance_balance_holder += decimal.Decimal(amount)
+                                current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                                new_data = {
+                                    'transaction_date': tr_datetime, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                    'type_transaction': 'COMING', 'current_id': current, 'description': description,
+                                    'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
+                                    'import_id': transaction.get('id'), 'type_payment': type_payment,
+                                    'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                }
+                                transaction_new.objects.create(**new_data)
+
+                    skip_count += 50
+                    time.sleep(1)
+
+                    transactions_history = json.loads(requests.post(
+                        f"https://api.modulbank.ru/v1/operation-history/{corr_account_id}/",
+                        headers={'Authorization': f'Bearer {obj.key}'},
+                        data={
+                            "statuses": [
+                                "Executed", "Received", "PayReceived"
+                            ],
+                            "from": date_start,
+                            "till": date_end,
+                            "skip": skip_count,
+                            "records": 50
+                        }
+                    ).content)
+
+                for transaction in transactions_history:
+                    if Transaction.objects.filter(import_id=transaction.get("id")).exists() is False:
+                        if transaction.get('category') == "Credit":
+                            sub_type = None
+                            description = transaction.get('paymentPurpose')
+
+                            if description.lower().find('реклам') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Реклама')[0]
+                            elif description.lower().find('комиссия за') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Услуги Банка')[0]
+                                sub_type = SubPayType.objects.filter(sub_type='Комиссия')[0]
+                            elif description.lower().find('по для эвм') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Использование ПО для ЭВМ')[0]
+                            elif description.lower().find('интернет-услуги') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Интернет')[0]
+                            elif description.lower().find('разраб') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Услуги по разработке')[0]
+                            elif description.lower().find('привлечение пользователей') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
+                            else:
+                                type_payment = PayType.objects.filter(pay_type='Прочие')[0]
+
+                            tr_com = 0
+                            tr_current = 'RUR'
+                            tr_sum = decimal.Decimal(transaction.get('amount'))
+
+                            tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
+                            amount = tr_sum + tr_com
+                            current = Current.objects.filter(current_name=tr_current)[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder -= decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                            new_data = {
+                                'transaction_date': tr_datetime, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                'type_transaction': 'EXPENDITURE', 'current_id': current, 'sub_type_pay': sub_type,
+                                'description': description, 'balance_holder': balance_holder[0],
+                                'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                'type_payment': type_payment,
+                            }
+                            transaction_new.objects.create(**new_data)
+                        else:
+                            type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
+                            description = transaction.get('paymentPurpose')
+
+                            tr_com = 0
+                            tr_current = 'RUR'
+                            tr_sum = decimal.Decimal(transaction.get('amount'))
+
+                            tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
+                            amount = tr_sum + tr_com
+                            current = Current.objects.filter(current_name=tr_current)[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder += decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                            new_data = {
+                                'transaction_date': tr_datetime, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                'type_transaction': 'COMING', 'current_id': current, 'description': description,
+                                'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
+                                'import_id': transaction.get('id'), 'type_payment': type_payment,
+                                'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                            }
+                            transaction_new.objects.create(**new_data)
 
         new_start = dt.now().date() - datetime.timedelta(days=1)
         import_object = ImportData.objects.filter(bank=obj.bank)
