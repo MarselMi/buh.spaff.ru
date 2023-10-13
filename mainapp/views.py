@@ -570,12 +570,18 @@ def transaction_view(request):
     coming = sorted(coming.items(), key=lambda a: a[0])
     expenditure = (sorted(expenditure.items(), key=lambda a: a[0]))
 
+    tr_types = {
+        "Выберите тип транзакции": "",
+        "Приход": "COMING",
+        'Расход': "EXPENDITURE"
+    }
+
     data = {
         'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
         'transactions': transactions, 'authors': authors, 'get_param_filter': get_param_filter,
         'collapsed': collapsed, 'sub_type': sub_type, 'count': count, 'page': page, 'limit': limit,
         'all_cur': current_dict, 'url_params': url_params, 'original_count': original_count,
-        'coming': coming, 'expenditure': expenditure,
+        'coming': coming, 'expenditure': expenditure, 'tr_types': tr_types
         # 'coming_sum': coming_sum, 'expenditure_transaction': expenditure_transaction,
         # 'expenditure_amount': expenditure_amount, 'expenditure_comission': expenditure_comission,
     }

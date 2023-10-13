@@ -41,16 +41,13 @@
 								<div class="col-12 col-sm-3 mb-3">
 									<label for="filter_type">Тип транзакции</label>
 									<select class="form-select filter" autocomplete="off" name="type_transaction" id="filter_type">
-										{% if get_param_filter.type_transaction.0 %}
-											<option selected value="{{ get_param_filter.type_transaction.0 }}">{{ get_param_filter.type_transaction.0|trans_type }}</option>
-											<option value="">Выберите тип транзакции</option>
-											<option value="COMING">Приход</option>
-											<option value="EXPENDITURE">Расход</option>
-										{% else %}
-											<option value="">Выберите тип транзакции</option>
-											<option value="COMING">Приход</option>
-											<option value="EXPENDITURE">Расход</option>
-										{% endif %}
+										{% for key, val in tr_types.items %}
+											{% if get_param_filter.type_transaction.0 == val %}
+												<option selected value="{{ val }}">{{ key }}</option>
+											{% else %}
+												<option value="{{ val }}">{{ key }}</option>
+											{% endif %}
+										{% endfor %}
 									</select>
 								</div> <!-- /col -->
 
