@@ -554,9 +554,9 @@ def transaction_view(request):
             if tr.get('update_date'):
                 tr['update_date'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M')
             tr['transaction_date'] = tr.get('transaction_date').strftime('%d.%m.%Y в %H:%M:%S')
-            tr['transaction_sum'] = str(tr.get('transaction_sum')).replace('.', ',')
-            tr['commission'] = str(tr.get('commission')).replace('.', ',')
-            tr['amount'] = str(tr.get('amount')).replace('.', ',')
+            tr['transaction_sum'] = float(tr.get('transaction_sum'))
+            tr['commission'] = float(tr.get('commission'))
+            tr['amount'] = float(tr.get('amount'))
 
         df = pd.DataFrame(transactions)
         dir_path = f'{os.path.abspath("media")}/{request.user}/'
