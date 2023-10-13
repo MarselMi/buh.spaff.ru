@@ -197,6 +197,11 @@
 										Сбросить
 									</button>
 
+									<button onclick="exportTransactions()" type="button" class="btn btn-secondary btn-light ms-3" id="sheetjsexport">
+										<b id="transactionsExportButtonInner">
+											Выгрузить в excel
+										</b>
+									</button>
 								</div>
 							</div>
 
@@ -394,28 +399,36 @@
 										</tr>
 									{% endfor %}
 									</tbody>
-									<!-- <tfoot>
-										<tr>
-											<th id="coming_sum" rowspan="2">
-												Входящие транзакции: {{ coming_sum|numb_format }}
-											</th>
-											<th id="expenditure_amount" rowspan="2">
-												Исходящие транзакции: {{ expenditure_amount|numb_format }}
-											</th>
-											<th id="expenditure_transaction">
-												Сумма перевода - {{ expenditure_transaction|numb_format }}
-											</th>
-										</tr>
-										<tr>
-											<th id="expenditure_comission">
-												Комиссия - {{ expenditure_comission|numb_format }}
-											</th>
-										</tr>
-									</tfoot> -->
 								</table> <!-- /table -->
 
 							</div> <!-- /table-responsive -->
 							
+							<div class="table-responsive mt-3">
+								<strong>ИТОГО ВХОДЯЩИХ ПЕРЕВОДОВ:</strong>
+								<table class="table table-bordered text-nowrap mb-0">
+									<thead class="text-center">
+										<tr id="coming_current_summ">
+											{% for key in coming %}
+											<th>{{ key.0 }}: {{ key.1|numb_format }}</th>
+											{% endfor %}
+										</tr>
+									</thead>
+								</table>
+							</div>
+							
+							<div class="table-responsive mt-3">
+								<strong>ИТОГО ИСОДЯЩИХ ПЕРЕВОДОВ:</strong>
+								<table class="table table-bordered text-nowrap mb-0">
+									<thead class="text-center">
+										<tr id="expenditure_current_summ">
+											{% for key in expenditure %}
+											<th>{{ key.0 }}: {{ key.1|numb_format }}</th>
+											{% endfor %}
+										</tr>
+									</thead>
+								</table>
+							</div>
+
 							<div class="pagin_list">
 								{% if count > 1 %}
 									<nav id="pagination" class="col align-self-center mt-4" aria-label="Page navigation example">
@@ -561,8 +574,7 @@
 	<script>
 
 		const formatter = new Intl.NumberFormat('ru-RU', {
-			style: 'currency',
-			currency: 'RUB',
+			
 			// These options are needed to round to whole numbers if that's what you want.
 			//minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
 			//maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
@@ -683,7 +695,6 @@
 			tr_sum = tr_sum + current_element;
 			var comission = `&ndash;`;
 			if(+tr_line.commission != '0.00'){
-				console.log(tr_line.commission);
 				var percent = ((+tr_line.commission / +tr_line.transaction_sum) * 100).toFixed(1);
 				comission = `<span data-bs-toggle="tooltip" data-bs-title="${percent}%">
 								${tr_line.commission_js}
@@ -790,6 +801,31 @@
 					}
 				}).then(function(result) {
 					$('.resutl_table').empty();
+					$('#coming_current_summ').empty();
+					$('#expenditure_current_summ').empty();
+
+					var summ_coming = '';
+					if(result.coming){
+						for(let i = 0; result.coming.length > i; i++){
+							summ_coming += `
+							<th>${result.expenditure[i][0]}: ${formatter.format(result.coming[i][1])}</th>`;
+						}
+					}
+					
+					$('#coming_current_summ').append(summ_coming)
+					
+
+					var summ_expenditure = '';
+					if(result.expenditure){
+						for(let i = 0; result.expenditure.length > i; i++){
+							summ_expenditure += `
+							<th>${result.expenditure[i][0]}: ${formatter.format(result.expenditure[i][1])}</th>`;
+						}
+					}
+					
+					$('#expenditure_current_summ').append(summ_coming)
+					
+
 					var transactions = result.res;
 					var trans_incom = 0;
 					var expenditure_trans = 0;
@@ -852,6 +888,31 @@
 				}
 			}).then(function(result) {
 				$('.resutl_table').empty();
+
+				$('#coming_current_summ').empty();
+				$('#expenditure_current_summ').empty();
+
+				var summ_coming = '';
+				if(result.coming){
+					for(let i = 0; result.coming.length > i; i++){
+						summ_coming += `
+						<th>${result.coming[i][0]}: ${formatter.format(result.coming[i][1])}</th>`;
+					}
+				}
+				
+				$('#coming_current_summ').append(summ_coming)
+				
+
+				var summ_expenditure = '';
+				if(result.expenditure){
+					for(let i = 0; result.expenditure.length > i; i++){
+						summ_expenditure += `
+						<th>${result.expenditure[i][0]}: ${formatter.format(result.expenditure[i][1])}</th>`;
+					}
+				}
+
+				$('#expenditure_current_summ').append(summ_expenditure)
+					
 				var transactions = result.res;
 				var trans_incom = 0;
 				var expenditure_trans = 0;
@@ -1007,6 +1068,46 @@
 			})
 		}
 
+	</script>
+
+	<script>
+		
+		function exportTransactions() {
+			setAwait();
+			$.ajax(
+				{
+					url: url,
+					method: 'POST',
+					data: {
+						csrfmiddlewaretoken: token,
+						type: 'export'
+					}
+				}
+			).then(function(result) {
+				var downloadREsponce = JSON.parse(result);
+				var link = document.createElement('a');
+				link.setAttribute('href', `/media/${downloadREsponce.folder}/${downloadREsponce.name}`);
+				link.setAttribute('download', `${downloadREsponce.name}`);
+				link.click();
+				returnBack();
+				return false;
+			}).catch(function(err) {
+				var x = 1;
+			});
+			function setAwait() {
+				var partnerExportButton = $('#sheetjsexport');
+				var partnerExportButtonInner = $('#transactionsExportButtonInner');
+				partnerExportButtonInner.html('Отчет выгружается...');
+				partnerExportButton.attr('disabled', '');
+			};
+			function returnBack() {
+				var partnerExportButton = $('#sheetjsexport');
+				var partnerExportButtonInner = $('#transactionsExportButtonInner');
+				partnerExportButtonInner.html('Выгрузить в excel');
+				partnerExportButton.removeAttr('disabled');
+			};
+		};
+	
 	</script>
 
 {% endblock content %}

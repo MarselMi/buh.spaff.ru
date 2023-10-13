@@ -1,8 +1,11 @@
 import json
 import decimal
 import math
+import os
+import shutil
+from collections import defaultdict
 from hashlib import md5
-import requests
+import pandas as pd
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -297,6 +300,11 @@ def transaction_view(request):
     dict_for_sql_filter = dict()
     get_param_filter = dict(request.GET)
 
+    try:
+        shutil.rmtree(os.path.abspath(f"media/{request.user}"))
+    except FileNotFoundError:
+        pass
+
     current_dict = get_currents()
 
     collapsed = request.session.get('transaction_collapse')
@@ -314,6 +322,7 @@ def transaction_view(request):
         page = 1
 
     if request.method == "POST":
+
         '''Для установки лимита вывода информации'''
         if request.POST.get('type') == 'limit25':
             request.session["limit_transactions"] = 25
@@ -391,7 +400,24 @@ def transaction_view(request):
                 offset=offset,
                 order_by=request.POST.get('name')
             )
+
+        coming = dict()
+        expenditure = dict()
+
         for tr in transactions:
+            if tr.get('type_transaction') == 'COMING':
+                if coming.get(tr.get('current_transaction')):
+                    coming[tr.get('current_transaction')] += round(float(tr.get('amount')), 2)
+                else:
+                    coming.setdefault(tr.get('current_transaction'),
+                                      round(float(tr.get('amount')), 2))
+            if tr.get('type_transaction') == 'EXPENDITURE':
+                if expenditure.get(tr.get('current_transaction')):
+                    expenditure[tr.get('current_transaction')] += round(float(tr.get('amount')), 2)
+                else:
+                    expenditure.setdefault(tr.get('current_transaction'),
+                                           round(float(tr.get('amount')), 2))
+
             tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y')
             tr['create_date_js_s'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M:%S')
             if tr.get('update_date'):
@@ -402,7 +428,11 @@ def transaction_view(request):
             tr['transaction_sum_js'] = numb_format(tr.get('transaction_sum'))
             if tr.get('commission'):
                 tr['commission_js'] = numb_format(tr.get('commission'))
-        return JsonResponse({'res': transactions})
+
+        coming = sorted(coming.items(), key=lambda a: a[0])
+        expenditure = (sorted(expenditure.items(), key=lambda a: a[0]))
+
+        return JsonResponse({'res': transactions, 'coming': coming, 'expenditure': expenditure})
 
     '''AJAX-для смены сортировки по направлению'''
     if request.POST.get('type') == 'order_desc':
@@ -431,7 +461,24 @@ def transaction_view(request):
                 offset=offset,
                 order_by=split_order_by
             )
+
+        coming = dict()
+        expenditure = dict()
+
         for tr in transactions:
+            if tr.get('type_transaction') == 'COMING':
+                if coming.get(tr.get('current_transaction')):
+                    coming[tr.get('current_transaction')] += round(float(tr.get('amount')), 2)
+                else:
+                    coming.setdefault(tr.get('current_transaction'),
+                                      round(float(tr.get('amount')), 2))
+            if tr.get('type_transaction') == 'EXPENDITURE':
+                if expenditure.get(tr.get('current_transaction')):
+                    expenditure[tr.get('current_transaction')] += round(float(tr.get('amount')), 2)
+                else:
+                    expenditure.setdefault(tr.get('current_transaction'),
+                                           round(float(tr.get('amount')), 2))
+
             tr['create_date_js'] = tr.get('create_date').strftime('%d.%m.%Y')
             tr['create_date_js_s'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M:%S')
             if tr.get('update_date'):
@@ -442,7 +489,11 @@ def transaction_view(request):
             tr['transaction_sum_js'] = numb_format(tr.get('transaction_sum'))
             if tr.get('commission'):
                 tr['commission_js'] = numb_format(tr.get('commission'))
-        return JsonResponse({'res': transactions})
+
+        coming = sorted(coming.items(), key=lambda a: a[0])
+        expenditure = (sorted(expenditure.items(), key=lambda a: a[0]))
+
+        return JsonResponse({'res': transactions, 'coming': coming, 'expenditure': expenditure})
 
     if request.user.is_superuser:
         balance_holders = get_allow_balance_holders(request.user.id, simple_user=False)
@@ -453,19 +504,23 @@ def transaction_view(request):
         transactions = get_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True, limit=limit, offset=offset, order_by=order_by)
         original_count = get_count_allow_transaction_filter(request.user.id, filter_data=dict_for_sql_filter, author_res=True)[0].get('COUNT(`mt`.`id`)')
 
-    coming_sum = 0
-    expenditure_comission = 0
-    expenditure_transaction = 0
-    expenditure_amount = 0
+    coming = dict()
+    expenditure = dict()
+
     for transaction in transactions:
         if transaction.get('type_transaction') == 'COMING':
-            coming_sum += round(float(transaction.get('amount')), 2)
+            if coming.get(transaction.get('current_transaction')):
+                coming[transaction.get('current_transaction')] += round(float(transaction.get('amount')), 2)
+            else:
+                coming.setdefault(transaction.get('current_transaction'), round(float(transaction.get('amount')), 2))
         if transaction.get('type_transaction') == 'EXPENDITURE':
-            expenditure_amount += round(float(transaction.get('amount')), 2)
-            expenditure_comission += round(float(transaction.get('commission')), 2)
-            expenditure_transaction += round(float(transaction.get('transaction_sum')), 2)
+            if expenditure.get(transaction.get('current_transaction')):
+                expenditure[transaction.get('current_transaction')] += round(float(transaction.get('amount')), 2)
+            else:
+                expenditure.setdefault(transaction.get('current_transaction'), round(float(transaction.get('amount')), 2))
         if transaction.get('commission'):
             transaction['percent'] = round((float(transaction.get('commission')) / float(transaction.get('transaction_sum')) * 100), 2)
+
     count = math.ceil(int(original_count) / limit)
 
     if request.GET.get('collapse'):
@@ -477,13 +532,52 @@ def transaction_view(request):
 
     url_params = str(request).split('/')[-1].rstrip("'>").split('&page=')[0]
 
+    if request.POST.get('type') == 'export':
+
+        if request.user.is_superuser:
+            transactions = get_allow_transaction_filter(
+                request.user.id,
+                filter_data=dict_for_sql_filter,
+                order_by=order_by
+            )
+
+        else:
+            transactions = get_allow_transaction_filter(
+                request.user.id,
+                filter_data=dict_for_sql_filter,
+                author_res=True,
+                order_by=order_by
+            )
+
+        for tr in transactions:
+            tr['create_date'] = tr.get('create_date').strftime('%d.%m.%Y в %H:%M:%S')
+            if tr.get('update_date'):
+                tr['update_date'] = tr.get('update_date').strftime('%d.%m.%Y в %H:%M')
+            tr['transaction_date'] = tr.get('transaction_date').strftime('%d.%m.%Y в %H:%M:%S')
+            tr['transaction_sum'] = str(tr.get('transaction_sum'))
+            tr['commission'] = str(tr.get('commission'))
+            tr['amount'] = str(tr.get('amount'))
+
+        df = pd.DataFrame(transactions)
+        dir_path = f'{os.path.abspath("media")}/{request.user}/'
+        file_name = f'Транзакции.xlsx'
+        file_path = f'{dir_path}{file_name}'
+        os.mkdir(dir_path)
+        df.to_excel(file_path, sheet_name='Отчет по транзакциям')
+        output = {'folder': str(request.user), 'name': file_name}
+        return HttpResponse(json.dumps(output))
+
+    coming = sorted(coming.items(), key=lambda a: a[0])
+    expenditure = (sorted(expenditure.items(), key=lambda a: a[0]))
+
     data = {
         'title': 'Транзакции', 'balance_holders': balance_holders, 'type_payments': type_payments,
         'transactions': transactions, 'authors': authors, 'get_param_filter': get_param_filter,
         'collapsed': collapsed, 'sub_type': sub_type, 'count': count, 'page': page, 'limit': limit,
-        'url_params': url_params, 'original_count': original_count, 'coming_sum': coming_sum,
-        'expenditure_amount': expenditure_amount, 'expenditure_comission': expenditure_comission,
-        'expenditure_transaction': expenditure_transaction, 'all_cur': current_dict
+        'all_cur': current_dict, 'url_params': url_params, 'original_count': original_count,
+        'coming': coming, 'expenditure': expenditure,
+        # 'coming_sum': coming_sum, 'expenditure_transaction': expenditure_transaction,
+        # 'expenditure_amount': expenditure_amount, 'expenditure_comission': expenditure_comission,
     }
 
     return render(request, 'mainapp/transactions.html', data)
