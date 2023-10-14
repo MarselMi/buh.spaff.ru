@@ -171,40 +171,138 @@ def import_transactions():
             password = obj.key
             login = obj.account
 
-            try:
-                token_request = (requests.post(
-                    'https://api.capitalist.net/',
-                    json={"operation": "get_token", "login": login},
-                    headers={"x-response-format": "json"})
-                )
+            token_request = (requests.post(
+                'https://api.capitalist.net/',
+                json={"operation": "get_token", "login": login},
+                headers={"x-response-format": "json"})
+            )
 
-                token = json.loads(token_request.content).get('data').get('token')
+            token = json.loads(token_request.content).get('data').get('token')
 
-                '''Запрос на историю транзакций'''
-                transactions_history = requests.post(
-                    'https://api.capitalist.net/',
-                    json={
-                        "operation": "get_documents_history_ext",
-                        "login": login,
-                        "token": token,
-                        "plain_password": password,
-                        "document_state": "executed",
-                        "limit": 100,
-                        "period_from": date_start
-                    },
-                    headers={"x-response-format": "json"}
-                )
-                '''Проверяю сколько страниц в ответе'''
-                page_count = int(json.loads(transactions_history.content).get('data').get('pages').get('pageCount'))
+            '''Запрос на историю транзакций'''
+            transactions_history = requests.post(
+                'https://api.capitalist.net/',
+                json={
+                    "operation": "get_documents_history_ext",
+                    "login": login,
+                    "token": token,
+                    "plain_password": password,
+                    "document_state": "executed",
+                    "limit": 100,
+                    "period_from": date_start
+                },
+                headers={"x-response-format": "json"}
+            )
+            '''Проверяю сколько страниц в ответе'''
+            page_count = int(json.loads(transactions_history.content).get('data').get('pages').get('pageCount'))
 
-                if page_count == 1:
-                    transactions = json.loads(transactions_history.content).get('data').get('history')
+            if page_count == 1:
+                transactions = json.loads(transactions_history.content).get('data').get('history')
+                for i in transactions:
+                    if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
+
+                        new_transa = Transaction
+
+                        if i.get('outgoing'):
+                            type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
+                            if i.get('description').lower().find('conversion') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                            tr_comis = i.get('tax')
+                            tr_sum = i.get('amount')
+                            amount = tr_sum + tr_comis
+                            current = Current.objects.filter(current_name=i.get('currency'))[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder -= decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+                            new_data = {
+                                'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
+                                'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
+                                'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
+                                'commission': tr_comis, 'current_id': current, 'channel': i.get('channel'),
+                                'requisite': i.get('correspondent')
+                            }
+                            new_transa.objects.create(**new_data)
+                        else:
+                            type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
+                            if i.get('description').lower().find('conversion') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                            tr_com = i.get('tax')
+                            tr_sum = i.get('amount')
+                            amount = tr_sum - tr_com
+                            current = Current.objects.filter(current_name=i.get('currency'))[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder += decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+                            new_data = {
+                                'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
+                                'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
+                                'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
+                                'commission': tr_com, 'current_id': current, 'channel': i.get('channel'),
+                                'requisite': i.get('correspondent')
+                            }
+                            new_transa.objects.create(**new_data)
+                        '''Входящие внутренние транзакции'''
+                        if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
+                            type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
+                            if i.get('description').lower().find('conversion') > 0:
+                                type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                            tr_com = i.get('tax')
+                            tr_sum = amount = i.get('destAmount')
+                            current = Current.objects.filter(current_name=i.get('destCurrency'))[0]
+                            current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
+                                current_id=current,
+                                balance_holder_id=balance_holder[0]
+                            )
+                            old_balance_balance_holder = current_balance_holder[0].holder_current_balance
+                            old_balance_balance_holder += decimal.Decimal(amount)
+                            current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
+                            new_data = {
+                                'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
+                                'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
+                                'description': i.get('description'), 'balance_holder': balance_holder[0],
+                                'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
+                                'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
+                                'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
+                                'requisite': i.get('correspondent')
+                            }
+                            new_transa.objects.create(**new_data)
+            else:
+                for page in range(page_count):
+                    transactions_req = requests.post(
+                        'https://api.capitalist.net/',
+                        json={
+                            "operation": "get_documents_history_ext",
+                            "login": login,
+                            "token": token,
+                            "plain_password": password,
+                            "document_state": "executed",
+                            "limit": 100,
+                            "page": int(page) + 1,
+                            "period_from": date_start
+                        },
+                        headers={"x-response-format": "json"}
+                    )
+                    transactions = json.loads(transactions_req.content).get('data').get('history')
                     for i in transactions:
                         if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
 
                             new_transa = Transaction
 
                             if i.get('outgoing'):
+                                '''Исходящие транзакции'''
                                 type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
                                 if i.get('description').lower().find('conversion') > 0:
                                     type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
@@ -219,17 +317,19 @@ def import_transactions():
                                 old_balance_balance_holder = current_balance_holder[0].holder_current_balance
                                 old_balance_balance_holder -= decimal.Decimal(amount)
                                 current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
                                 new_data = {
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                     'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
-                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
-                                    'commission': tr_comis, 'current_id': current, 'channel': i.get('channel'),
+                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_comis,
+                                    'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
                                     'requisite': i.get('correspondent')
                                 }
                                 new_transa.objects.create(**new_data)
                             else:
+                                '''Входящие транзакции'''
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                                 if i.get('description').lower().find('conversion') > 0:
                                     type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
@@ -244,18 +344,19 @@ def import_transactions():
                                 old_balance_balance_holder = current_balance_holder[0].holder_current_balance
                                 old_balance_balance_holder += decimal.Decimal(amount)
                                 current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
+
                                 new_data = {
                                     'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
                                     'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
-                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
-                                    'commission': tr_com, 'current_id': current, 'channel': i.get('channel'),
+                                    'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
+                                    'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
                                     'requisite': i.get('correspondent')
                                 }
                                 new_transa.objects.create(**new_data)
-                            '''Входящие внутренние транзакции'''
                             if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
+                                '''Входящие внутренние транзакции'''
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                                 if i.get('description').lower().find('conversion') > 0:
                                     type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
@@ -280,110 +381,6 @@ def import_transactions():
                                     'requisite': i.get('correspondent')
                                 }
                                 new_transa.objects.create(**new_data)
-                else:
-                    for page in range(page_count):
-                        transactions_req = requests.post(
-                            'https://api.capitalist.net/',
-                            json={
-                                "operation": "get_documents_history_ext",
-                                "login": login,
-                                "token": token,
-                                "plain_password": password,
-                                "document_state": "executed",
-                                "limit": 100,
-                                "page": int(page) + 1,
-                                "period_from": date_start
-                            },
-                            headers={"x-response-format": "json"}
-                        )
-                        transactions = json.loads(transactions_req.content).get('data').get('history')
-                        for i in transactions:
-                            if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
-
-                                new_transa = Transaction
-
-                                if i.get('outgoing'):
-                                    '''Исходящие транзакции'''
-                                    type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
-                                    if i.get('description').lower().find('conversion') > 0:
-                                        type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
-                                    tr_comis = i.get('tax')
-                                    tr_sum = i.get('amount')
-                                    amount = tr_sum + tr_comis
-                                    current = Current.objects.filter(current_name=i.get('currency'))[0]
-                                    current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
-                                        current_id=current,
-                                        balance_holder_id=balance_holder[0]
-                                    )
-                                    old_balance_balance_holder = current_balance_holder[0].holder_current_balance
-                                    old_balance_balance_holder -= decimal.Decimal(amount)
-                                    current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
-
-                                    new_data = {
-                                        'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
-                                        'type_transaction': 'EXPENDITURE', 'name': f'Capital_{i.get("number")}',
-                                        'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                        'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
-                                        'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_comis,
-                                        'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
-                                        'requisite': i.get('correspondent')
-                                    }
-                                    new_transa.objects.create(**new_data)
-                                else:
-                                    '''Входящие транзакции'''
-                                    type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                                    if i.get('description').lower().find('conversion') > 0:
-                                        type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
-                                    tr_com = i.get('tax')
-                                    tr_sum = i.get('amount')
-                                    amount = tr_sum - tr_com
-                                    current = Current.objects.filter(current_name=i.get('currency'))[0]
-                                    current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
-                                        current_id=current,
-                                        balance_holder_id=balance_holder[0]
-                                    )
-                                    old_balance_balance_holder = current_balance_holder[0].holder_current_balance
-                                    old_balance_balance_holder += decimal.Decimal(amount)
-                                    current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
-
-                                    new_data = {
-                                        'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
-                                        'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
-                                        'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                        'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
-                                        'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
-                                        'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
-                                        'requisite': i.get('correspondent')
-                                    }
-                                    new_transa.objects.create(**new_data)
-                                if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
-                                    '''Входящие внутренние транзакции'''
-                                    type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                                    if i.get('description').lower().find('conversion') > 0:
-                                        type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
-                                    tr_com = i.get('tax')
-                                    tr_sum = amount = i.get('destAmount')
-                                    current = Current.objects.filter(current_name=i.get('destCurrency'))[0]
-                                    current_balance_holder = CurrentBalanceHolderBalance.objects.filter(
-                                        current_id=current,
-                                        balance_holder_id=balance_holder[0]
-                                    )
-                                    old_balance_balance_holder = current_balance_holder[0].holder_current_balance
-                                    old_balance_balance_holder += decimal.Decimal(amount)
-                                    current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
-
-                                    new_data = {
-                                        'transaction_date': dt.fromtimestamp(int(i.get('timestamp'))),
-                                        'type_transaction': 'COMING', 'name': f'Capital_{i.get("number")}',
-                                        'description': i.get('description'), 'balance_holder': balance_holder[0],
-                                        'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
-                                        'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
-                                        'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
-                                        'requisite': i.get('correspondent')
-                                    }
-                                    new_transa.objects.create(**new_data)
-            except:
-                pass
 
         elif obj.bank.lower() == 'modulbank':
             date_start = obj.date_start.strftime('%Y-%m-%dT00:00:00')+"Z"
