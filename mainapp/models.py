@@ -109,6 +109,9 @@ class Transaction(models.Model):
     type_transaction = models.CharField(max_length=15, choices=TRANSACTION_CHOICE, verbose_name='Тип транзакции')
     transaction_date = models.DateTimeField(verbose_name='Время Транзакции')
 
+    channel = models.CharField(max_length=65, blank=True, null=True, default=None, verbose_name='Источник откуда/куда')
+    requisite = models.CharField(max_length=65, blank=True, null=True, default=None, verbose_name='Реквизиты')
+
     name = models.CharField(max_length=65, verbose_name='Наименование')
     description = models.TextField(blank=True, null=True, default=None, verbose_name='Подробнее')
     balance_holder = models.ForeignKey('BalanceHolder', on_delete=models.SET_NULL, null=True, blank=True,

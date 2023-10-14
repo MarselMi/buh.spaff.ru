@@ -223,6 +223,8 @@ def get_allow_transaction_filter(pk, author_res=None, filter_data=None, limit=''
                             `mt`.`amount`,
                             `mt`.`commission`,
                             `mt`.`transaction_sum`,
+                            `mt`.`channel` as 'Источник',
+                            `mt`.`requisite` as 'Реквизиты',
                             (SELECT `mp`.`pay_type` FROM `mainapp_paytype` mp WHERE `mt`.`type_payment_id`=`mp`.`id`) as 'type_payment',
                             (SELECT `mu`.`username` FROM `mainapp_customuser` mu WHERE `mt`.`author_id`=`mu`.`id`) as 'author',
                             (SELECT `sb`.`sub_type` FROM `mainapp_subpaytype` sb WHERE `sb`.`id`=`mt`.`sub_type_pay_id`) as sub_type_pay_id,

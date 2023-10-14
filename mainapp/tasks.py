@@ -100,7 +100,8 @@ def import_transactions():
                                     'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': status, 'author_id': system_author,
                                     'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
-                                    'sub_type_pay': sub_type[0], 'current_id': current,
+                                    'sub_type_pay': sub_type[0], 'current_id': current, 'channel': transaction.get('recipient'),
+                                    'requisite': transaction.get('recipientAccount')
                                 }
                             else:
                                 new_data = {
@@ -108,7 +109,8 @@ def import_transactions():
                                     'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': status, 'author_id': system_author,
                                     'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
-                                    'current_id': current,
+                                    'current_id': current, 'channel': transaction.get('recipient'),
+                                    'requisite': transaction.get('recipientAccount')
                                 }
                             transaction_new.objects.create(**new_data)
                         else:
@@ -135,7 +137,8 @@ def import_transactions():
                                     'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': status, 'author_id': system_author,
                                     'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
-                                    'sub_type_pay': sub_type[0], 'current_id': current,
+                                    'sub_type_pay': sub_type[0], 'current_id': current,  'channel': transaction.get('payerName'),
+                                    'requisite': transaction.get('payerAccount')
                                 }
                             else:
                                 new_data = {
@@ -143,7 +146,8 @@ def import_transactions():
                                     'name': tr_name, 'description': description, 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': status, 'author_id': system_author,
                                     'transaction_sum': amount, 'import_id': import_id, 'type_payment': pay_type[0],
-                                    'current_id': current,
+                                    'current_id': current, 'channel': transaction.get('payerName'),
+                                    'requisite': transaction.get('payerAccount')
                                 }
                             transaction_new.objects.create(**new_data)
             except:
@@ -223,7 +227,8 @@ def import_transactions():
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                     'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
-                                    'commission': tr_comis, 'current_id': current,
+                                    'commission': tr_comis, 'current_id': current, 'channel': i.get('channel'),
+                                    'requisite': i.get('correspondent')
                                 }
                                 new_transa.objects.create(**new_data)
                             else:
@@ -247,7 +252,8 @@ def import_transactions():
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                     'transaction_sum': tr_sum, 'import_id': i.get('id'), 'type_payment': type_payment,
-                                    'commission': tr_com, 'current_id': current,
+                                    'commission': tr_com, 'current_id': current, 'channel': i.get('channel'),
+                                    'requisite': i.get('correspondent')
                                 }
                                 new_transa.objects.create(**new_data)
                             '''Входящие внутренние транзакции'''
@@ -272,7 +278,8 @@ def import_transactions():
                                     'description': i.get('description'), 'balance_holder': balance_holder[0],
                                     'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                     'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
-                                    'type_payment': type_payment, 'current_id': current,
+                                    'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
+                                    'requisite': i.get('correspondent')
                                 }
                                 new_transa.objects.create(**new_data)
                 else:
@@ -320,7 +327,8 @@ def import_transactions():
                                         'description': i.get('description'), 'balance_holder': balance_holder[0],
                                         'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                         'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_comis,
-                                        'type_payment': type_payment, 'current_id': current,
+                                        'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
+                                        'requisite': i.get('correspondent')
                                     }
                                     new_transa.objects.create(**new_data)
                                 else:
@@ -346,7 +354,8 @@ def import_transactions():
                                         'description': i.get('description'), 'balance_holder': balance_holder[0],
                                         'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                         'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
-                                        'type_payment': type_payment, 'current_id': current,
+                                        'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
+                                        'requisite': i.get('correspondent')
                                     }
                                     new_transa.objects.create(**new_data)
                                 if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
@@ -371,7 +380,8 @@ def import_transactions():
                                         'description': i.get('description'), 'balance_holder': balance_holder[0],
                                         'amount': amount, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                         'transaction_sum': tr_sum, 'import_id': i.get('id'), 'commission': tr_com,
-                                        'type_payment': type_payment, 'current_id': current,
+                                        'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
+                                        'requisite': i.get('correspondent')
                                     }
                                     new_transa.objects.create(**new_data)
             except:
@@ -449,7 +459,8 @@ def import_transactions():
                                     'description': description, 'balance_holder': balance_holder[0],
                                     'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
                                     'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
-                                    'type_payment': type_payment,
+                                    'type_payment': type_payment, 'channel': transaction.get('contragentName'),
+                                    'requisite': transaction.get('contragentBankAccountNumber')
                                 }
                                 transaction_new.objects.create(**new_data)
                             else:
@@ -477,6 +488,8 @@ def import_transactions():
                                     'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
                                     'import_id': transaction.get('id'), 'type_payment': type_payment,
                                     'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
+                                    'channel': transaction.get('contragentName'),
+                                    'requisite': transaction.get('contragentBankAccountNumber')
                                 }
                                 transaction_new.objects.create(**new_data)
                 else:
@@ -524,7 +537,8 @@ def import_transactions():
                                         'description': description, 'balance_holder': balance_holder[0],
                                         'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
                                         'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
-                                        'type_payment': type_payment,
+                                        'type_payment': type_payment, 'channel': transaction.get('contragentName'),
+                                        'requisite': transaction.get('contragentBankAccountNumber')
                                     }
                                     transaction_new.objects.create(**new_data)
                                 else:
@@ -552,6 +566,8 @@ def import_transactions():
                                         'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
                                         'import_id': transaction.get('id'), 'type_payment': type_payment,
                                         'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                        'channel': transaction.get('contragentName'),
+                                        'requisite': transaction.get('contragentBankAccountNumber')
                                     }
                                     transaction_new.objects.create(**new_data)
 
@@ -615,7 +631,8 @@ def import_transactions():
                                     'description': description, 'balance_holder': balance_holder[0],
                                     'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
                                     'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
-                                    'type_payment': type_payment,
+                                    'type_payment': type_payment, 'channel': transaction.get('contragentName'),
+                                    'requisite': transaction.get('contragentBankAccountNumber')
                                 }
                                 transaction_new.objects.create(**new_data)
                             else:
@@ -643,6 +660,8 @@ def import_transactions():
                                     'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
                                     'import_id': transaction.get('id'), 'type_payment': type_payment,
                                     'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
+                                    'channel': transaction.get('contragentName'),
+                                    'requisite': transaction.get('contragentBankAccountNumber')
                                 }
                                 transaction_new.objects.create(**new_data)
             except:
