@@ -205,8 +205,9 @@ def import_transactions():
 
                         if i.get('outgoing'):
                             type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
-                            if i.get('description').lower().find('conversion') > 0:
-                                type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                            if i.get('description'):
+                                if i.get('description').lower().find('conversion') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
                             tr_comis = i.get('tax')
                             tr_sum = i.get('amount')
                             amount = tr_sum + tr_comis
@@ -230,8 +231,9 @@ def import_transactions():
                             new_transa.objects.create(**new_data)
                         else:
                             type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                            if i.get('description').lower().find('conversion') > 0:
-                                type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                            if i.get('description'):
+                                if i.get('description').lower().find('conversion') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
                             tr_com = i.get('tax')
                             tr_sum = i.get('amount')
                             amount = tr_sum - tr_com
@@ -256,8 +258,9 @@ def import_transactions():
                         '''Входящие внутренние транзакции'''
                         if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
                             type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                            if i.get('description').lower().find('conversion') > 0:
-                                type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                            if i.get('description'):
+                                if i.get('description').lower().find('conversion') > 0:
+                                    type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
                             tr_com = i.get('tax')
                             tr_sum = amount = i.get('destAmount')
                             current = Current.objects.filter(current_name=i.get('destCurrency'))[0]
@@ -304,8 +307,9 @@ def import_transactions():
                             if i.get('outgoing'):
                                 '''Исходящие транзакции'''
                                 type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
-                                if i.get('description').lower().find('conversion') > 0:
-                                    type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                                if i.get('description'):
+                                    if i.get('description').lower().find('conversion') > 0:
+                                        type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
                                 tr_comis = i.get('tax')
                                 tr_sum = i.get('amount')
                                 amount = tr_sum + tr_comis
@@ -331,8 +335,9 @@ def import_transactions():
                             else:
                                 '''Входящие транзакции'''
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                                if i.get('description').lower().find('conversion') > 0:
-                                    type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                                if i.get('description'):
+                                    if i.get('description').lower().find('conversion') > 0:
+                                        type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
                                 tr_com = i.get('tax')
                                 tr_sum = i.get('amount')
                                 amount = tr_sum - tr_com
@@ -358,8 +363,9 @@ def import_transactions():
                             if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
                                 '''Входящие внутренние транзакции'''
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
-                                if i.get('description').lower().find('conversion') > 0:
-                                    type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
+                                if i.get('description'):
+                                    if i.get('description').lower().find('conversion') > 0:
+                                        type_payment = PayType.objects.filter(pay_type='Обмен в Capitalist')[0]
                                 tr_com = i.get('tax')
                                 tr_sum = amount = i.get('destAmount')
                                 current = Current.objects.filter(current_name=i.get('destCurrency'))[0]
