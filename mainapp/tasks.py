@@ -31,7 +31,7 @@ def import_transactions():
                 for transaction in transactions_objects:
                     transaction_new = Transaction
                     sub_type = None
-                    if len(Transaction.objects.filter(import_id=transaction.get("operationId"))) == 0:
+                    if Transaction.objects.filter(import_id=transaction.get("operationId")).exists() is False:
                         pay_type = PayType.objects.filter(pay_type='Временная категория')
                         if transaction.get('paymentPurpose').lower().find('cloudpayments') > -1:
                             pay_type = PayType.objects.filter(pay_type='CloudPayments')
