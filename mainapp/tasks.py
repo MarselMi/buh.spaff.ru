@@ -31,7 +31,7 @@ def import_transactions():
                 for transaction in transactions_objects:
                     transaction_new = Transaction
                     sub_type = None
-                    if Transaction.objects.filter(import_id=transaction.get("operationId")).exists() is False:
+                    if Transaction.objects.filter(import_id=f'{obj.account}_{transaction.get("operationId")}').exists() is False:
                         pay_type = PayType.objects.filter(pay_type='Временная категория')
                         if transaction.get('paymentPurpose').lower().find('cloudpayments') > -1:
                             pay_type = PayType.objects.filter(pay_type='CloudPayments')
@@ -78,7 +78,7 @@ def import_transactions():
 
                         if transaction.get('payerAccount') == obj.account:
                             type_transaction = 'EXPENDITURE'
-                            import_id = transaction.get('operationId')
+                            import_id = f'{obj.account}_{transaction.get("operationId")}'
                             tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
                             status = 'SUCCESSFULLY'
                             transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d')
@@ -115,7 +115,7 @@ def import_transactions():
                             transaction_new.objects.create(**new_data)
                         else:
                             type_transaction = 'COMING'
-                            import_id = transaction.get('operationId')
+                            import_id = f'{obj.account}_{transaction.get("operationId")}'
                             tr_name = f"{transaction.get('paymentPurpose')[:28]}..."
                             status = 'SUCCESSFULLY'
                             transaction_date = dt.strptime(transaction.get('date'), '%Y-%m-%d')
