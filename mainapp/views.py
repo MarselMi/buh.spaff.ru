@@ -568,7 +568,7 @@ def transaction_view(request):
         return HttpResponse(json.dumps(output))
 
     coming = sorted(coming.items(), key=lambda a: a[0])
-    expenditure = (sorted(expenditure.items(), key=lambda a: a[0]))
+    expenditure = sorted(expenditure.items(), key=lambda a: a[0])
 
     tr_types = {
         "Выберите тип транзакции": "",
@@ -1218,7 +1218,7 @@ def balance_holder_update_view(request, pk):
 
 
 def payment_type_view(request):
-    pay_type = PayType.objects.all().order_by('-id')
+    pay_type = PayType.objects.all().order_by('id')
     sub_pay_types = SubPayType.objects.all()
     if request.method == 'POST':
         '''Проверка дублирования подтипа платежа при создании '''
