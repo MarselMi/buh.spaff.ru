@@ -1,5 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 import os
+from datetime import timedelta
+
 from celery import Celery
 from celery.schedules import crontab
 
@@ -13,7 +15,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.beat_schedule = {
     'import_transactions': {
         'task': 'mainapp.tasks.import_transactions',
-        'schedule': crontab(minute='*/2'),
+        'schedule': timedelta(seconds=120),
         'args': ()
     }
 }
