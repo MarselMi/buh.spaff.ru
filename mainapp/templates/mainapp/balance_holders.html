@@ -59,7 +59,7 @@
 													{% if object.balance %}
 														{% for all_balance in object.balance %}
 															{% if all_balance.holder_current_balance %}
-																<option>
+																<ol>
 																	{{ all_balance.holder_current_balance|numb_format }}
 																	{% if all_balance.name == 'USD' %}
 																		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-dollar" viewBox="0 0 16 16">
@@ -92,7 +92,7 @@
 																	{% elif all_balance.name == 'RUR' %}
 																		<i class="fa-regular fa-ruble-sign ms-1"></i>
 																	{% endif %}
-																</option>
+																</ol>
 															{% endif %}
 														{% endfor %}
 													{% endif %}

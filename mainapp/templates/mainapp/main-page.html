@@ -27,9 +27,9 @@
 												{% for curlist in curr %}
 													{% if curlist.balance_holder_id_id == holder.id %}
 														{% if curlist.holder_current_balance %}
-															<option>
+															<ol class="mb-2">
 																{{ curlist.name }}: {{ curlist.holder_current_balance|numb_format }}
-															</option>
+															</ol>
 														{% endif %}
 													{% endif %}
 												{% endfor %}
