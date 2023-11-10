@@ -24,15 +24,15 @@
 								<div class="inner" style="text-align: -webkit-center;border-radius: 20px;">
 									<h5>
 										{% for curr in currents %}
-												{% for curlist in curr %}
-													{% if curlist.balance_holder_id_id == holder.id %}
-														{% if curlist.holder_current_balance %}
-															<ol class="mb-2" >
-																{{ curlist.name }}: <span style="display:inline-block;">{{ curlist.holder_current_balance|numb_format }}</span>
-															</ol>
-														{% endif %}
+											{% for curlist in curr %}
+												{% if curlist.balance_holder_id_id == holder.id %}
+													{% if curlist.holder_current_balance %}
+														<span class="mb-2">
+															{{ curlist.name }}: <span style="display:inline-block;">{{ curlist.holder_current_balance|numb_format }}</span>
+														</span><br>
 													{% endif %}
-												{% endfor %}
+												{% endif %}
+											{% endfor %}
 										{% endfor %}
 									</h5>
 									{{ holder.organization_holder }}
