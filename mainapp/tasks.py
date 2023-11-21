@@ -47,7 +47,7 @@ def import_transactions():
                 for transaction in transactions_objects:
                     transaction_new = Transaction
                     sub_type = None
-                    if Transaction.objects.filter(import_id=f'{obj.account}_{transaction.get("operationId")}').count():
+                    if Transaction.objects.filter(import_id=f'{obj.account}_{transaction.get("operationId")}').count() == 0:
                         pay_type = PayType.objects.filter(pay_type='Временная категория')
                         if transaction.get('paymentPurpose').lower().find('cloudpayments') > -1:
                             pay_type = PayType.objects.filter(pay_type='CloudPayments')
@@ -220,7 +220,7 @@ def import_transactions():
                 if page_count == 1:
                     transactions = json.loads(transactions_history.content).get('data').get('history')
                     for i in transactions:
-                        if Transaction.objects.filter(import_id=i.get('id')).count():
+                        if Transaction.objects.filter(import_id=i.get('id')).count() == 0:
 
                             new_transa = Transaction
 
@@ -445,7 +445,7 @@ def import_transactions():
 
                 if len(transactions_history) < 50:
                     for transaction in transactions_history:
-                        if Transaction.objects.filter(import_id=transaction.get("id")).exists() is False:
+                        if Transaction.objects.filter(import_id=transaction.get("id")).count() == 0:
                             if transaction.get('category') == "Credit":
                                 sub_type = None
                                 description = transaction.get('paymentPurpose')
@@ -617,7 +617,7 @@ def import_transactions():
                         ).content)
 
                     for transaction in transactions_history:
-                        if Transaction.objects.filter(import_id=transaction.get("id")).exists() is False:
+                        if Transaction.objects.filter(import_id=transaction.get("id")).count() == 0:
                             if transaction.get('category') == "Credit":
                                 sub_type = None
                                 description = transaction.get('paymentPurpose')
