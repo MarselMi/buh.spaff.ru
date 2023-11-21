@@ -321,7 +321,7 @@ def import_transactions():
                         )
                         transactions = json.loads(transactions_req.content).get('data').get('history')
                         for i in transactions:
-                            if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
+                            if Transaction.objects.filter(import_id=i.get('id')).count() == 0:
 
                                 new_transa = Transaction
 
@@ -523,7 +523,7 @@ def import_transactions():
                 else:
                     while len(transactions_history) == 50:
                         for transaction in transactions_history:
-                            if Transaction.objects.filter(import_id=transaction.get("id")).count():
+                            if Transaction.objects.filter(import_id=transaction.get("id")).count() == 0:
                                 if transaction.get('category') == "Credit":
                                     sub_type = None
                                     description = transaction.get('paymentPurpose')
