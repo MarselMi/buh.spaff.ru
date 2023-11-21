@@ -9,10 +9,26 @@ from mainapp.models import (
 import requests
 import json
 import time
+import redis
 
 
 @app.task
 def import_transactions():
+
+    r = redis.Redis(db=1)
+    if not r.get('tr_check'):
+        r['tr_check'] = 0
+
+    try:
+        check = int(r.get('tr_check'))
+    except TypeError:
+        check = 0
+
+    if check == 1:
+        return 0
+
+    r['tr_check'] = 1
+
     objects_active = ImportData.objects.filter(status_import=True)
     system_author = int(CustomUser.objects.filter(username='ImportTransact')[0].id)
     for obj in objects_active:
@@ -31,7 +47,7 @@ def import_transactions():
                 for transaction in transactions_objects:
                     transaction_new = Transaction
                     sub_type = None
-                    if len(Transaction.objects.filter(import_id=f'{obj.account}_{transaction.get("operationId")}')) == 0:
+                    if Transaction.objects.filter(import_id=f'{obj.account}_{transaction.get("operationId")}').count():
                         pay_type = PayType.objects.filter(pay_type='Временная категория')
                         if transaction.get('paymentPurpose').lower().find('cloudpayments') > -1:
                             pay_type = PayType.objects.filter(pay_type='CloudPayments')
@@ -204,7 +220,7 @@ def import_transactions():
                 if page_count == 1:
                     transactions = json.loads(transactions_history.content).get('data').get('history')
                     for i in transactions:
-                        if len(Transaction.objects.filter(import_id=i.get('id'))) == 0:
+                        if Transaction.objects.filter(import_id=i.get('id')).count():
 
                             new_transa = Transaction
 
@@ -507,7 +523,7 @@ def import_transactions():
                 else:
                     while len(transactions_history) == 50:
                         for transaction in transactions_history:
-                            if Transaction.objects.filter(import_id=transaction.get("id")).exists() is False:
+                            if Transaction.objects.filter(import_id=transaction.get("id")).count():
                                 if transaction.get('category') == "Credit":
                                     sub_type = None
                                     description = transaction.get('paymentPurpose')
@@ -682,3 +698,5 @@ def import_transactions():
                 import_object.update(repyt_start_date=new_start)
             except:
                 pass
+
+    r['tr_check'] = 0
