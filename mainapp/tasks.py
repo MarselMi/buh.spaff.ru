@@ -444,12 +444,12 @@ def import_transactions():
                 transaction_new = Transaction
 
                 if len(transactions_history) < 50:
+                    tr_bulk_list = []
                     for transaction in transactions_history:
                         if Transaction.objects.filter(import_id=transaction.get("id")).count() == 0:
                             if transaction.get('category') == "Credit":
                                 sub_type = None
                                 description = transaction.get('paymentPurpose')
-
                                 if description.lower().find('реклам') > 0:
                                     type_payment = PayType.objects.filter(pay_type='Реклама')[0]
                                 elif description.lower().find('комиссия за') > 0:
@@ -465,11 +465,9 @@ def import_transactions():
                                     type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
                                 else:
                                     type_payment = PayType.objects.filter(pay_type='Прочие')[0]
-
                                 tr_com = 0
                                 tr_current = 'RUR'
                                 tr_sum = decimal.Decimal(transaction.get('amount'))
-
                                 tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
                                 amount = tr_sum + tr_com
                                 current = Current.objects.filter(current_name=tr_current)[0]
@@ -480,7 +478,6 @@ def import_transactions():
                                 old_balance_balance_holder = current_balance_holder[0].holder_current_balance
                                 old_balance_balance_holder -= decimal.Decimal(amount)
                                 current_balance_holder.update(holder_current_balance=old_balance_balance_holder)
-
                                 new_data = {
                                     'transaction_date': tr_datetime, 'status': 'SUCCESSFULLY', 'author_id': system_author,
                                     'type_transaction': 'EXPENDITURE', 'current_id': current, 'sub_type_pay': sub_type,
@@ -490,15 +487,13 @@ def import_transactions():
                                     'type_payment': type_payment, 'channel': transaction.get('contragentName'),
                                     'requisite': transaction.get('contragentBankAccountNumber')
                                 }
-                                transaction_new.objects.create(**new_data)
+                                tr_bulk_list.append(Transaction(**new_data))
                             else:
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                                 description = transaction.get('paymentPurpose')
-
                                 tr_com = 0
                                 tr_current = 'RUR'
                                 tr_sum = decimal.Decimal(transaction.get('amount'))
-
                                 tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
                                 amount = tr_sum + tr_com
                                 current = Current.objects.filter(current_name=tr_current)[0]
@@ -519,15 +514,17 @@ def import_transactions():
                                     'channel': transaction.get('contragentName'),
                                     'requisite': transaction.get('contragentBankAccountNumber')
                                 }
-                                transaction_new.objects.create(**new_data)
+                                tr_bulk_list.append(Transaction(**new_data))
+                    if tr_bulk_list:
+                        Transaction.objects.bulk_create(tr_bulk_list)
                 else:
                     while len(transactions_history) == 50:
+                        tr_bulk_list = []
                         for transaction in transactions_history:
                             if Transaction.objects.filter(import_id=transaction.get("id")).count() == 0:
                                 if transaction.get('category') == "Credit":
                                     sub_type = None
                                     description = transaction.get('paymentPurpose')
-
                                     if description.lower().find('реклам') > 0:
                                         type_payment = PayType.objects.filter(pay_type='Реклама')[0]
                                     elif description.lower().find('комиссия за') > 0:
@@ -543,11 +540,9 @@ def import_transactions():
                                         type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
                                     else:
                                         type_payment = PayType.objects.filter(pay_type='Прочие')[0]
-
                                     tr_com = 0
                                     tr_current = 'RUR'
                                     tr_sum = decimal.Decimal(transaction.get('amount'))
-
                                     tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
                                     amount = tr_sum + tr_com
                                     current = Current.objects.filter(current_name=tr_current)[0]
@@ -564,19 +559,17 @@ def import_transactions():
                                         'type_transaction': 'EXPENDITURE', 'current_id': current, 'sub_type_pay': sub_type,
                                         'description': description, 'balance_holder': balance_holder[0],
                                         'amount': amount, 'transaction_sum': tr_sum, 'import_id': transaction.get('id'),
-                                        'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                        'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
                                         'type_payment': type_payment, 'channel': transaction.get('contragentName'),
                                         'requisite': transaction.get('contragentBankAccountNumber')
                                     }
-                                    transaction_new.objects.create(**new_data)
+                                    tr_bulk_list.append(Transaction(**new_data))
                                 else:
                                     type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                                     description = transaction.get('paymentPurpose')
-
                                     tr_com = 0
                                     tr_current = 'RUR'
                                     tr_sum = decimal.Decimal(transaction.get('amount'))
-
                                     tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
                                     amount = tr_sum + tr_com
                                     current = Current.objects.filter(current_name=tr_current)[0]
@@ -593,15 +586,15 @@ def import_transactions():
                                         'type_transaction': 'COMING', 'current_id': current, 'description': description,
                                         'balance_holder': balance_holder[0], 'amount': amount, 'transaction_sum': tr_sum,
                                         'import_id': transaction.get('id'), 'type_payment': type_payment,
-                                        'commission': tr_com, 'name': f'ModulBank_{transaction.get("companyId")[:8]}',
+                                        'commission': tr_com, 'name': f'ModulBank_{transaction.get("id")[:8]}',
                                         'channel': transaction.get('contragentName'),
                                         'requisite': transaction.get('contragentBankAccountNumber')
                                     }
-                                    transaction_new.objects.create(**new_data)
-
+                                    tr_bulk_list.append(Transaction(**new_data))
+                        if tr_bulk_list:
+                            Transaction.objects.bulk_create(tr_bulk_list)
                         skip_count += 50
                         time.sleep(1)
-
                         transactions_history = json.loads(requests.post(
                             f"https://api.modulbank.ru/v1/operation-history/{corr_account_id}/",
                             headers={'Authorization': f'Bearer {obj.key}'},
@@ -615,13 +608,12 @@ def import_transactions():
                                 "records": 50
                             }
                         ).content)
-
+                    tr_bulk_list = []
                     for transaction in transactions_history:
                         if Transaction.objects.filter(import_id=transaction.get("id")).count() == 0:
                             if transaction.get('category') == "Credit":
                                 sub_type = None
                                 description = transaction.get('paymentPurpose')
-
                                 if description.lower().find('реклам') > 0:
                                     type_payment = PayType.objects.filter(pay_type='Реклама')[0]
                                 elif description.lower().find('комиссия за') > 0:
@@ -637,11 +629,9 @@ def import_transactions():
                                     type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
                                 else:
                                     type_payment = PayType.objects.filter(pay_type='Прочие')[0]
-
                                 tr_com = 0
                                 tr_current = 'RUR'
                                 tr_sum = decimal.Decimal(transaction.get('amount'))
-
                                 tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
                                 amount = tr_sum + tr_com
                                 current = Current.objects.filter(current_name=tr_current)[0]
@@ -662,15 +652,13 @@ def import_transactions():
                                     'type_payment': type_payment, 'channel': transaction.get('contragentName'),
                                     'requisite': transaction.get('contragentBankAccountNumber')
                                 }
-                                transaction_new.objects.create(**new_data)
+                                tr_bulk_list.append(Transaction(**new_data))
                             else:
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                                 description = transaction.get('paymentPurpose')
-
                                 tr_com = 0
                                 tr_current = 'RUR'
                                 tr_sum = decimal.Decimal(transaction.get('amount'))
-
                                 tr_datetime = dt.strptime(transaction.get('executed'), '%Y-%m-%dT%H:%M:%S')
                                 amount = tr_sum + tr_com
                                 current = Current.objects.filter(current_name=tr_current)[0]
@@ -691,7 +679,9 @@ def import_transactions():
                                     'channel': transaction.get('contragentName'),
                                     'requisite': transaction.get('contragentBankAccountNumber')
                                 }
-                                transaction_new.objects.create(**new_data)
+                                tr_bulk_list.append(Transaction(**new_data))
+                    if tr_bulk_list:
+                        Transaction.objects.bulk_create(tr_bulk_list)
 
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
