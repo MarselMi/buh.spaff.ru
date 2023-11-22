@@ -36,7 +36,7 @@
 											<td>{{ object.status|change_status|safe }}</td>
 											<td>{{ object.transaction_date|dash|safe }}</td>
 											<td>{{ object.amount|change_sum_trans|safe }}</td>
-											<td>{{ object.description|dash|safe }}</td>
+											<td>{{ object.description|replace_none|dash|safe }}</td>
 											<td>{{ object.type_payment|pay_type_decode|safe }}</td>
 											<td>{{ object.sub_type_pay|sub_pay_type_decode|safe }}</td>
 											<td>{% if object.check_img %}

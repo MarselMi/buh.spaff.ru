@@ -37,9 +37,15 @@ def translate_import(obj):
 def pay_type_decode(obj):
     if obj:
         slpit_object = obj.split('/')
-        first_el = PayType.objects.filter(pk=slpit_object[0])[0]
-        second_el = PayType.objects.filter(pk=slpit_object[1])[0]
-        return f'{first_el.pay_type}/{second_el.pay_type}'
+        try:
+            first_el = PayType.objects.filter(pk=slpit_object[0])[0].pay_type
+        except ValueError:
+            first_el = ''
+        try:
+            second_el = PayType.objects.filter(pk=slpit_object[1])[0].pay_type
+        except ValueError:
+            second_el = ''
+        return f'{first_el}/{second_el}'
     return f'&ndash;'
 
 
@@ -54,12 +60,29 @@ def translate_account_type(obj):
 
 
 @register.filter
+def replace_none(obj):
+    if obj:
+        obj = obj.replace('None', '')
+        replace_obj = obj.split('/')
+        if replace_obj[0] == replace_obj[1]:
+            return '&ndash;'
+        else:
+            return f'{replace_obj[0]}/{replace_obj[1]}'
+
+
+@register.filter
 def sub_pay_type_decode(obj):
     if obj:
         slpit_object = obj.split('/')
-        first_el = SubPayType.objects.filter(pk=slpit_object[0])[0]
-        second_el = SubPayType.objects.filter(pk=slpit_object[1])[0]
-        return f'{first_el.sub_type}/{second_el.sub_type}'
+        try:
+            first_el = SubPayType.objects.filter(pk=slpit_object[0])[0].sub_type
+        except ValueError:
+            first_el = '-'
+        try:
+            second_el = SubPayType.objects.filter(pk=slpit_object[1])[0].sub_type
+        except ValueError:
+            second_el = '-'
+        return f'{first_el}/{second_el}'
     return f'&ndash;'
 
 
