@@ -441,7 +441,6 @@ def import_transactions():
                         "records": 50
                     }
                 ).content)
-                transaction_new = Transaction
 
                 if len(transactions_history) < 50:
                     tr_bulk_list = []
