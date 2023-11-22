@@ -44,10 +44,10 @@ def import_transactions():
                     f"https://business.tinkoff.ru/openapi/api/v1/bank-statement?accountNumber={obj.account}&from={date_start}&till={date_end}",
                     headers={'Authorization': f'Bearer {obj.key}'}
                 ).content).get('operation')
+                tr_bulk_list = []
                 for transaction in transactions_objects:
-                    transaction_new = Transaction
-                    sub_type = None
                     if Transaction.objects.filter(import_id=f'{obj.account}_{transaction.get("operationId")}').count() == 0:
+                        sub_type = None
                         pay_type = PayType.objects.filter(pay_type='Временная категория')
                         if transaction.get('paymentPurpose').lower().find('cloudpayments') > -1:
                             pay_type = PayType.objects.filter(pay_type='CloudPayments')
@@ -128,7 +128,7 @@ def import_transactions():
                                     'current_id': current, 'channel': transaction.get('recipient'),
                                     'requisite': transaction.get('recipientAccount')
                                 }
-                            transaction_new.objects.create(**new_data)
+                            tr_bulk_list.append(Transaction(**new_data))
                         else:
                             type_transaction = 'COMING'
                             import_id = f'{obj.account}_{transaction.get("operationId")}'
@@ -165,7 +165,9 @@ def import_transactions():
                                     'current_id': current, 'channel': transaction.get('payerName'),
                                     'requisite': transaction.get('payerAccount')
                                 }
-                            transaction_new.objects.create(**new_data)
+                            tr_bulk_list.append(Transaction(**new_data))
+                if tr_bulk_list:
+                    Transaction.objects.bulk_create(tr_bulk_list)
 
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
@@ -218,12 +220,10 @@ def import_transactions():
                 page_count = int(json.loads(transactions_history.content).get('data').get('pages').get('pageCount'))
 
                 if page_count == 1:
+                    tr_bulk_list = []
                     transactions = json.loads(transactions_history.content).get('data').get('history')
                     for i in transactions:
                         if Transaction.objects.filter(import_id=i.get('id')).count() == 0:
-
-                            new_transa = Transaction
-
                             if i.get('outgoing'):
                                 type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
                                 if i.get('description'):
@@ -249,7 +249,7 @@ def import_transactions():
                                     'commission': tr_comis, 'current_id': current, 'channel': i.get('channel'),
                                     'requisite': i.get('correspondent')
                                 }
-                                new_transa.objects.create(**new_data)
+                                tr_bulk_list.append(Transaction(**new_data))
                             else:
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
                                 if i.get('description'):
@@ -275,7 +275,7 @@ def import_transactions():
                                     'commission': tr_com, 'current_id': current, 'channel': i.get('channel'),
                                     'requisite': i.get('correspondent')
                                 }
-                                new_transa.objects.create(**new_data)
+                                tr_bulk_list.append(Transaction(**new_data))
                             '''Входящие внутренние транзакции'''
                             if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
                                 type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
@@ -302,7 +302,9 @@ def import_transactions():
                                     'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
                                     'requisite': i.get('correspondent')
                                 }
-                                new_transa.objects.create(**new_data)
+                                tr_bulk_list.append(Transaction(**new_data))
+                    if tr_bulk_list:
+                        Transaction.objects.bulk_create(tr_bulk_list)
                 else:
                     for page in range(page_count):
                         transactions_req = requests.post(
@@ -320,11 +322,9 @@ def import_transactions():
                             headers={"x-response-format": "json"}
                         )
                         transactions = json.loads(transactions_req.content).get('data').get('history')
+                        tr_bulk_list = []
                         for i in transactions:
                             if Transaction.objects.filter(import_id=i.get('id')).count() == 0:
-
-                                new_transa = Transaction
-
                                 if i.get('outgoing'):
                                     '''Исходящие транзакции'''
                                     type_payment = PayType.objects.filter(pay_type='Выплаты-партнерские')[0]
@@ -352,7 +352,7 @@ def import_transactions():
                                         'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
                                         'requisite': i.get('correspondent')
                                     }
-                                    new_transa.objects.create(**new_data)
+                                    tr_bulk_list.append(Transaction(**new_data))
                                 else:
                                     '''Входящие транзакции'''
                                     type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
@@ -380,7 +380,7 @@ def import_transactions():
                                         'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
                                         'requisite': i.get('correspondent')
                                     }
-                                    new_transa.objects.create(**new_data)
+                                    tr_bulk_list.append(Transaction(**new_data))
                                 if i.get('correspondent') in our_correspondent and i.get('selfExchange'):
                                     '''Входящие внутренние транзакции'''
                                     type_payment = PayType.objects.filter(pay_type='Пополнение')[0]
@@ -407,7 +407,9 @@ def import_transactions():
                                         'type_payment': type_payment, 'current_id': current, 'channel': i.get('channel'),
                                         'requisite': i.get('correspondent')
                                     }
-                                    new_transa.objects.create(**new_data)
+                                    tr_bulk_list.append(Transaction(**new_data))
+                        if tr_bulk_list:
+                            Transaction.objects.bulk_create(tr_bulk_list)
 
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
