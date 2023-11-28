@@ -18,7 +18,7 @@ def import_transactions():
     r = redis.Redis(db=1)
     if not r.get('tr_check'):
         r['tr_check'] = 0
-    r['tr_check'] = 0
+
     try:
         check = int(r.get('tr_check'))
     except TypeError:
