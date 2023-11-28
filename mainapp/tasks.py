@@ -172,8 +172,8 @@ def import_transactions():
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
                 import_object.update(repyt_start_date=new_start)
-            except:
-                pass
+            except TypeError:
+                continue
 
         elif obj.bank.lower() == 'capitalist':
             our_correspondent = [
@@ -414,8 +414,8 @@ def import_transactions():
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
                 import_object.update(repyt_start_date=new_start)
-            except:
-                pass
+            except TypeError:
+                continue
 
         elif obj.bank.lower() == 'modulbank':
             date_start = obj.date_start.strftime('%Y-%m-%dT00:00:00')+"Z"
@@ -687,7 +687,7 @@ def import_transactions():
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
                 import_object.update(repyt_start_date=new_start)
-            except:
-                pass
+            except TypeError:
+                continue
 
     r['tr_check'] = 0
