@@ -18,7 +18,7 @@ def import_transactions():
     r = redis.Redis(db=1)
     if not r.get('tr_check'):
         r['tr_check'] = 0
-
+    r['tr_check'] = 0
     try:
         check = int(r.get('tr_check'))
     except TypeError:
@@ -172,7 +172,7 @@ def import_transactions():
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
                 import_object.update(repyt_start_date=new_start)
-            except TypeError:
+            except:
                 continue
 
         elif obj.bank.lower() == 'capitalist':
@@ -414,7 +414,7 @@ def import_transactions():
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
                 import_object.update(repyt_start_date=new_start)
-            except TypeError:
+            except:
                 continue
 
         elif obj.bank.lower() == 'modulbank':
@@ -687,7 +687,7 @@ def import_transactions():
                 new_start = dt.now().date() - datetime.timedelta(days=1)
                 import_object = ImportData.objects.filter(bank=obj.bank)
                 import_object.update(repyt_start_date=new_start)
-            except TypeError:
+            except:
                 continue
 
     r['tr_check'] = 0
