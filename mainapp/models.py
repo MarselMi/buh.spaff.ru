@@ -144,6 +144,9 @@ class Transaction(models.Model):
         self.save()
 
     class Meta:
+        indexes = [
+            models.Index(fields=['import_id']),
+        ]
         verbose_name = 'Транзакцию'
         verbose_name_plural = 'Транзакции'
 
