@@ -9,19 +9,15 @@ from telebot import types
 import requests
 import datetime
 from pathlib import Path
-
+from variables import *
 from django.core.files.storage import FileSystemStorage
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = BASE_DIR / 'media'
 
-local = 'http://127.0.0.1:8000'
-prod = 'https://buh.spaff.ru'
-
 PROD_DOMAIN = prod
 
-API_TOKEN = '5655161091:AAGPrpG314RXFKJe2XJ7bCGqgrh4tn9mP54'
 bot = telebot.TeleBot(API_TOKEN)
 url = f"https://api.telegram.org/bot{API_TOKEN}/getUpdates"
 
@@ -200,7 +196,6 @@ def listen_messages(message):
                 '''Перенаправление в следующую функцию для получения имени транзакции'''
                 bot.register_next_step_handler(message, load_check)
             else:
-                print('i heare')
                 message_send = "Неизвестная команда, введите команду /help, для ознакомления"
                 bot.send_message(message.chat.id, text=message_send)
     except:
