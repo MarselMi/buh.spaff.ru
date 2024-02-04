@@ -19,13 +19,13 @@ def import_transactions():
     if not r.get('tr_check'):
         r['tr_check'] = 0
 
-    # try:
-    #     check = int(r.get('tr_check'))
-    # except TypeError:
-    #     check = 0
-    #
-    # if check == 1:
-    #     return 0
+    try:
+        check = int(r.get('tr_check'))
+    except TypeError:
+        check = 0
+
+    if check == 1:
+        return 0
 
     r['tr_check'] = 1
 
