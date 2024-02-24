@@ -23,9 +23,9 @@ def import_transactions():
         check = int(r.get('tr_check'))
     except TypeError:
         check = 0
-
-    if check == 1:
-        return 0
+    r['tr_check'] = 0
+    # if check == 1:
+    #     return 0
 
     r['tr_check'] = 1
 
