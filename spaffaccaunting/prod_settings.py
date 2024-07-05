@@ -29,7 +29,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    'buh.spaff.ru',
+    variables.allow_prod,
     variables.ip_prod,
 ]
 
