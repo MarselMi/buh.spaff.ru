@@ -135,5 +135,5 @@ dmypy.json
 .idea
 
 /apiapp/migrations/
-/.idea/
+.idea/
 /media/
