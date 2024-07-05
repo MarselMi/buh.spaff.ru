@@ -9,7 +9,7 @@ from telebot import types
 import requests
 import datetime
 from pathlib import Path
-from variables import *
+from variables import API_TOKEN, local, prod
 from django.core.files.storage import FileSystemStorage
 
 

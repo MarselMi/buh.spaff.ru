@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import variables
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4#ae+71v%2nn&1uc+9tr_b%jr(*+v7tg#yrert*3plry+@ir1('
+SECRET_KEY = variables.SECRET_KEY_DJANGO
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -29,7 +30,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     'buh.spaff.ru',
-    '2.58.70.133'
+    variables.ip_prod,
 ]
 
 DATABASES = {
@@ -39,11 +40,11 @@ DATABASES = {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         },
-        'NAME': 'buh',
-        'USER': 'buhsoft',
-        'PASSWORD': 'gzfZ0xDmugJw',
-        'HOST': 'master.bbbf8e05-6eac-4287-908f-44b5ad38540f.c.dbaas.selcloud.ru',
-        'PORT': '6033',
+        'NAME': variables.DB_NAME,
+        'USER': variables.DB_USERNAME,
+        'PASSWORD': variables.DB_PASSWORD,
+        'HOST': variables.DB_HOST,
+        'PORT': variables.DB_POST,
     }
 }
 

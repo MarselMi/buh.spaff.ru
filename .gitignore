@@ -137,3 +137,4 @@ dmypy.json
 /apiapp/migrations/
 .idea/
 /media/
+spaffaccaunting/variables.py
